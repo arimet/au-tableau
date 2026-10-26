@@ -33,7 +33,7 @@ A topic is one folder in `src/content/topics/`. The folder name is the topic key
 
 1. **Create the folder** `src/content/topics/<topic>/`.
 2. **Write the story twice**, in `fr.mdx` and `en.mdx`. The frontmatter is validated by `src/content.config.ts`:
-   `topic` (the folder name), `locale` (`fr` or `en`), `slug` (kebab-case, used in the URL), `question`, `hook`, `discipline`, `date` and `answer` (the short answer). A topic dated in the future is published by the first build after that date. A topic without both languages fails the build.
+   `topic` (the folder name), `locale` (`fr` or `en`), `slug` (kebab-case, used in the URL), `question`, `hook`, `discipline`, `date` and `answer` (the short answer). A topic dated in the future is published by the first build after that date; the deploy workflow rebuilds the site every Monday at 06:00 UTC, so date topics on Mondays. To preview scheduled topics locally, run `SHOW_FUTURE=1 npm run dev`. A topic without both languages fails the build.
 3. **Add `data.ts`** with the facts behind the story:
    - `sources: Source[]`, peer-reviewed only (`peerReviewed: true`, with the required `url` and, when there is one, the `doi`), ordered by first citation on the page;
    - `calcs: Calc[]`, the calculations. Each step is either taken from a source (`sourceIds`) or derived (`formula`), never neither;

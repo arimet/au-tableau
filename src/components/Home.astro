@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import { localePath, ui, type Locale } from '../lib/i18n';
-import { publishedTopics } from '../lib/topics';
+import { buildNow, publishedTopics } from '../lib/topics';
 import { topicHero } from '../lib/topic-assets';
 import { url } from '../lib/url';
 
@@ -17,7 +17,7 @@ const { locale, title, description, emptyText } = Astro.props;
 const other: Locale = locale === 'fr' ? 'en' : 'fr';
 
 // Evaluated at build time: a future-dated topic appears only after a rebuild.
-const [latest, ...previous] = publishedTopics(await getCollection('topics'), locale, new Date());
+const [latest, ...previous] = publishedTopics(await getCollection('topics'), locale, buildNow());
 const Hero = latest && topicHero(latest.data.topic);
 const href = (e: NonNullable<typeof latest>) => url(localePath(locale, `/${e.data.slug}`));
 const formatDate = (d: Date) => d.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });

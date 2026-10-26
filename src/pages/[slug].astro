@@ -1,13 +1,13 @@
 ---
 import { getCollection } from 'astro:content';
 import Topic from '../layouts/Topic.astro';
-import { alternateOf, publishedTopics } from '../lib/topics';
+import { alternateOf, buildNow, publishedTopics } from '../lib/topics';
 import { topicData, topicHero } from '../lib/topic-assets';
 
 // Every topic must be published in both languages, so the language switch never leads to a missing page.
 // A topic missing its other version, Hero or data fails the build and names the topic; it is never skipped.
 export async function getStaticPaths() {
-  const now = new Date();
+  const now = buildNow();
   const all = await getCollection('topics');
   const published = [...publishedTopics(all, 'fr', now), ...publishedTopics(all, 'en', now)];
   return publishedTopics(all, 'fr', now).map((entry) => ({

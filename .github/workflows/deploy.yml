@@ -3,6 +3,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # Monday morning rebuild: a topic dated that day goes live without a push.
+  schedule:
+    - cron: '0 6 * * 1'
 permissions:
   contents: read
   pages: write

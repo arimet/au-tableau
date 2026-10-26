@@ -1,5 +1,9 @@
 import type { Locale } from './i18n.ts';
 
+/** The build time, or the far future with SHOW_FUTURE set, to preview scheduled topics locally. */
+export const buildNow = (env: Record<string, string | undefined> = process.env): Date =>
+  env.SHOW_FUTURE ? new Date(8.64e15) : new Date();
+
 /**
  * Topics of one locale whose date has passed, newest first.
  * `now` is the build time: a topic dated in the future only appears after a rebuild.

@@ -1,0 +1,69 @@
+---
+// Target day length and what it takes, recomputed live: tonnes launched westward, rotation energy to add.
+import Slider from '../../../components/Slider.astro';
+import { formatNumberHtml, formatPercent } from '../../../lib/format';
+import type { Locale } from '../../../lib/i18n';
+import { SLIDER, TARGET_HOURS, energyShare, tonnesFor } from './data';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+---
+
+<div class="west-slider" data-locale={locale}>
+  <Slider
+    id="day-hours"
+    label={fr ? 'Durée de la journée visée, en heures' : 'Target day length, in hours'}
+    min={SLIDER.min}
+    max={SLIDER.max}
+    step={SLIDER.step}
+    scale="linear"
+    value={TARGET_HOURS}
+    {locale}
+  />
+  <p class="sentence" aria-live="polite">
+    {fr ? 'Tonnes à lancer vers l’ouest : ' : 'Tonnes to launch westward: '}
+    <b class="result tonnes" set:html={formatNumberHtml(tonnesFor(TARGET_HOURS), locale, 2)} />.
+    <br />
+    {fr ? 'Énergie de rotation en plus : ' : 'Extra rotation energy: '}
+    <b class="result energy">{formatPercent(energyShare(TARGET_HOURS), locale)}</b>.
+  </p>
+</div>
+
+<script>
+  import { formatNumberHtml, formatPercent } from '../../../lib/format';
+  import { energyShare, tonnesFor } from './data';
+
+  for (const box of document.querySelectorAll<HTMLElement>('.west-slider')) {
+    const input = box.querySelector<HTMLInputElement>('input[type="range"]')!;
+    const tonnes = box.querySelector('.tonnes')!;
+    const energy = box.querySelector('.energy')!;
+    const locale = box.dataset.locale === 'en' ? 'en' : 'fr';
+    input.addEventListener('input', () => {
+      const hours = Number(input.value);
+      tonnes.innerHTML = formatNumberHtml(tonnesFor(hours), locale, 2);
+      energy.textContent = formatPercent(energyShare(hours), locale);
+    });
+  }
+</script>
+
+<style>
+  .west-slider {
+    padding: 1rem 0;
+  }
+
+  .sentence {
+    color: var(--chalk);
+    font-size: 1.2rem;
+    line-height: 1.8;
+  }
+
+  .result {
+    color: var(--chalk-yellow);
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+</style>

@@ -15,6 +15,14 @@ export type CalcStep = {
 
 export type Calc = { id: string; steps: CalcStep[] };
 
+/** A calc step from its French and English labels. */
+export const calcStep = (fr: string, en: string, value: number, unit: string, how: Pick<CalcStep, 'sourceIds' | 'formula' | 'digits'>): CalcStep => ({
+  label: { fr, en },
+  value,
+  unit,
+  ...how,
+});
+
 /** Every number shown must cite a known source or come from a formula. Empty result means all is well. */
 export const checkSources = (sources: Source[], calcs: Calc[]): string[] => {
   const errors: string[] = [];

@@ -62,6 +62,10 @@ const numberParts = (value: number, locale: Locale, digits: number): { mantissa:
   };
 };
 
+/** A share as a percentage, 2 significant digits: 0.44 → "44 %" (fr), "44%" (en). */
+export const formatPercent = (share: number, locale: Locale): string =>
+  `${formatNumberText(share * 100, locale, 2)}${locale === 'fr' ? ' %' : '%'}`;
+
 /** A number for display, HTML-safe: mantissa × 10<sup>exp</sup> when out of the plain range. Never "e+37". */
 export const formatNumberHtml = (value: number, locale: Locale, digits = 3): string => {
   const { mantissa, exp } = numberParts(value, locale, digits);

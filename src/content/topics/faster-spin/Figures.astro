@@ -1,0 +1,233 @@
+---
+// Small figures for the story: the faster spin, rockets bolted to the ground, heat-carrying eddies,
+// and the change in the global mean.
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchArc, sketchCircle, sketchLine, arrowHead, hatch, smoothPath, type Pt } from '../../../lib/chalk';
+import type { Locale } from '../../../lib/i18n';
+import { figures, MEAN } from './data';
+
+interface Props {
+  name: 'spin' | 'anchored' | 'eddies' | 'mean';
+  locale: Locale;
+}
+
+const { name, locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng({ spin: 21, anchored: 22, eddies: 23, mean: 24 }[name]);
+
+const arrow = (from: Pt, to: Pt, size = 10) => {
+  const angle = Math.atan2(to[1] - from[1], to[0] - from[0]);
+  return [sketchLine(rand, from, to, 1), ...arrowHead(rand, to, angle, size)];
+};
+const spiral = (x: number, y: number, size: number) =>
+  smoothPath(
+    Array.from({ length: 20 }, (_, i): Pt => {
+      const t = i / 19, a = t * 4 * Math.PI, rr = 1.5 + size * t;
+      return [x + rr * Math.cos(a), y + rr * Math.sin(a)];
+    }),
+  );
+const draw = (t: number, d: number) => `--t:${t}s;--d:${d}s`;
+
+// Spin, seen from above the North Pole: east is anticlockwise. Today's turn, then the faster one.
+const [sx, sy, sr] = [150, 140, 64];
+const spinEarth = sketchCircle(rand, sx, sy, sr);
+const spinHatch = hatch(rand, sx, sy, sr, 6.5, 0.62);
+const today = sketchArc(rand, sx, sy, sr + 16, 0.2, -2.4);
+const faster = sketchArc(rand, sx, sy, sr + 32, 0.2, -3.6);
+
+// Bolted rocket: the ground seen from the side, the rocket lying on it, nose east (right).
+const R = 700, top = 200, gcy = top + R;
+const surface = sketchArc(rand, 200, gcy, R, -Math.PI / 2 - 0.28, -Math.PI / 2 + 0.28, 0.002).d;
+const groundLines = Array.from({ length: 56 }, (_, i) => sketchLine(rand, [-40 + i * 8, top - 10], [i * 8, top + 50], 0.6));
+const rocketBody = 'M0,-27 C7.5,-17 8,-5 7,12 L-7,12 C-8,-5 -7.5,-17 0,-27Z';
+const rocketFins = 'M-7,3 L-14,16 L-7,13 M7,3 L14,16 L7,13';
+const bolts = [[196, 194], [224, 194]].map(([x, y]) => sketchLine(rand, [x, y], [x, y + 10], 0.3));
+
+// Eddies: heat carried from the equator (left) to the pole (right), today and with a faster spin.
+const rows = [
+  { y: 98, size: 17, count: 4, width: 3.2 },
+  { y: 220, size: 7, count: 9, width: 1.6 },
+];
+
+// Mean: a temperature axis from −2 to +2 °C.
+const [ax0, ax1, ay] = [50, 410, 120];
+const xOf = (c: number) => ax0 + ((c + 2) / 4) * (ax1 - ax0);
+const axis = sketchLine(rand, [ax0 - 10, ay], [ax1 + 10, ay], 0.8);
+const ticks = [-2, -1, 0, 1, 2].map((c) => ({ c, d: sketchLine(rand, [xOf(c), ay - 7], [xOf(c), ay + 7], 0.3) }));
+const marks = [
+  { c: MEAN.charnayTemperate, color: 'var(--blue)', text: fr ? 'tempéré' : 'temperate', value: f.charnayTemperate },
+  { c: MEAN.charnayWarm, color: 'var(--pink)', text: fr ? 'chaud, sans glace' : 'warm, ice-free', value: f.charnayWarm },
+];
+const signed = (c: number) => (c > 0 ? `+${c}` : c < 0 ? `−${-c}` : '0');
+
+const labels = {
+  spin: fr
+    ? { scene: `Schéma vu du pôle Nord : aujourd’hui la Terre fait un tour en ${f.hoursNow} h ; pour un tour en ${f.hoursTarget} h, il lui faut ${f.momentumShare} d’élan et ${f.energyShare} d’énergie de rotation en plus.`, a: 'vu du pôle Nord', b: `${f.hoursNow} h`, c: `${f.hoursTarget} h`, d: `élan : +${f.momentumShare}`, e: `énergie : +${f.energyShare}` }
+    : { scene: `Diagram seen from the North Pole: today the Earth turns once in ${f.hoursNow} h; to turn once in ${f.hoursTarget} h it needs ${f.momentumShare} more angular momentum and ${f.energyShare} more rotation energy.`, a: 'seen from the North Pole', b: `${f.hoursNow} h`, c: `${f.hoursTarget} h`, d: `momentum: +${f.momentumShare}`, e: `energy: +${f.energyShare}` },
+  anchored: fr
+    ? { scene: 'Schéma : une fusée boulonnée au sol, nez vers l’est. Elle pousse le sol vers l’est, ses gaz poussent l’air vers l’ouest, et l’air frotte le sol vers l’ouest. Au total, rien ne change.', a: 'la fusée pousse', b: 'le sol vers l’est', c: 'les gaz poussent', d: 'l’air vers l’ouest', e: 'au total : rien' }
+    : { scene: 'Diagram: a rocket bolted to the ground, nose east. It pushes the ground east, its gases push the air west, and the air drags the ground west. In total, nothing changes.', a: 'the rocket pushes', b: 'the ground east', c: 'the gases push', d: 'the air west', e: 'in total: nothing' },
+  eddies: fr
+    ? { scene: 'Schéma : de grands tourbillons portent la chaleur de l’équateur vers le pôle. Quand la Terre tourne plus vite, ils sont plus petits et en portent moins.', a: 'aujourd’hui', b: 'Terre plus rapide', eq: 'équateur', pole: 'pôle', c: 'moins de chaleur vers le pôle' }
+    : { scene: 'Diagram: large eddies carry heat from the equator to the pole. When the Earth spins faster, they are smaller and carry less.', a: 'today', b: 'faster Earth', eq: 'equator', pole: 'pole', c: 'less heat to the pole' },
+  mean: fr
+    ? { scene: `Échelle de ${signed(ticks[0].c)} à ${signed(ticks.at(-1)!.c)} °C : avec des jours de ${f.charnayDay} h, la moyenne change de ${f.charnayTemperate} °C dans un climat tempéré et de ${f.charnayWarm} °C dans un climat chaud sans glace.`, a: `jours de ${f.charnayDay} h au lieu de ${f.hoursNow} h` }
+    : { scene: `Scale from ${signed(ticks[0].c)} to ${signed(ticks.at(-1)!.c)} °C: with ${f.charnayDay} h days, the mean changes by ${f.charnayTemperate} °C in a temperate climate and by ${f.charnayWarm} °C in a warm ice-free climate.`, a: `${f.charnayDay} h days instead of ${f.hoursNow} h` },
+}[name];
+const viewBox = { spin: '0 0 460 280', anchored: '0 0 400 250', eddies: '0 0 460 300', mean: '0 0 500 170' }[name];
+---
+
+<Scene {viewBox} label={labels.scene} {locale}>
+  {
+    name === 'spin' && (
+      <>
+        <defs>
+          <clipPath id="spin-spin-earth">
+            <circle cx={sx} cy={sy} r={sr - 1} />
+          </clipPath>
+        </defs>
+        <g clip-path="url(#spin-spin-earth)" stroke="var(--blue)" stroke-width="1.5" opacity="0.6" fill="none" stroke-linecap="round">
+          {spinHatch.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(0.6 + i * 0.03, 0.2)} />)}
+        </g>
+        <g fill="none" stroke-linecap="round">
+          <path class="draw" pathLength="1" d={spinEarth} stroke="var(--chalk)" stroke-width="2.3" style={draw(0, 0.9)} />
+          <circle class="pop" cx={sx} cy={sy} r="2.5" fill="var(--chalk)" style="--t:0.9s" />
+          <g stroke="var(--chalk)" stroke-width="2">
+            <path class="draw" pathLength="1" d={today.d} style={draw(1.3, 0.6)} />
+            {arrowHead(rand, today.tip, today.angle, 9).map((d) => <path class="draw" pathLength="1" {d} style={draw(1.9, 0.12)} />)}
+          </g>
+          <g stroke="var(--chalk-yellow)" stroke-width="2.3">
+            <path class="draw" pathLength="1" d={faster.d} style={draw(2.2, 0.6)} />
+            {arrowHead(rand, faster.tip, faster.angle, 10).map((d) => <path class="draw" pathLength="1" {d} style={draw(2.8, 0.12)} />)}
+          </g>
+        </g>
+        <g class="labels">
+          <Annotation x={16} y={26} t={0.9}>{labels.a}</Annotation>
+          <Annotation x={today.tip[0] - 14} y={today.tip[1] - 10} t={1.9} anchor="end">{labels.b}</Annotation>
+          <Annotation x={faster.tip[0] - 10} y={faster.tip[1] + 22} t={2.8} anchor="end">{labels.c}</Annotation>
+          <Annotation x={278} y={90} t={3.2}>{labels.d}</Annotation>
+          <Annotation x={278} y={120} t={3.4}>{labels.e}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'anchored' && (
+      <>
+        <defs>
+          <clipPath id="spin-anchored-ground">
+            <circle cx="200" cy={gcy} r={R - 1} />
+          </clipPath>
+        </defs>
+        <g clip-path="url(#spin-anchored-ground)" stroke="var(--blue)" stroke-width="1.5" opacity="0.5" fill="none" stroke-linecap="round">
+          {groundLines.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(0.4 + i * 0.012, 0.2)} />)}
+        </g>
+        <path class="draw" pathLength="1" d={surface} fill="none" stroke="var(--chalk)" stroke-width="2.3" stroke-linecap="round" style={draw(0, 0.8)} />
+        <g class="pop" style="--t:1.1s" transform="translate(210 182) rotate(90) scale(1.25)">
+          <path class="flame" d="M-5.5,13 Q-9,27 0,40 Q9,27 5.5,13Z" fill="var(--chalk-yellow)" />
+          <path d={rocketBody} fill="var(--pink)" />
+          <path d="M-7,3 L-14,16 L-7,13Z M7,3 L14,16 L7,13Z" fill="var(--pink)" />
+          <g fill="none" stroke="var(--chalk)" stroke-width="1.6" stroke-linejoin="round">
+            <path d={rocketBody} />
+            <path d={rocketFins} />
+          </g>
+        </g>
+        <g fill="none" stroke="var(--chalk)" stroke-width="2.3" stroke-linecap="round">
+          {bolts.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(1.4 + i * 0.1, 0.12)} />)}
+        </g>
+        <g fill="none" stroke="var(--chalk-yellow)" stroke-width="2.3" stroke-linecap="round">
+          {arrow([200, 226], [300, 226], 10).map((d, i) => <path class="draw" pathLength="1" {d} style={draw(1.7 + (i ? 0.4 : 0), i ? 0.12 : 0.4)} />)}
+        </g>
+        <g fill="none" stroke="var(--pink)" stroke-width="2" stroke-linecap="round">
+          <path class="draw" pathLength="1" d={spiral(118, 170, 9)} style={draw(2.4, 0.5)} />
+          <path class="draw" pathLength="1" d={spiral(72, 150, 8)} style={draw(2.6, 0.5)} />
+          {[...arrow([140, 160], [40, 120], 10), ...arrow([120, 192], [30, 192], 10)].map((d, i) => (
+            <path class="draw" pathLength="1" {d} style={draw(3 + (i % 3 ? 0.35 : 0) + (i > 2 ? 0.5 : 0), i % 3 ? 0.12 : 0.35)} />
+          ))}
+        </g>
+        <g class="labels">
+          <Annotation x={230} y={120} t={2.1}>{labels.a}</Annotation>
+          <Annotation x={230} y={144} t={2.25}>{labels.b}</Annotation>
+          <Annotation x={20} y={60} t={3.2}>{labels.c}</Annotation>
+          <Annotation x={20} y={84} t={3.35}>{labels.d}</Annotation>
+          <Annotation x={230} y={44} t={4.2}>{labels.e}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'eddies' &&
+      rows.map((row, k) => (
+        <>
+          <g fill="none" stroke-linecap="round">
+            <path class="draw" pathLength="1" d={sketchLine(rand, [24, row.y - 34], [24, row.y + 34], 0.6)} stroke="var(--pink)" stroke-width="6" opacity="0.7" style={draw(k * 2.4, 0.3)} />
+            <path class="draw" pathLength="1" d={sketchLine(rand, [436, row.y - 34], [436, row.y + 34], 0.6)} stroke="var(--blue)" stroke-width="6" opacity="0.7" style={draw(k * 2.4 + 0.2, 0.3)} />
+            <g stroke="var(--chalk)" stroke-width="1.8" opacity="0.85">
+              {Array.from({ length: row.count }, (_, i) => (
+                <path class="draw" pathLength="1" d={spiral(70 + ((i + 0.5) * 320) / row.count, row.y + (i % 2 ? 6 : -6), row.size)} style={draw(k * 2.4 + 0.5 + i * 0.08, 0.4)} />
+              ))}
+            </g>
+            <g stroke="var(--chalk-yellow)" stroke-width={row.width}>
+              {arrow([46, row.y + 40], [k ? 300 : 410, row.y + 40], 10 + row.width).map((d, i) => (
+                <path class="draw" pathLength="1" {d} style={draw(k * 2.4 + 1.3 + (i ? 0.5 : 0), i ? 0.12 : 0.5)} />
+              ))}
+            </g>
+          </g>
+          <g class="labels">
+            <Annotation x={46} y={row.y - 46} t={k * 2.4}>{k ? labels.b : labels.a}</Annotation>
+          </g>
+        </>
+      ))
+  }
+  {
+    name === 'eddies' && (
+      <g class="labels">
+        <Annotation x={10} y={22} t={0.3}>{labels.eq}</Annotation>
+        <Annotation x={450} y={22} t={0.5} anchor="end">{labels.pole}</Annotation>
+        <Annotation x={46} y={292} t={4.4}>{labels.c}</Annotation>
+      </g>
+    )
+  }
+
+  {
+    name === 'mean' && (
+      <>
+        <g fill="none" stroke="var(--chalk)" stroke-linecap="round">
+          <path class="draw" pathLength="1" d={axis} stroke-width="2" style={draw(0, 0.7)} />
+          {ticks.map(({ d }, i) => <path class="draw" pathLength="1" {d} stroke-width="1.6" style={draw(0.7 + i * 0.08, 0.1)} />)}
+        </g>
+        {
+          marks.map((m, i) => (
+            <g fill="none" stroke={m.color} stroke-width="2.6" stroke-linecap="round">
+              {arrow([xOf(0), ay - 24 - i * 36], [xOf(m.c), ay - 24 - i * 36], 9).map((d, j) => (
+                <path class="draw" pathLength="1" {d} style={draw(1.4 + i * 0.9 + (j ? 0.4 : 0), j ? 0.12 : 0.4)} />
+              ))}
+            </g>
+          ))
+        }
+        <g class="labels">
+          {ticks.map(({ c }, i) => <Annotation x={xOf(c)} y={ay + 30} t={0.9 + i * 0.08} anchor="middle">{signed(c)} °C</Annotation>)}
+          {marks.map((m, i) => (
+            <Annotation x={xOf(0) + (m.c < 0 ? -6 : 6)} y={ay - 42 - i * 36} t={1.9 + i * 0.9} anchor={m.c < 0 ? 'end' : 'start'}>
+              {`${m.text}${fr ? ' : ' : ': '}${m.value} °C`}
+            </Annotation>
+          ))}
+          <Annotation x={ax0 - 10} y={16} t={0.2}>{labels.a}</Annotation>
+        </g>
+      </>
+    )
+  }
+</Scene>
+
+<style>
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

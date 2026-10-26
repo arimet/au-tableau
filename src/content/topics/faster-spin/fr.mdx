@@ -1,0 +1,100 @@
+---
+topic: faster-spin
+locale: fr
+slug: terre-tourner-plus-vite-refroidir
+question: "Faire tourner la Terre plus vite la refroidirait-elle ?"
+hook: "L’idée circule : raccourcir les journées pour rafraîchir la planète. On calcule ce qu’il faudrait pour accélérer la Terre, puis on regarde ce que les modèles de climat en disent."
+discipline: Climat
+date: 2026-10-26
+answer: "Pas vraiment. Selon les modèles, la température moyenne bougerait d’environ un degré, dans un sens ou dans l’autre. Ce qui change surtout, c’est l’écart : l’équateur se réchauffe, les pôles se refroidissent. Et des fusées fixées au sol ne feraient pas tourner la Terre plus vite."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import WestSlider from './WestSlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('fr');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="spin" locale="fr" />
+
+## Des journées de {f.hoursTarget} heures
+
+Aujourd’hui, la Terre fait un tour sur elle-même en {f.hoursNow} heures. Pour qu’elle le fasse en {f.hoursTarget} heures, elle doit tourner {f.speedFactor} fois plus vite.
+
+Il faut alors lui ajouter {f.momentumShare} de son élan de rotation, que les physiciens appellent le moment cinétique. Son énergie de rotation, elle, augmente de {f.energyShare}.
+
+<ShowCalc calc={calc('target')} sources={sources} locale="fr">
+
+Le calcul multiplie la vitesse de rotation par {f.hoursNow}/{f.hoursTarget}. Il raccourcit donc dans la même proportion le jour sidéral, un tour complet par rapport aux étoiles, qui dure aujourd’hui {f.siderealDay}. Viser exactement {f.hoursTarget} heures de jour solaire, du midi au midi suivant, changerait le résultat de moins de 1 %. Le couple est celui qu’il faudrait exercer sans relâche pendant un an pour atteindre ce résultat.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="anchored" locale="fr" />
+
+## Des fusées fixées au sol ne servent à rien
+
+Imaginons des fusées boulonnées au sol, nez vers l’est. En poussant, chaque fusée entraîne le sol vers l’est. Mais ses gaz partent vers l’ouest dans l’atmosphère et entraînent l’air avec eux.
+
+L’air frotte ensuite sur le sol et le freine d’autant. L’atmosphère fait partie de la Terre : l’élan passe d’une partie à l’autre, et le total ne change pas. Aucun nombre de fusées n’y suffit. Un calcul publié fait la même hypothèse : les gaz qui retombent rendent leur élan à la Terre<SourceRef id="zhang2013" sources={sources} />.
+
+</Step>
+
+<Step>
+  <WestSlider slot="figure" locale="fr" />
+
+## Il faudrait lancer vers l’ouest
+
+Seule une masse qui quitte la Terre peut changer son élan. Pour l’accélérer, il faut l’envoyer vers l’ouest, à contre-sens de la rotation. Plus l’orbite est haute, plus chaque tonne compte.
+
+Sur une orbite à {f.westAltitude} kilomètres d’altitude, parcourue vers l’ouest, il faudrait placer **{f.westTonnes} de tonnes** pour des journées de {f.hoursTarget} heures. Le curseur fait varier la journée visée de {f.sliderMax} à {f.sliderMin} heures.
+
+<ShowCalc calc={calc('west')} sources={sources} locale="fr">
+
+Ce que le calcul laisse de côté. Il suppose un départ depuis l’équateur et une orbite circulaire au-dessus de l’équateur. Il ne compte que la masse placée en orbite : il ignore la fusée et le carburant. La tonne posée au sol tournait déjà vers l’est avec la Terre ; en partant vers l’ouest, elle lui laisse aussi cet élan.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="eddies" locale="fr" />
+
+## Un équateur plus chaud, des pôles plus froids
+
+Supposons quand même la Terre accélérée. Les modèles de climat simulent alors l’air et les océans d’une planète qui tourne plus vite.
+
+Aux latitudes moyennes, de grands tourbillons d’air, les dépressions, portent la chaleur de l’équateur vers les pôles. Sur une planète qui tourne plus vite, ces tourbillons sont plus petits et portent moins bien la chaleur<SourceRef id="kaspi2015" sources={sources} />. L’équateur garde sa chaleur, les pôles en reçoivent moins<SourceRef id="charnay2013" sources={sources} />. Quand la rotation ralentit, c’est l’inverse : les tropiques se refroidissent et les hautes latitudes se réchauffent<SourceRef id="navarra2002" sources={sources} />.
+
+Une étude qui teste des journées de {f.hoursNow} à {f.jenkinsShortest} heures ne voit de grand changement dans la circulation de l’air qu’en dessous de {f.jenkinsThreshold} heures<SourceRef id="jenkins1996" sources={sources} />.
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="mean" locale="fr" />
+
+## Et la température moyenne ?
+
+Elle bouge peu, dans un sens ou dans l’autre. Un modèle de la Terre d’il y a {f.charnayAge} milliards d’années compare des journées de {f.charnayDay} heures et de {f.hoursNow} heures. La moyenne baisse de {f.charnayCooling} °C dans un climat tempéré et monte de {f.charnayWarming} °C dans un climat chaud sans glace. Le modèle conclut à un impact très limité<SourceRef id="charnay2013" sources={sources} />.
+
+Les nuages ne tranchent pas non plus. Avec des journées de {f.charnayDay} heures, une simulation trouve {f.jenkinsClouds} de nuages en moins<SourceRef id="jenkins1993" sources={sources} />. Une autre, qui impose la température des océans, trouve au contraire un peu plus de nuages<SourceRef id="jenkins1996" sources={sources} />.
+
+</Step>
+
+<Aside>
+
+## Et une Terre beaucoup plus lente ?
+
+Là, les nuages peuvent refroidir. Sur une planète qui tourne en quelques semaines, une épaisse couche de nuages se forme du côté jour et renvoie une grande part de la lumière du Soleil<SourceRef id="yang2014" sources={sources} />. Une Vénus primitive aurait pu rester tempérée si elle tournait en plus d’environ {f.wayDays} jours terrestres<SourceRef id="way2016" sources={sources} />.
+
+Ce serait l’inverse de l’idée de départ, et le climat changerait beaucoup : avec des journées de {f.navarraStorms} heures ({f.navarraStormDays} jours), les tempêtes des latitudes moyennes disparaissent presque, et leurs pluies avec elles<SourceRef id="navarra2002" sources={sources} />.
+
+</Aside>

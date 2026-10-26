@@ -1,0 +1,100 @@
+---
+topic: faster-spin
+locale: en
+slug: spin-earth-faster-cool-down
+question: "Would spinning the Earth faster cool it down?"
+hook: "The idea is going around: shorten the days to cool the planet. We work out what it would take to speed the Earth up, then look at what climate models say about it."
+discipline: Climate
+date: 2026-10-26
+answer: "Not really. According to the models, the mean temperature would move by about one degree, one way or the other. What mostly changes is the gap: the equator warms, the poles cool. And rockets fixed to the ground would not make the Earth spin faster anyway."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import WestSlider from './WestSlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('en');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="spin" locale="en" />
+
+## {f.hoursTarget}-hour days
+
+Today the Earth turns once on its axis in {f.hoursNow} hours. To do it in {f.hoursTarget} hours, it must spin {f.speedFactor} times faster.
+
+That means adding {f.momentumShare} to its spin momentum, which physicists call angular momentum. Its rotation energy goes up by {f.energyShare}.
+
+<ShowCalc calc={calc('target')} sources={sources} locale="en">
+
+The calculation multiplies the rotation rate by {f.hoursNow}/{f.hoursTarget}. It therefore shortens, in the same proportion, the sidereal day: one full turn relative to the stars, which lasts {f.siderealDay} today. Aiming at exactly {f.hoursTarget} hours of solar day, from one noon to the next, would change the result by less than 1%. The torque is the one you would have to apply without a break for a year to get there.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="anchored" locale="en" />
+
+## Rockets fixed to the ground do nothing
+
+Picture rockets bolted to the ground, nose east. As it pushes, each rocket drags the ground east. But its gases leave westward into the atmosphere and drag the air with them.
+
+The air then rubs against the ground and slows it by the same amount. The atmosphere is part of the Earth: the momentum moves from one part to the other, and the total does not change. No number of rockets is enough. A published calculation makes the same assumption: gases that fall back hand their momentum back to the Earth<SourceRef id="zhang2013" sources={sources} />.
+
+</Step>
+
+<Step>
+  <WestSlider slot="figure" locale="en" />
+
+## You would have to launch westward
+
+Only mass that leaves the Earth can change its angular momentum. To speed it up, that mass must go west, against the rotation. The higher the orbit, the more each tonne counts.
+
+On an orbit {f.westAltitude} kilometres up, travelled westward, you would need to place **{f.westTonnes} tonnes** to get {f.hoursTarget}-hour days. The slider moves the target day from {f.sliderMax} down to {f.sliderMin} hours.
+
+<ShowCalc calc={calc('west')} sources={sources} locale="en">
+
+What the calculation leaves out. It assumes a launch from the equator and a circular orbit above the equator. It only counts the mass placed in orbit: it ignores the rocket and its fuel. The tonne resting on the ground was already turning east with the Earth; by leaving westward, it also leaves that momentum behind.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="eddies" locale="en" />
+
+## A warmer equator, colder poles
+
+Suppose the Earth has been sped up anyway. Climate models then simulate the air and oceans of a planet that spins faster.
+
+At mid-latitudes, large eddies of air, the low-pressure systems, carry heat from the equator to the poles. On a planet that spins faster, these eddies are smaller and carry heat less well<SourceRef id="kaspi2015" sources={sources} />. The equator keeps its heat, the poles get less of it<SourceRef id="charnay2013" sources={sources} />. When the spin slows down, it goes the other way: the tropics cool and the high latitudes warm<SourceRef id="navarra2002" sources={sources} />.
+
+A study that tests days from {f.hoursNow} down to {f.jenkinsShortest} hours only sees a large change in how the air circulates below {f.jenkinsThreshold} hours<SourceRef id="jenkins1996" sources={sources} />.
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="mean" locale="en" />
+
+## And the mean temperature?
+
+It barely moves, one way or the other. A model of the Earth {f.charnayAge} billion years ago compares {f.charnayDay}-hour and {f.hoursNow}-hour days. The mean drops by {f.charnayCooling} °C in a temperate climate and rises by {f.charnayWarming} °C in a warm ice-free climate. The model concludes the impact is very limited<SourceRef id="charnay2013" sources={sources} />.
+
+Clouds do not settle it either. With {f.charnayDay}-hour days, a simulation finds {f.jenkinsClouds} fewer clouds<SourceRef id="jenkins1993" sources={sources} />. Another, which sets the ocean temperature in advance, finds slightly more clouds instead<SourceRef id="jenkins1996" sources={sources} />.
+
+</Step>
+
+<Aside>
+
+## And a much slower Earth?
+
+There, clouds can cool. On a planet that turns once in a few weeks, a thick cloud layer forms on the day side and sends back a large share of the sunlight<SourceRef id="yang2014" sources={sources} />. An early Venus could have stayed temperate if one turn took more than about {f.wayDays} Earth days<SourceRef id="way2016" sources={sources} />.
+
+That is the opposite of the original idea, and the climate would change a lot: with {f.navarraStorms}-hour days ({f.navarraStormDays} days), mid-latitude storms almost vanish, and their rain with them<SourceRef id="navarra2002" sources={sources} />.
+
+</Aside>

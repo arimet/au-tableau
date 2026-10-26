@@ -1,4 +1,4 @@
-import type { Source, Calc, CalcStep } from '../../../lib/sources.ts';
+import { calcStep as step, type Source, type Calc } from '../../../lib/sources.ts';
 import type { Locale } from '../../../lib/i18n.ts';
 import { formatDuration, formatLargeCount, formatNumberText } from '../../../lib/format.ts';
 
@@ -110,7 +110,7 @@ export const REFERENCE_LAUNCH = {
   orbitalSpeedMs: Math.sqrt(EARTH.gm / leoRadius),
 };
 const geoRadius = Math.cbrt(EARTH.gm / omega ** 2);
-const GEO = { orbitRadiusM: geoRadius, orbitalSpeedMs: omega * geoRadius };
+export const GEO = { orbitRadiusM: geoRadius, orbitalSpeedMs: omega * geoRadius };
 
 const groundSpeed = omega * EARTH.equatorialRadius;
 const groundL = TONNE * omega * EARTH.equatorialRadius ** 2;
@@ -133,13 +133,6 @@ const launches2022 = 186; // launches in the emissions inventory, failures inclu
 
 /** Slider range: tonnes placed in orbit, as powers of ten. */
 export const SLIDER = { minExp: 0, maxExp: 10 };
-
-const step = (fr: string, en: string, value: number, unit: string, how: Pick<CalcStep, 'sourceIds' | 'formula' | 'digits'>): CalcStep => ({
-  label: { fr, en },
-  value,
-  unit,
-  ...how,
-});
 
 export const calcs: Calc[] = [
   {

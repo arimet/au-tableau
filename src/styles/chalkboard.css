@@ -91,3 +91,108 @@ html {
   border-radius: 6px;
   border: 3px solid var(--slate);
 }
+
+/* Chalk scenes. Default state: everything drawn. A scene is only hidden once JS arms it
+   (.is-armed) and animated while .is-playing; reduced motion never arms, so it stays drawn. */
+.scene {
+  position: relative;
+  margin: 0;
+}
+
+.scene svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.scene .write {
+  font-family: var(--font-hand);
+  fill: var(--chalk);
+  font-size: 22px; /* SVG user units */
+}
+
+.scene .replay {
+  display: none;
+  margin: 0.25rem 0 0 auto;
+  padding: 0.25rem 0.5rem;
+  background: none;
+  border: 0;
+  color: var(--text);
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.scene .replay:hover {
+  opacity: 1;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pop {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes write {
+  to {
+    opacity: 1;
+    clip-path: inset(-20% -5% -20% 0);
+  }
+}
+
+@keyframes flick {
+  from {
+    transform: scaleY(0.86);
+  }
+  to {
+    transform: scaleY(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scene.is-armed .replay {
+    display: block;
+  }
+
+  .scene.is-armed .draw {
+    /* Slightly past 1 with a long gap: round caps would draw a dot at the start of an undrawn path. */
+    stroke-dasharray: 1 2;
+    stroke-dashoffset: 1.02;
+  }
+
+  .scene.is-armed .pop {
+    opacity: 0;
+  }
+
+  .scene.is-armed .write {
+    opacity: 0;
+    clip-path: inset(-20% 100% -20% 0);
+  }
+
+  .scene.is-playing .draw {
+    animation: draw var(--d, 1s) cubic-bezier(0.35, 0.05, 0.25, 1) var(--t, 0s) forwards;
+  }
+
+  .scene.is-playing .pop {
+    animation: pop 0.45s ease-out var(--t, 0s) forwards;
+  }
+
+  .scene.is-playing .write {
+    animation: write 0.7s ease-out var(--t, 0s) forwards;
+  }
+
+  .scene.is-playing .flame {
+    transform-box: fill-box;
+    transform-origin: 50% 0;
+    animation: flick 0.18s ease-in-out infinite alternate;
+  }
+}

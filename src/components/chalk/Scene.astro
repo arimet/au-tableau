@@ -1,0 +1,35 @@
+---
+import { ui, type Locale } from '../../lib/i18n';
+
+interface Props {
+  viewBox: string;
+  label: string;
+  locale: Locale;
+}
+
+const { viewBox, label, locale } = Astro.props;
+
+// Unique filter id per scene (several scenes can share a page): a hash of the page path and the
+// accessible label. Deterministic across builds, and two scenes only collide if they carry the same label.
+const hash = [...`${Astro.url.pathname}|${label}`].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+const filterId = `chalk-${hash.toString(36)}`;
+---
+
+<figure class="scene">
+  <svg viewBox={viewBox} role="img" aria-label={label}>
+    <defs>
+      <filter id={filterId}>
+        <feTurbulence type="fractalNoise" baseFrequency=".9" result="n" />
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" />
+      </filter>
+    </defs>
+    <g filter={`url(#${filterId})`}>
+      <slot />
+    </g>
+  </svg>
+  <button type="button" class="replay hand">{ui[locale].replay}</button>
+</figure>
+
+<script>
+  import '../../scripts/draw';
+</script>

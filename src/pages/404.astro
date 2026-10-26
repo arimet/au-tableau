@@ -1,0 +1,60 @@
+---
+import Base from '../layouts/Base.astro';
+import Scene from '../components/chalk/Scene.astro';
+import Annotation from '../components/chalk/Annotation.astro';
+import { rng, sketchArc, sketchCircle, sketchLine } from '../lib/chalk';
+import { localePath } from '../lib/i18n';
+import { url } from '../lib/url';
+
+// A chalk question mark, crossed out. Same seed, same drawing.
+const rand = rng(404);
+const [cx, cy, r] = [150, 100, 52];
+const hook = sketchArc(rand, cx, cy, r, -Math.PI * 1.05, Math.PI * 0.35);
+const stem = sketchLine(rand, hook.tip, [cx, cy + r * 1.5], 2);
+const stemEnd = sketchLine(rand, [cx, cy + r * 1.5], [cx, cy + r * 2], 1);
+const dot = sketchCircle(rand, cx, cy + r * 2.45, 5);
+const strike = sketchLine(rand, [60, 250], [250, 20], 3);
+const strike2 = sketchLine(rand, [64, 254], [246, 26], 3);
+---
+
+<Base
+  locale="fr"
+  title="Page introuvable · Au tableau !"
+  description="Cette page n’existe pas. This page does not exist."
+  alternateHref={url(localePath('en', '/'))}
+>
+  <main class="lost">
+    <div class="board">
+      <Scene viewBox="0 0 300 300" label="Un point d’interrogation tracé à la craie, barré." locale="fr">
+        <g fill="none" stroke="var(--chalk)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+          <path class="draw" pathLength="1" style="--t:0s;--d:1s" d={hook.d} />
+          <path class="draw" pathLength="1" style="--t:0.9s;--d:0.3s" d={stem} />
+          <path class="draw" pathLength="1" style="--t:1.15s;--d:0.3s" d={stemEnd} />
+          <path class="draw" pathLength="1" style="--t:1.45s;--d:0.3s" d={dot} />
+        </g>
+        <g fill="none" stroke="var(--pink)" stroke-linecap="round">
+          <path class="draw" pathLength="1" style="--t:1.9s;--d:0.5s" stroke-width="6" d={strike} />
+          <path class="draw" pathLength="1" style="--t:2.1s;--d:0.5s" stroke-width="3.3" opacity=".55" d={strike2} />
+        </g>
+        <Annotation x={260} y={290} t={2.6} anchor="end">404</Annotation>
+      </Scene>
+    </div>
+    <h1>Page introuvable</h1>
+    <p lang="fr">Cette page n’existe pas. <a href={url(localePath('fr', '/'))}>Retour à l’accueil</a></p>
+    <p lang="en">This page does not exist. <a href={url(localePath('en', '/'))}>Back to the home page</a></p>
+  </main>
+</Base>
+
+<style>
+  .lost {
+    max-width: 32rem;
+    margin: 0 auto;
+    padding: 1rem 1.25rem 4rem;
+    text-align: center;
+  }
+
+  .board {
+    max-width: 18rem;
+    margin: 0 auto 1.5rem;
+  }
+</style>

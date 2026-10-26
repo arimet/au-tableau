@@ -1,0 +1,13 @@
+---
+interface Props {
+  x: number;
+  y: number;
+  /** Start time of the writing, in seconds. */
+  t: number;
+  anchor?: 'start' | 'end';
+}
+
+const { x, y, t, anchor = 'start' } = Astro.props;
+---
+
+<text class="write" {x} {y} text-anchor={anchor} style={`--t:${t}s`}><slot /></text>

@@ -31,6 +31,7 @@ const { calc, sources, locale } = Astro.props;
       ))
     }
   </ol>
+  <div class="notes"><slot /></div>
 </details>
 
 <style>
@@ -70,6 +71,10 @@ const { calc, sources, locale } = Astro.props;
   .how {
     grid-column: 1 / -1;
     font-size: 0.9rem;
+  }
+
+  .notes {
+    font-size: 0.95rem;
   }
 
   .formula {

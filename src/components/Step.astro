@@ -1,8 +1,14 @@
 ---
 // One beat of the story: text on the left, its figure pinned beside it while the text scrolls.
+// `stack` puts a wide figure (a ruler, a long chart) under the text, at full width; on a phone it scrolls sideways.
+interface Props {
+  stack?: boolean;
+}
+
+const { stack = false } = Astro.props;
 ---
 
-<section class="step">
+<section class:list={['step', { stack }]}>
   <div class="text"><slot /></div>
   <div class="figure"><slot name="figure" /></div>
 </section>
@@ -25,6 +31,14 @@
     max-width: 60ch;
   }
 
+  .stack {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .stack .figure {
+    position: static;
+  }
+
   @media (max-width: 759px) {
     .step {
       grid-template-columns: minmax(0, 1fr);
@@ -33,6 +47,15 @@
 
     .figure {
       position: static;
+    }
+
+    /* A wide figure keeps a legible size and scrolls sideways instead of shrinking. */
+    .stack .figure {
+      overflow-x: auto;
+    }
+
+    .stack .figure :global(.scene) {
+      min-width: 40rem;
     }
   }
 </style>

@@ -3,13 +3,20 @@ import assert from 'node:assert/strict';
 import { formatDuration, formatLargeCount, formatNumberHtml, formatNumberText } from '../src/lib/format.ts';
 
 test('durations', () => {
-  assert.equal(formatDuration(4e-13, 'fr'), '0,4 picoseconde');
-  assert.equal(formatDuration(4e-13, 'en'), '0.4 picoseconds');
+  assert.equal(formatDuration(4e-13, 'fr'), '400 femtosecondes');
+  assert.equal(formatDuration(4e-13, 'en'), '400 femtoseconds');
   assert.equal(formatDuration(1e-12, 'en'), '1 picosecond');
   assert.equal(formatDuration(2.5e-9, 'fr'), '2,5 nanosecondes');
   assert.equal(formatDuration(1.2e-3, 'en'), '1.2 milliseconds');
   assert.equal(formatDuration(3, 'fr'), '3 secondes');
   assert.doesNotMatch(formatDuration(1.24e-14, 'fr'), /e-|^0 /);
+});
+test('femtoseconds are the smallest unit', () => {
+  assert.equal(formatDuration(1.86e-15, 'fr'), '1,9 femtoseconde');
+  assert.equal(formatDuration(7.2e-16, 'en'), '0.72 femtoseconds');
+  assert.equal(formatDuration(7.2e-16, 'fr'), '0,72 femtoseconde');
+  assert.equal(formatDuration(3e-18, 'fr'), '0,003 femtoseconde');
+  assert.equal(formatDuration(9.996e-13, 'en'), '1 picosecond');
 });
 test('large counts', () => {
   assert.equal(formatLargeCount(2.5e11, 'fr'), '250 milliards');

@@ -11,6 +11,7 @@ const UNITS: Entry[] = [
   { factor: 1e-6, forms: { fr: ['microseconde', 'microsecondes'], en: ['microsecond', 'microseconds'] } },
   { factor: 1e-9, forms: { fr: ['nanoseconde', 'nanosecondes'], en: ['nanosecond', 'nanoseconds'] } },
   { factor: 1e-12, forms: { fr: ['picoseconde', 'picosecondes'], en: ['picosecond', 'picoseconds'] } },
+  { factor: 1e-15, forms: { fr: ['femtoseconde', 'femtosecondes'], en: ['femtosecond', 'femtoseconds'] } },
 ];
 
 const SCALES: Entry[] = [
@@ -39,7 +40,7 @@ const phrase = (value: number, locale: Locale, forms: Forms): string => {
 };
 
 export const formatDuration = (seconds: number, locale: Locale): string => {
-  // Below a picosecond, stay in picoseconds. Zero reads as seconds.
+  // Below a femtosecond, stay in femtoseconds. Zero reads as seconds.
   const unit = pick(UNITS, seconds) ?? (seconds === 0 ? UNITS[0] : UNITS[UNITS.length - 1]);
   return phrase(seconds / unit.factor, locale, unit.forms);
 };

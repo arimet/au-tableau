@@ -175,7 +175,7 @@ export const calcs: Calc[] = [
       step('Allongement du jour par les marées, par siècle (prédiction)', 'Day lengthening from the tides, per century (prediction)', tidesPerCentury, 's', { sourceIds: ['stephenson2016'] }),
       step('Le même, par an', 'The same, per year', tidesPerCentury / 100, 's', { formula: '÷ 100' }),
       step('Raccourcissement du jour, séisme de Sumatra de 2004 (modèle) (b)', 'Day shortening, 2004 Sumatra earthquake (model) (b)', sumatra, 's', { sourceIds: ['gross-chao2006'] }),
-      step('Tonnes en orbite basse pour le même effet', 'Tonnes in low orbit for the same effect', sumatra / SECONDS_PER_TONNE, 't', { formula: 'b ÷ a' }),
+      step('Tonnes en orbite basse pour un effet de même ampleur, en sens inverse', 'Tonnes in low orbit for an effect of the same size, in the opposite direction', sumatra / SECONDS_PER_TONNE, 't', { formula: 'b ÷ a' }),
       step('Raccourcissement du jour, barrages de 1835 à 2011 (environ)', 'Day shortening, dams from 1835 to 2011 (about)', dams, 's', { sourceIds: ['valencic2026'] }),
     ],
   },

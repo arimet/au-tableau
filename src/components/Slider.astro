@@ -25,7 +25,7 @@ const { id, label, min, max, step, scale, value, locale } = Astro.props;
 
 <div class="slider">
   <label for={id} class="hand">{label}</label>
-  <input type="range" {id} {min} {max} {step} {value} data-scale={scale} />
+  <input type="range" autocomplete="off" {id} {min} {max} {step} {value} data-scale={scale} />
   <output id={`${id}-out`} for={id} class="result" set:html={formatNumberHtml(sliderToValue(value, scale), locale)} />
 </div>
 

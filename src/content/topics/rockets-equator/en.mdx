@@ -6,7 +6,7 @@ question: "If we launch rockets from the equator, does the Earth slow down?"
 hook: "A rocket heading east takes a little momentum from the Earth. We follow that momentum from the launch pad to orbit, then measure it."
 discipline: Physics
 date: 2026-10-26
-answer: "Yes, by a tiny amount. Gases released in the atmosphere stay there and hand their momentum back to the Earth. Only the satellite that stays in orbit carries its own away: each tonne makes the day longer by something on the order of a femtosecond."
+answer: "Yes, by a tiny amount. Gases released in the atmosphere stay there and hand their momentum back to the Earth. Only what stays in orbit, such as the satellite, carries its own away: each tonne makes the day longer by something on the order of a femtosecond."
 ---
 
 import Step from '../../../components/Step.astro';
@@ -79,7 +79,7 @@ What the calculation leaves out. It assumes a launch from the equator and a circ
 
 Tidal friction makes the day longer by {f.tidesYear} each year<SourceRef id="stephenson2016" sources={sources} />. According to a model, the {f.sumatraYear} Sumatra earthquake made it shorter by {f.sumatra}<SourceRef id="gross-chao2006" sources={sources} />. The dams built from {f.damsFrom} to {f.damsTo} made it shorter by about {f.dams}<SourceRef id="valencic2026" sources={sources} />. The water they hold back makes the day longer, but the resulting fall in sea level makes it shorter by more.
 
-To match the Sumatra earthquake, we would have to place **{f.sumatraTonnes}** tonnes in low orbit.
+For an effect of the same size as the Sumatra earthquake, in the opposite direction, we would have to place **{f.sumatraTonnes}** tonnes in low orbit.
 
 </Step>
 

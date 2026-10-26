@@ -6,7 +6,7 @@ question: "Si on lance des fusées depuis l’équateur, la Terre ralentit-elle 
 hook: "Une fusée qui part vers l’est prend un peu d’élan à la Terre. On suit cet élan du pas de tir jusqu’à l’orbite, puis on le mesure."
 discipline: Physique
 date: 2026-10-26
-answer: "Oui, d’une durée infime. Les gaz rejetés dans l’atmosphère y restent et rendent leur élan à la Terre. Seul le satellite resté en orbite emporte le sien : chaque tonne allonge la journée d’une durée de l’ordre de la femtoseconde."
+answer: "Oui, d’une durée infime. Les gaz rejetés dans l’atmosphère y restent et rendent leur élan à la Terre. Seul ce qui reste en orbite, comme le satellite, emporte le sien : chaque tonne allonge la journée d’une durée de l’ordre de la femtoseconde."
 ---
 
 import Step from '../../../components/Step.astro';
@@ -79,7 +79,7 @@ Ce que le calcul laisse de côté. Il suppose un départ depuis l’équateur et
 
 Le frottement des marées allonge la journée de {f.tidesYear} chaque année<SourceRef id="stephenson2016" sources={sources} />. D’après un modèle, le séisme de Sumatra de {f.sumatraYear} l’a raccourcie de {f.sumatra}<SourceRef id="gross-chao2006" sources={sources} />. Les barrages construits de {f.damsFrom} à {f.damsTo} l’ont raccourcie d’environ {f.dams}<SourceRef id="valencic2026" sources={sources} />. L’eau qu’ils retiennent allonge la journée, mais la baisse du niveau de l’océan qui en découle la raccourcit davantage.
 
-Pour égaler le séisme de Sumatra, il faudrait placer **{f.sumatraTonnes}** de tonnes en orbite basse.
+Pour un effet de même ampleur que le séisme de Sumatra, mais en sens inverse, il faudrait placer **{f.sumatraTonnes}** de tonnes en orbite basse.
 
 </Step>
 

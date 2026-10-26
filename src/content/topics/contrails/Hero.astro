@@ -1,0 +1,97 @@
+---
+// Opening scene, side view of the sky: an airliner at cruise height leaves a trail of ice that spreads
+// out; far above, at 20 km, the layer where sulfur aerosols would have to go.
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchLine, smoothPath, type Pt } from '../../../lib/chalk';
+import type { Locale } from '../../../lib/i18n';
+import { figures } from './data';
+import { PLANE } from './plane';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng(2029);
+
+const ground = 340;
+const yOf = (km: number) => ground - km * 13;
+const axisX = 60;
+
+const groundLine = sketchLine(rand, [20, ground], [580, ground], 1);
+const groundHatch = Array.from({ length: 70 }, (_, i) => sketchLine(rand, [20 + i * 8, ground + 4], [12 + i * 8, ground + 22], 0.4));
+const axis = sketchLine(rand, [axisX, ground], [axisX, yOf(24)], 0.6);
+const ticks = [0, 10, 20].map((km) => ({ km, d: sketchLine(rand, [axisX - 6, yOf(km)], [axisX + 6, yOf(km)], 0.3) }));
+const cruise = sketchLine(rand, [axisX + 14, yOf(8)], [axisX + 14, yOf(13)], 0.3);
+
+// The airliner at 11 km, flying right; its trail starts thin and spreads into a cirrus veil behind it.
+const plane: Pt = [430, yOf(11)];
+const trail = smoothPath(Array.from({ length: 12 }, (_, i): Pt => [plane[0] - 30 - i * 26, plane[1] + 2 + (rand() - 0.5) * 2]));
+const veil = Array.from({ length: 5 }, (_, k) =>
+  smoothPath(Array.from({ length: 6 }, (_, i): Pt => [130 + i * 30 + k * 8, plane[1] - 18 + k * 9 + Math.sin(i + k) * 4])),
+);
+
+// The stratospheric layer at 20 km: a dashed line and a scatter of fine droplets.
+const layer = sketchLine(rand, [axisX, yOf(20)], [580, yOf(20)], 0.8);
+const droplets = Array.from({ length: 60 }, () => [axisX + 20 + rand() * 490, yOf(20) - 12 + rand() * 24] as Pt);
+
+const text = fr
+  ? {
+      label: `Schéma, vue de côté du ciel : un avion de ligne vole vers ${f.cruise} km d’altitude et laisse une traînée de glace qui s’étale, dans un air à ${f.formation} °C ou moins. Bien plus haut, vers ${f.stratosphere} km, la couche où il faudrait monter des aérosols de soufre pour refroidir la Terre.`,
+      trail: ['traînée : de la vapeur d’eau qui gèle', `dans un air à ${f.formation} °C ou moins`],
+      cruise: `avions de ligne : ${f.cruise} km`,
+      layer: `aérosols de soufre : il faudrait monter à ${f.stratosphere} km`,
+      km: 'km',
+    }
+  : {
+      label: `Diagram, side view of the sky: an airliner flies at about ${f.cruise} km and leaves a trail of ice that spreads out, in air at ${f.formation} °C or colder. Far higher, around ${f.stratosphere} km, the layer where sulfur aerosols would have to go to cool the Earth.`,
+      trail: ['trail: water vapour freezing', `in air at ${f.formation} °C or colder`],
+      cruise: `airliners: ${f.cruise} km`,
+      layer: `sulfur aerosols: you would have to reach ${f.stratosphere} km`,
+      km: 'km',
+    };
+const line = (d: string, t: number, dur: number) => ({ d, style: `--t:${t}s;--d:${dur}s` });
+---
+
+<Scene viewBox="0 0 600 380" label={text.label} {locale}>
+  <g fill="none" stroke-linecap="round">
+    {groundHatch.map((d, i) => <path class="draw" pathLength="1" {...line(d, 0.3 + i * 0.006, 0.15)} stroke="var(--green)" stroke-width="1.4" opacity="0.5" />)}
+    <path class="draw" pathLength="1" {...line(groundLine, 0, 0.6)} stroke="var(--chalk)" stroke-width="2.3" />
+    <path class="draw" pathLength="1" {...line(axis, 0.6, 0.6)} stroke="var(--chalk)" stroke-width="1.6" />
+    {ticks.map(({ d }, i) => <path class="draw" pathLength="1" {...line(d, 1.1 + i * 0.1, 0.1)} stroke="var(--chalk)" stroke-width="1.6" />)}
+    <path class="draw" pathLength="1" {...line(cruise, 1.5, 0.3)} stroke="var(--chalk-yellow)" stroke-width="3" />
+
+    <path class="draw" pathLength="1" {...line(trail, 2.4, 0.9)} stroke="var(--chalk)" stroke-width="3" opacity="0.85" />
+    {veil.map((d, i) => <path class="draw" pathLength="1" {...line(d, 3.2 + i * 0.12, 0.5)} stroke="var(--chalk)" stroke-width="1.6" opacity="0.45" />)}
+
+    <path class="draw" pathLength="1" {...line(layer, 4.2, 0.9)} stroke="var(--pink)" stroke-width="1.6" stroke-dasharray="6 7" />
+  </g>
+  <g fill="var(--pink)" opacity="0.7">
+    {droplets.map(([x, y], i) => <circle class="pop" cx={x} cy={y} r="1.6" style={`--t:${(4.6 + i * 0.01).toFixed(2)}s`} />)}
+  </g>
+  <g class="pop" style="--t:2s" transform={`translate(${plane[0]} ${plane[1]})`}>
+    <path d={PLANE.hull} fill="var(--blue)" fill-opacity="0.5" stroke="var(--chalk)" stroke-width="1.6" stroke-linejoin="round" />
+    <path d={PLANE.wings} fill="none" stroke="var(--chalk)" stroke-width="1.6" stroke-linejoin="round" />
+  </g>
+
+  <g class="labels">
+    {ticks.map(({ km }, i) => <Annotation x={axisX - 12} y={yOf(km) + 6} t={1.2 + i * 0.1} anchor="end">{km}</Annotation>)}
+    <Annotation x={axisX - 12} y={yOf(24) + 6} t={1.5} anchor="end">{text.km}</Annotation>
+    <Annotation x={axisX + 26} y={yOf(13) - 14} t={1.8}>{text.cruise}</Annotation>
+    <Annotation x={150} y={yOf(11) + 54} t={3.6}>{text.trail[0]}</Annotation>
+    <Annotation x={150} y={yOf(11) + 78} t={3.75}>{text.trail[1]}</Annotation>
+    <Annotation x={axisX + 26} y={yOf(20) - 26} t={5}>{text.layer}</Annotation>
+  </g>
+</Scene>
+
+<style>
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

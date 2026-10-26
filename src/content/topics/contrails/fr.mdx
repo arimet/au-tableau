@@ -1,0 +1,98 @@
+---
+topic: contrails
+locale: fr
+slug: trainees-avions-refroidir-climat
+question: "Les traînées des avions servent-elles à refroidir la Terre ?"
+hook: "Certains y voient un épandage secret pour modifier le climat. On regarde de quoi sont faites les traînées, ce qu’elles font vraiment au climat, et ce que demanderait un vrai programme pour refroidir la Terre."
+discipline: Climat
+date: 2026-10-26
+answer: "Non. Une traînée, c’est la vapeur d’eau du moteur qui gèle dans un air très froid, et les traînées réchauffent un peu le climat au lieu de le refroidir. Refroidir la Terre avec des aérosols demanderait de monter bien plus haut que les avions de ligne, avec des avions qui n’existent pas encore, et des milliers de vols par an : cela ne passerait pas inaperçu."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import ProgrammeSlider from './ProgrammeSlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('fr');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="trail" locale="fr" />
+
+## Une traînée, c’est de la glace
+
+Un moteur d’avion rejette des gaz chauds chargés de vapeur d’eau, et c’est elle qui fait la traînée. En se mélangeant à un air à {f.formation} °C ou plus froid, cette vapeur se condense en gouttelettes<SourceRef id="schumann1996" sources={sources} />. Les particules du moteur, comme les suies, leur servent de germes, puis les gouttelettes gèlent<SourceRef id="karcher2018" sources={sources} />.
+
+Dans un air sec, la traînée disparaît en {f.shortMinutes} minutes. Elle ne dure que si l’air est sursaturé en vapeur par rapport à la glace : elle peut alors tenir jusqu’à {f.persistentHours} heures et s’étaler en voile de cirrus. Les avions traversent un tel air pendant {f.supersaturated} de leur temps de vol<SourceRef id="karcher2018" sources={sources} />.
+
+Ce même air humide, soulevé par une dépression, fabrique aussi des cirrus naturels<SourceRef id="spichtinger2005" sources={sources} /><SourceRef id="karcher2018" sources={sources} />. Voilà pourquoi les traînées qui durent et les cirrus arrivent souvent ensemble : ils ont la même cause.
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="balance" locale="fr" />
+
+## Les traînées réchauffent
+
+Le jour, une traînée renvoie un peu de lumière du Soleil vers l’espace. Jour et nuit, elle retient la chaleur que la Terre rayonne, et la nuit rien ne compense. Au total, le réchauffement l’emporte un peu<SourceRef id="karcher2018" sources={sources} />.
+
+En {f.forcingYear}, les traînées et leurs cirrus réchauffaient le climat d’environ {f.contrailErf} milliwatts par mètre carré, avec une fourchette de {f.contrailErfRange}. C’est plus que l’effet du CO2 accumulé par l’aviation, {f.aviationCo2Erf} milliwatts par mètre carré<SourceRef id="lee2021" sources={sources} />. Les auteurs jugent ce chiffre peu sûr, mais son signe ne fait pas débat : un épandage pour refroidir la Terre qui la réchauffe n’aurait pas de sens.
+
+<ShowCalc calc={calc('forcing')} sources={sources} locale="fr">
+
+Ce rapport compare des traînées qui durent quelques heures, renouvelées tant qu’on vole, à un gaz qui s’accumule pendant des siècles. Il ne dit pas lequel compte le plus sur le long terme.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="altitudes" locale="fr" />
+
+## Ce qui refroidit vraiment : le soufre, très haut
+
+En {f.pinatuboYear}, le volcan Pinatubo a envoyé {f.pinatuboSo2} millions de tonnes de dioxyde de soufre au-dessus de {f.stratosphere} km<SourceRef id="kremser2016" sources={sources} />. Le soufre y forme de fines gouttelettes d’acide sulfurique, qui renvoient une partie de la lumière du Soleil. Là-haut, il leur faut environ un an pour que leur quantité baisse de {f.aerosolDrop} ; plus bas, la pluie les élimine en quelques jours<SourceRef id="pitari2002" sources={sources} />. La surface de la Terre s’est refroidie d’environ {f.cooling} °C<SourceRef id="canty2013" sources={sources} />, pendant {f.coolingYears} ans<SourceRef id="robock2000" sources={sources} />.
+
+Les avions de ligne volent vers {f.cruise} km d’altitude<SourceRef id="karcher2018" sources={sources} />, bien en dessous. Ce qu’ils rejetteraient retomberait en quelques jours à quelques mois<SourceRef id="kremser2016" sources={sources} />.
+
+</Step>
+
+<Step>
+  <ProgrammeSlider slot="figure" locale="fr" />
+
+## Ce que demanderait un vrai programme
+
+Aucun avion existant ne monte vers {f.stratosphere} km avec assez de charge. Les avions de recherche y arrivent, mais avec environ {f.researchPayload} tonne. Une étude a donc dessiné un avion neuf, capable d’y porter {f.payload} tonnes de soufre<SourceRef id="smith2018" sources={sources} />.
+
+Dans son scénario, la première année demande {f.so2Year1} million de tonnes de SO2, {f.flightsYear1} vols et {f.aircraftYear1} avions. La quinzième, {f.so2Year15} millions de tonnes, {f.flightsYear15} vols et {f.aircraftYear15} avions. En moyenne sur les quinze ans, cela coûte environ {f.cost} de dollars par an. C’est {f.pinatuboTimes1} fois moins de soufre que le Pinatubo la première année, et encore {f.pinatuboTimes15} fois moins la quinzième, mais chaque année. Et cela ne compenserait que la moitié de la hausse du forçage à partir du lancement, soit {f.coolingYear15} °C en moins la quinzième année<SourceRef id="smith2018" sources={sources} />. Le curseur parcourt les {f.sliderMax} années.
+
+<ShowCalc calc={calc('programme')} sources={sources} locale="fr">
+
+Le curseur suppose que le soufre monté augmente de la même quantité chaque année, comme dans l’étude, et que chaque vol emporte une charge pleine. L’avion brûle le soufre en vol, ce qui double sa masse en SO2.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="experts" locale="fr" />
+
+## Et les preuves d’un épandage secret ?
+
+Une équipe a soumis les « preuves » les plus citées à {f.experts} spécialistes des traînées et des dépôts atmosphériques : des photos de traînées, des analyses d’eau, de sol et de neige. {f.expertsNo} sur {f.experts}, soit {f.expertsShare}, n’ont jamais rencontré de signe d’un programme secret. Le seul « oui » portait sur du baryum dans l’air d’un site isolé. Les analyses citées utilisaient des seuils prévus pour l’eau potable<SourceRef id="shearer2016" sources={sources} />.
+
+Un vrai programme se verrait. Des dizaines de gros avions, des milliers de vols par an, depuis des bases dans plusieurs pays<SourceRef id="smith2018" sources={sources} />. Et les aérosols de la haute atmosphère sont mesurés au laser depuis {f.lidarSince}, puis par satellite. Ces mesures repèrent déjà des éruptions de {f.volcanoMt} million de tonnes de SO2<SourceRef id="kremser2016" sources={sources} />, l’ordre de grandeur de la première année du programme. Une éruption envoie tout d’un coup, alors qu’un programme étalerait ses vols sur l’année : aucune étude lue ne chiffre le seuil de détection dans ce cas, et l’argument le plus solide reste le nombre de vols.
+
+</Step>
+
+<Aside>
+
+## Et si on arrêtait d’un coup ?
+
+Masquer le réchauffement engage pour longtemps. Dans {f.terminationModels} modèles de climat où l’on baisse la lumière du Soleil puis où l’on arrête net, le réchauffement repart, dans la décennie qui suit l’arrêt, environ {f.terminationFactor} fois plus vite qu’il ne l’aurait fait sans intervention<SourceRef id="jones2013" sources={sources} />. Cette expérience baisse le Soleil au lieu d’injecter des aérosols ; un modèle testé avec des aérosols donne un retour un peu plus lent.
+
+</Aside>

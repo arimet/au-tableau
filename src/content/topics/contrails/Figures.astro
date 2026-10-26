@@ -1,0 +1,185 @@
+---
+// Small figures for the story: short and lasting trails, their warming next to aviation's CO2,
+// the heights where aerosols stay, and the expert survey.
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchLine, smoothPath, type Pt } from '../../../lib/chalk';
+import type { Locale } from '../../../lib/i18n';
+import { figures, BARS } from './data';
+import { PLANE } from './plane';
+
+interface Props {
+  name: 'trail' | 'balance' | 'altitudes' | 'experts';
+  locale: Locale;
+}
+
+const { name, locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng({ trail: 41, balance: 42, altitudes: 43, experts: 44 }[name]);
+const draw = (t: number, d: number) => `--t:${t}s;--d:${d}s`;
+
+// Trail: dry air above (a short trail), ice-supersaturated air below (a long one that spreads).
+const rows = [
+  { y: 74, length: 70, spread: 0 },
+  { y: 190, length: 300, spread: 5 },
+];
+const trails = rows.map((r) => ({
+  core: smoothPath(Array.from({ length: 8 }, (_, i): Pt => [370 - (i * r.length) / 7, r.y + 2 + (rand() - 0.5) * 2])),
+  veil: Array.from({ length: r.spread }, (_, k) =>
+    smoothPath(Array.from({ length: 6 }, (_, i): Pt => [70 + i * 34 + k * 6, r.y - 16 + k * 8 + Math.sin(i + k) * 4])),
+  ),
+}));
+
+// Balance: bars in mW/m² on a common scale.
+const [bx0, bx1, maxMw] = [184, 440, 100];
+const xOf = (mw: number) => bx0 + (mw / maxMw) * (bx1 - bx0);
+const barAxis = sketchLine(rand, [bx0, 40], [bx0, 190], 0.4);
+const bars = [
+  { y: 80, value: BARS.contrail, range: BARS.contrailRange, color: 'var(--pink)' },
+  { y: 150, value: BARS.co2, range: undefined, color: 'var(--chalk-yellow)' },
+];
+const whisker = (y: number, [a, b]: number[]) => [
+  sketchLine(rand, [xOf(a), y], [xOf(b), y], 0.3),
+  sketchLine(rand, [xOf(a), y - 8], [xOf(a), y + 8], 0.2),
+  sketchLine(rand, [xOf(b), y - 8], [xOf(b), y + 8], 0.2),
+];
+
+// Altitudes: a volcano whose plume spreads above 20 km; airliners lower down.
+const ground = 280;
+const yOf = (km: number) => ground - km * 9.5;
+const surface = sketchLine(rand, [20, ground], [440, ground], 0.8);
+const volcano = smoothPath([[40, ground], [80, ground - 34], [96, ground - 38], [112, ground - 34], [150, ground]]);
+const plume = smoothPath([[96, ground - 40], [92, yOf(8)], [100, yOf(14)], [96, yOf(20)], [104, yOf(22)]]);
+const veilLines = [0, 1, 2].map((k) => smoothPath(Array.from({ length: 8 }, (_, i): Pt => [100 + i * 46, yOf(21 + k * 1.4) + Math.sin(i + k) * 3])));
+const altAxis = sketchLine(rand, [440, ground], [440, yOf(24)], 0.5);
+const altTicks = [0, 10, 20].map((km) => ({ km, d: sketchLine(rand, [434, yOf(km)], [446, yOf(km)], 0.3) }));
+const cruiseBand = sketchLine(rand, [426, yOf(8)], [426, yOf(13)], 0.3);
+const airliner: Pt = [300, yOf(11)];
+
+// Experts: 77 dots, one of them answered yes.
+const dots = Array.from({ length: f.experts }, (_, i) => [40 + (i % 11) * 22, 50 + Math.floor(i / 11) * 22] as Pt);
+
+const labels = {
+  trail: fr
+    ? { scene: `Schéma : en air sec, la traînée ne dure que ${f.shortMinutes} minutes. En air humide, sursaturé en vapeur par rapport à la glace, elle dure jusqu’à ${f.persistentHours} heures et s’étale en voile de cirrus.`, a: 'air sec', b: `${f.shortMinutes} min`, c: ['air humide, sursaturé', 'par rapport à la glace'], d: `jusqu’à ${f.persistentHours} h, s’étale en cirrus` }
+    : { scene: `Diagram: in dry air, the trail lasts only ${f.shortMinutes} minutes. In moist air, supersaturated with respect to ice, it lasts up to ${f.persistentHours} hours and spreads into a cirrus veil.`, a: 'dry air', b: `${f.shortMinutes} min`, c: ['moist air, supersaturated', 'with respect to ice'], d: `up to ${f.persistentHours} h, spreads into cirrus` },
+  balance: fr
+    ? { scene: `Graphique : en ${f.forcingYear}, les traînées et leurs cirrus réchauffent le climat de ${f.contrailErf} milliwatts par mètre carré, avec une fourchette de ${f.contrailErfRange} et une confiance faible, contre ${f.aviationCo2Erf} pour le CO2 de l’aviation.`, a: 'traînées', b: 'CO2 de l’aviation', c: `réchauffement en ${f.forcingYear}, mW/m²`, d: 'confiance faible' }
+    : { scene: `Chart: in ${f.forcingYear}, contrails and their cirrus warm the climate by ${f.contrailErf} milliwatts per square metre, within a range of ${f.contrailErfRange} and with low confidence, against ${f.aviationCo2Erf} for aviation CO2.`, a: 'contrails', b: 'aviation CO2', c: `warming in ${f.forcingYear}, mW/m²`, d: 'low confidence' },
+  altitudes: fr
+    ? { scene: `Schéma, vue de côté : en ${f.pinatuboYear}, le Pinatubo a envoyé ${f.pinatuboSo2} millions de tonnes de SO2 au-dessus de ${f.stratosphere} km, où les aérosols mettent des années à disparaître. Les avions de ligne volent vers ${f.cruise} km : des aérosols lâchés là retomberaient en quelques jours à quelques mois.`, a: `Pinatubo, ${f.pinatuboYear}`, b: `${f.pinatuboSo2} Mt de SO2`, c: `au-dessus de ${f.stratosphere} km : des années`, d: 'plus bas : des jours à des mois', e: 'km' }
+    : { scene: `Diagram, side view: in ${f.pinatuboYear}, Pinatubo sent ${f.pinatuboSo2} million tonnes of SO2 above ${f.stratosphere} km, where aerosols take years to clear. Airliners fly at about ${f.cruise} km: aerosols released there would come down within days to months.`, a: `Pinatubo, ${f.pinatuboYear}`, b: `${f.pinatuboSo2} Mt of SO2`, c: `above ${f.stratosphere} km: years`, d: 'lower down: days to months', e: 'km' },
+  experts: fr
+    ? { scene: `Schéma : ${f.experts} points pour ${f.experts} experts ; ${f.expertsNo} n’ont trouvé aucune preuve d’un programme secret d’épandage, un seul a répondu oui.`, a: [`${f.expertsNo} sur ${f.experts} :`, 'aucune preuve'], b: '1 oui : du baryum dans l’air', c: 'd’un site isolé' }
+    : { scene: `Diagram: ${f.experts} dots for ${f.experts} experts; ${f.expertsNo} found no evidence of a secret spraying programme, a single one said yes.`, a: [`${f.expertsNo} of ${f.experts}:`, 'no evidence'], b: '1 yes: barium in the air', c: 'at a remote site' },
+}[name];
+const viewBox = { trail: '0 0 460 250', balance: '0 0 460 210', altitudes: '0 0 460 312', experts: '0 0 460 256' }[name];
+---
+
+<Scene {viewBox} label={labels.scene} {locale}>
+  {
+    name === 'trail' &&
+      rows.map((r, k) => (
+        <>
+          <g fill="none" stroke="var(--chalk)" stroke-linecap="round">
+            <path class="draw" pathLength="1" d={trails[k].core} stroke-width="3" opacity="0.85" style={draw(0.8 + k * 1.6, k ? 1 : 0.3)} />
+            {trails[k].veil.map((d, i) => <path class="draw" pathLength="1" {d} stroke-width="1.6" opacity="0.45" style={draw(2.6 + i * 0.12, 0.5)} />)}
+          </g>
+          <g class="pop" style={`--t:${0.4 + k * 1.6}s`} transform={`translate(400 ${r.y})`}>
+            <path d={PLANE.hull} fill="var(--blue)" fill-opacity="0.5" stroke="var(--chalk)" stroke-width="1.6" stroke-linejoin="round" />
+            <path d={PLANE.wings} fill="none" stroke="var(--chalk)" stroke-width="1.6" stroke-linejoin="round" />
+          </g>
+        </>
+      ))
+  }
+  {
+    name === 'trail' && (
+      <g class="labels">
+        <Annotation x={24} y={34} t={0.2}>{labels.a}</Annotation>
+        <Annotation x={290} y={110} t={1.2}>{labels.b}</Annotation>
+        <Annotation x={24} y={132} t={1.6}>{labels.c[0]}</Annotation>
+        <Annotation x={24} y={156} t={1.7}>{labels.c[1]}</Annotation>
+        <Annotation x={70} y={242} t={3.2}>{labels.d}</Annotation>
+      </g>
+    )
+  }
+
+  {
+    name === 'balance' && (
+      <>
+        <path class="draw" pathLength="1" d={barAxis} fill="none" stroke="var(--chalk)" stroke-width="1.8" style={draw(0, 0.4)} />
+        {bars.map((b, i) => (
+          <>
+            <rect class="pop" x={bx0} y={b.y - 14} width={xOf(b.value) - bx0} height="28" fill={b.color} fill-opacity="0.35" stroke={b.color} stroke-width="1.8" style={`--t:${0.6 + i * 0.6}s`} />
+            {b.range && (
+              <g fill="none" stroke="var(--chalk)" stroke-width="1.6" stroke-linecap="round">
+                {whisker(b.y, b.range).map((d, j) => <path class="draw" pathLength="1" {d} style={draw(1.8 + j * 0.1, 0.3)} />)}
+              </g>
+            )}
+          </>
+        ))}
+        <g class="labels">
+          <Annotation x={bx0 - 10} y={bars[0].y + 7} t={0.5} anchor="end">{labels.a}</Annotation>
+          <Annotation x={bx0 - 10} y={bars[1].y + 7} t={1.1} anchor="end">{labels.b}</Annotation>
+          <Annotation x={xOf(BARS.contrail) - 8} y={bars[0].y + 7} t={1} anchor="end">{`+${f.contrailErf}`}</Annotation>
+          <Annotation x={xOf(BARS.co2) + 12} y={bars[1].y + 7} t={1.6}>{`+${f.aviationCo2Erf}`}</Annotation>
+          <Annotation x={xOf(BARS.contrailRange[1])} y={bars[0].y - 24} t={2.2} anchor="end">{labels.d}</Annotation>
+          <Annotation x={bx0} y={26} t={0.2}>{labels.c}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'altitudes' && (
+      <>
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path class="draw" pathLength="1" d={surface} stroke="var(--chalk)" stroke-width="2.3" style={draw(0, 0.5)} />
+          <path class="draw" pathLength="1" d={volcano} stroke="var(--chalk)" stroke-width="2.3" style={draw(0.4, 0.5)} />
+          <path class="draw" pathLength="1" d={plume} stroke="var(--chalk)" stroke-width="5" opacity="0.5" style={draw(1, 0.8)} />
+          {veilLines.map((d, i) => <path class="draw" pathLength="1" {d} stroke="var(--pink)" stroke-width="2" opacity="0.7" style={draw(1.8 + i * 0.2, 0.8)} />)}
+          <path class="draw" pathLength="1" d={altAxis} stroke="var(--chalk)" stroke-width="1.6" style={draw(0.2, 0.6)} />
+          {altTicks.map(({ d }, i) => <path class="draw" pathLength="1" {d} stroke="var(--chalk)" stroke-width="1.6" style={draw(0.6 + i * 0.1, 0.1)} />)}
+          <path class="draw" pathLength="1" d={cruiseBand} stroke="var(--chalk-yellow)" stroke-width="3" style={draw(2.8, 0.3)} />
+        </g>
+        <g class="pop" style="--t:3s" transform={`translate(${airliner[0]} ${airliner[1]})`}>
+          <path d={PLANE.hull} fill="var(--blue)" fill-opacity="0.5" stroke="var(--chalk)" stroke-width="1.6" stroke-linejoin="round" />
+          <path d={PLANE.wings} fill="none" stroke="var(--chalk)" stroke-width="1.6" stroke-linejoin="round" />
+        </g>
+        <g class="labels">
+          {altTicks.map(({ km }, i) => <Annotation x={430} y={yOf(km) + 18} t={0.7 + i * 0.1} anchor="end">{`${km} ${labels.e}`}</Annotation>)}
+          <Annotation x={24} y={ground + 14} t={0.6}>{labels.a}</Annotation>
+          <Annotation x={130} y={yOf(15)} t={1.4}>{labels.b}</Annotation>
+          <Annotation x={110} y={yOf(25.5)} t={2.4}>{labels.c}</Annotation>
+          <Annotation x={airliner[0] - 80} y={airliner[1] + 36} t={3.2} anchor="middle">{labels.d}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'experts' && (
+      <>
+        {dots.map(([x, y], i) => (
+          <circle class="pop" cx={x} cy={y} r="7" fill={i === dots.length - 1 ? 'var(--chalk-yellow)' : 'none'} stroke={i === dots.length - 1 ? 'var(--chalk-yellow)' : 'var(--chalk)'} stroke-width="1.6" style={`--t:${(0.2 + i * 0.02).toFixed(2)}s`} />
+        ))}
+        <g class="labels">
+          <Annotation x={290} y={60} t={1.8}>{labels.a[0]}</Annotation>
+          <Annotation x={290} y={84} t={1.9}>{labels.a[1]}</Annotation>
+          <Annotation x={150} y={220} t={2.3}>{labels.b}</Annotation>
+          <Annotation x={150} y={244} t={2.4}>{labels.c}</Annotation>
+        </g>
+      </>
+    )
+  }
+</Scene>
+
+<style>
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

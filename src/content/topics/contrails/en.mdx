@@ -1,0 +1,98 @@
+---
+topic: contrails
+locale: en
+slug: aircraft-trails-cool-climate
+question: "Are aircraft trails used to cool the Earth?"
+hook: "Some see them as secret spraying to change the climate. We look at what trails are made of, what they really do to the climate, and what a real programme to cool the Earth would take."
+discipline: Climate
+date: 2026-10-26
+answer: "No. A trail is water vapour from the engine freezing in very cold air, and trails warm the climate slightly instead of cooling it. Cooling the Earth with aerosols would mean flying far higher than airliners, with aircraft that do not exist yet, and thousands of flights a year: it would not go unnoticed."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import ProgrammeSlider from './ProgrammeSlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('en');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="trail" locale="en" />
+
+## A trail is ice
+
+An aircraft engine releases hot gases laden with water vapour, and that vapour is what makes the trail. As it mixes with air at {f.formation} °C or colder, the vapour condenses into droplets<SourceRef id="schumann1996" sources={sources} />. Particles from the engine, such as soot, act as seeds, then the droplets freeze<SourceRef id="karcher2018" sources={sources} />.
+
+In dry air, the trail is gone within {f.shortMinutes} minutes. It only lasts if the air is supersaturated with respect to ice: it can then hold for up to {f.persistentHours} hours and spread into a veil of cirrus. Aircraft fly through such air {f.supersaturated} of the time<SourceRef id="karcher2018" sources={sources} />.
+
+The same moist air, lifted by a low-pressure system, also makes natural cirrus<SourceRef id="spichtinger2005" sources={sources} /><SourceRef id="karcher2018" sources={sources} />. That is why lasting trails and cirrus often show up together: they have the same cause.
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="balance" locale="en" />
+
+## Trails warm the climate
+
+By day, a trail sends a little sunlight back to space. Day and night, it holds in the heat the Earth radiates, and at night nothing offsets it. Overall, the warming wins slightly<SourceRef id="karcher2018" sources={sources} />.
+
+In {f.forcingYear}, contrails and their cirrus warmed the climate by about {f.contrailErf} milliwatts per square metre, within a range of {f.contrailErfRange}. That is more than the effect of the CO2 aviation has built up, {f.aviationCo2Erf} milliwatts per square metre<SourceRef id="lee2021" sources={sources} />. The authors rate this figure as uncertain, but its sign is not in doubt: spraying to cool the Earth that warms it would make no sense.
+
+<ShowCalc calc={calc('forcing')} sources={sources} locale="en">
+
+This ratio compares trails that last a few hours, renewed as long as planes fly, with a gas that builds up over centuries. It does not say which matters more in the long run.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="altitudes" locale="en" />
+
+## What really cools: sulfur, very high up
+
+In {f.pinatuboYear}, the Pinatubo volcano sent {f.pinatuboSo2} million tonnes of sulfur dioxide above {f.stratosphere} km<SourceRef id="kremser2016" sources={sources} />. The sulfur forms fine droplets of sulfuric acid there, which send part of the sunlight back. Up there, it takes about a year for their amount to drop by {f.aerosolDrop}; lower down, rain clears them within a few days<SourceRef id="pitari2002" sources={sources} />. The Earth’s surface cooled by about {f.cooling} °C<SourceRef id="canty2013" sources={sources} />, for {f.coolingYears} years<SourceRef id="robock2000" sources={sources} />.
+
+Airliners fly at about {f.cruise} km<SourceRef id="karcher2018" sources={sources} />, well below that. Whatever they released would come down within days to months<SourceRef id="kremser2016" sources={sources} />.
+
+</Step>
+
+<Step>
+  <ProgrammeSlider slot="figure" locale="en" />
+
+## What a real programme would take
+
+No existing aircraft climbs to about {f.stratosphere} km with enough load. Research aircraft get there, but with about {f.researchPayload} tonne. So one study designed a new aircraft able to carry {f.payload} tonnes of sulfur up there<SourceRef id="smith2018" sources={sources} />.
+
+In its scenario, the first year takes {f.so2Year1} million tonnes of SO2, {f.flightsYear1} flights and {f.aircraftYear1} aircraft. The fifteenth takes {f.so2Year15} million tonnes, {f.flightsYear15} flights and {f.aircraftYear15} aircraft. On average over the fifteen years, it costs about {f.cost} dollars a year. That is {f.pinatuboTimes1} times less sulfur than Pinatubo in the first year, and still {f.pinatuboTimes15} times less in the fifteenth, but every year. And it would only offset half of the rise in forcing from the start, {f.coolingYear15} °C less in the fifteenth year<SourceRef id="smith2018" sources={sources} />. The slider runs through the {f.sliderMax} years.
+
+<ShowCalc calc={calc('programme')} sources={sources} locale="en">
+
+The slider assumes the sulfur lofted grows by the same amount each year, as in the study, and that each flight carries a full load. The aircraft burns the sulfur in flight, which doubles its mass as SO2.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="experts" locale="en" />
+
+## And the evidence of secret spraying?
+
+A team put the most cited “evidence” to {f.experts} experts on contrails and atmospheric deposition: photos of trails, and tests of water, soil and snow. {f.expertsNo} of {f.experts}, or {f.expertsShare}, had never come across any sign of a secret programme. The single “yes” was about barium in the air at a remote site. The tests cited used thresholds meant for drinking water<SourceRef id="shearer2016" sources={sources} />.
+
+A real programme would be seen: dozens of large aircraft, thousands of flights a year, from bases in several countries<SourceRef id="smith2018" sources={sources} />. And aerosols high in the atmosphere have been measured by laser since {f.lidarSince}, then by satellite. These measurements already pick up eruptions of {f.volcanoMt} million tonnes of SO2<SourceRef id="kremser2016" sources={sources} />, about the size of the programme’s first year. An eruption releases everything at once, while a programme would spread its flights over the year: no study we read puts a number on the detection threshold in that case, and the strongest argument remains the number of flights.
+
+</Step>
+
+<Aside>
+
+## And if it stopped all at once?
+
+Masking warming is a long commitment. In {f.terminationModels} climate models where sunlight is dimmed and then the dimming stops abruptly, warming picks up, in the decade after stopping, about {f.terminationFactor} times faster than it would have without any intervention<SourceRef id="jones2013" sources={sources} />. That experiment dims the Sun instead of injecting aerosols; one model tested with aerosols gives a somewhat slower rebound.
+
+</Aside>

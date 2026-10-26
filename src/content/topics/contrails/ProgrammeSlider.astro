@@ -1,0 +1,71 @@
+---
+// Year of Smith & Wagner's programme and what it takes that year, recomputed live.
+import Slider from '../../../components/Slider.astro';
+import { formatNumberText } from '../../../lib/format';
+import type { Locale } from '../../../lib/i18n';
+import { SLIDER, programme, tonnesText } from './data';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+const start = programme(SLIDER.value);
+const n = (v: number, digits = 2) => formatNumberText(v, locale, digits);
+---
+
+<div class="programme-slider" data-locale={locale}>
+  <Slider
+    id="programme-year"
+    label={fr ? 'Année du programme' : 'Year of the programme'}
+    min={SLIDER.min}
+    max={SLIDER.max}
+    step={SLIDER.step}
+    scale="linear"
+    value={SLIDER.value}
+    {locale}
+  />
+  <p class="sentence" aria-live="polite">
+    {fr ? 'SO2 dispersé : ' : 'SO2 released: '}<b class="result so2">{tonnesText(start.so2Mt * 1e6, locale)}</b>
+    <br />
+    {fr ? 'Vols dans l’année : environ ' : 'Flights that year: about '}<b class="result flights">{n(start.flights)}</b>
+    <br />
+    {fr ? 'Soit, par jour : ' : 'That is, per day: '}<b class="result per-day">{n(start.perDay)}</b>
+  </p>
+</div>
+
+<script>
+  import { formatNumberText } from '../../../lib/format';
+  import { programme, tonnesText } from './data';
+
+  for (const box of document.querySelectorAll<HTMLElement>('.programme-slider')) {
+    const input = box.querySelector<HTMLInputElement>('input[type="range"]')!;
+    const locale = box.dataset.locale === 'en' ? 'en' : 'fr';
+    const out = (cls: string) => box.querySelector(`.${cls}`)!;
+    input.addEventListener('input', () => {
+      const p = programme(Number(input.value));
+      out('so2').textContent = tonnesText(p.so2Mt * 1e6, locale);
+      out('flights').textContent = formatNumberText(p.flights, locale, 2);
+      out('per-day').textContent = formatNumberText(p.perDay, locale, 2);
+    });
+  }
+</script>
+
+<style>
+  .programme-slider {
+    padding: 1rem 0;
+  }
+
+  .sentence {
+    color: var(--chalk);
+    font-size: 1.2rem;
+    line-height: 1.9;
+  }
+
+  .result {
+    color: var(--chalk-yellow);
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+</style>

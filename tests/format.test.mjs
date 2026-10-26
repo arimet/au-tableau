@@ -19,3 +19,13 @@ test('large counts', () => {
   assert.equal(formatLargeCount(250000, 'fr'), '250 000');
   assert.equal(formatLargeCount(250000, 'en'), '250,000');
 });
+test('rounding that reaches 1 000 moves up a unit', () => {
+  assert.equal(formatDuration(999.6e-6, 'fr'), '1 milliseconde');
+  assert.equal(formatDuration(9.996e-10, 'en'), '1 nanosecond');
+  assert.equal(formatLargeCount(999999999, 'fr'), '1 milliard');
+});
+test('negative values pluralise like positive ones', () => {
+  assert.equal(formatDuration(-3, 'en'), '-3 seconds');
+  assert.equal(formatDuration(-1, 'en'), '-1 second');
+  assert.equal(formatDuration(-2.5e-9, 'fr'), '-2,5 nanosecondes');
+});

@@ -26,7 +26,7 @@ export const calc = (id) => calcs.find((c) => c.id === id);
 
 ## Before lift-off, the rocket is already turning
 
-The Earth turns once on itself every day. At the equator, the ground moves east at {f.groundSpeed} metres per second.
+The Earth turns once on its axis every day. At the equator, the ground moves east at {f.groundSpeed} metres per second.
 
 A rocket standing on its launch pad moves with it. Even before it lights its engines, it already has momentum. Physicists call this turning momentum angular momentum.
 
@@ -35,11 +35,11 @@ A rocket standing on its launch pad moves with it. Even before it lights its eng
 <Step>
   <Figures slot="figure" name="gases" locale="en" />
 
-## The gases stay on Earth
+## Gases burned in the air stay there
 
-To climb and speed up eastward, the rocket pushes its gases backward. In return, the gases are pushed the other way.
+To gain speed, the rocket pushes its gases backward. In return, the gases push the rocket forward.
 
-They do not leave the Earth. The air slows them, then air friction on the ground passes their momentum to the Earth. The stages that fall back return theirs too. As long as everything stays on Earth or in its air, the total momentum does not change: it moves from one part to another.
+Gases released in the atmosphere stay there. The air slows them, then air friction on the ground passes their momentum to the Earth. The stages that fall back return theirs too. As long as everything stays on Earth or in its air, the total momentum does not change: it moves from one part to another.
 
 </Step>
 
@@ -87,7 +87,7 @@ To match the Sumatra earthquake, we would have to place **{f.sumatraTonnes}** to
 
 ## What about temperature?
 
-The published link runs the other way: ice melting under global warming makes the day longer by {f.climatePerCentury} per century since {f.climateSince}<SourceRef id="kiani2024" sources={sources} />. One century of this effect is the same as placing **{f.climateTonnes}** tonnes in low orbit. Warming reaches {f.warming} °C on average over {f.warmingPeriod[0]}–{f.warmingPeriod[1]}, relative to {f.baselinePeriod[0]}–{f.baselinePeriod[1]}, and it comes from human activities<SourceRef id="forster2024" sources={sources} />.
+As far as we found, no peer-reviewed publication links a change of a few femtoseconds to temperature. The known link runs the other way: ice melting under global warming makes the day longer by {f.climatePerCentury} per century since {f.climateSince}<SourceRef id="kiani2024" sources={sources} />. One century of this effect is the same as placing **{f.climateTonnes}** tonnes in low orbit. Warming reaches {f.warming} °C on average over {f.warmingPeriod[0]}–{f.warmingPeriod[1]}, relative to {f.baselinePeriod[0]}–{f.baselinePeriod[1]}, and it comes from human activities<SourceRef id="forster2024" sources={sources} />.
 
 <ShowCalc calc={calc('climate')} sources={sources} locale="en" />
 

@@ -196,7 +196,7 @@ export const magnitudeItems = (locale: Locale) => {
     { label: fr ? 'Une tonne en orbite basse' : 'One tonne in low orbit', seconds: SECONDS_PER_TONNE },
     { label: fr ? 'Les marées, en un an' : 'The tides, in one year', seconds: tidesPerCentury / 100, sourceId: 'stephenson2016' },
     { label: fr ? 'Séisme de Sumatra (raccourci)' : 'Sumatra earthquake (shorter)', seconds: sumatra, sourceId: 'gross-chao2006' },
-    { label: fr ? 'Barrages depuis 1835 (raccourci)' : 'Dams since 1835 (shorter)', seconds: dams, sourceId: 'valencic2026' },
+    { label: fr ? 'Barrages, 1835–2011 (raccourci)' : 'Dams, 1835–2011 (shorter)', seconds: dams, sourceId: 'valencic2026' },
   ];
 };
 

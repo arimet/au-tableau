@@ -20,7 +20,7 @@ const other: Locale = locale === 'fr' ? 'en' : 'fr';
 const [latest, ...previous] = publishedTopics(await getCollection('topics'), locale, new Date());
 const Hero = latest && topicHero(latest.data.topic);
 const href = (e: NonNullable<typeof latest>) => url(localePath(locale, `/${e.data.slug}`));
-const formatDate = (d: Date) => d.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+const formatDate = (d: Date) => d.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 ---
 
 <Base locale={locale} title={title} description={description} alternateHref={url(localePath(other, '/'))}>

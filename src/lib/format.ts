@@ -49,12 +49,26 @@ export const formatLargeCount = (n: number, locale: Locale): string => {
   return scale ? phrase(n / scale.factor, locale, scale.forms) : n.toLocaleString(locale);
 };
 
-/** A number for display, HTML-safe: plain up to 10^9, then mantissa × 10<sup>exp</sup>. Never "e+37". */
-export const formatNumberHtml = (value: number, locale: Locale): string => {
+// A number as shown: 3 significant digits, plain from 10^-3 to under 10^9, otherwise a mantissa and an exponent.
+const numberParts = (value: number, locale: Locale): { mantissa: string; exp?: string } => {
   const abs = Math.abs(value);
   if (abs === 0 || (abs >= 1e-3 && abs < 1e9))
-    return value.toLocaleString(locale, { maximumSignificantDigits: 3 });
+    return { mantissa: value.toLocaleString(locale, { maximumSignificantDigits: 3 }) };
   const [mantissa, exp] = value.toExponential(2).split('e');
-  const shown = Number(mantissa).toLocaleString(locale, { maximumSignificantDigits: 3 });
-  return `${shown} × 10<sup>${exp.replace('+', '').replace('-', '−')}</sup>`;
+  return {
+    mantissa: `${Number(mantissa).toLocaleString(locale, { maximumSignificantDigits: 3 })} ×`,
+    exp: exp.replace('+', '').replace('-', '−'),
+  };
+};
+
+/** A number for display, HTML-safe: mantissa × 10<sup>exp</sup> when out of the plain range. Never "e+37". */
+export const formatNumberHtml = (value: number, locale: Locale): string => {
+  const { mantissa, exp } = numberParts(value, locale);
+  return exp === undefined ? mantissa : `${mantissa} 10<sup>${exp}</sup>`;
+};
+
+/** Same number as plain text, for attributes and screen readers: "8,03 × 10^37". */
+export const formatNumberText = (value: number, locale: Locale): string => {
+  const { mantissa, exp } = numberParts(value, locale);
+  return exp === undefined ? mantissa : `${mantissa} 10^${exp}`;
 };

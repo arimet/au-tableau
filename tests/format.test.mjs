@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatDuration, formatLargeCount, formatNumberHtml } from '../src/lib/format.ts';
+import { formatDuration, formatLargeCount, formatNumberHtml, formatNumberText } from '../src/lib/format.ts';
 
 test('durations', () => {
   assert.equal(formatDuration(4e-13, 'fr'), '0,4 picoseconde');
@@ -36,4 +36,12 @@ test('numbers never use scientific notation, they use a power of ten', () => {
   assert.equal(formatNumberHtml(8.03e37, 'fr'), '8,03 × 10<sup>37</sup>');
   assert.equal(formatNumberHtml(1e-12, 'en'), '1 × 10<sup>−12</sup>');
   assert.equal(formatNumberHtml(0, 'en'), '0');
+});
+
+test('plain-text numbers keep the exponent unambiguous', () => {
+  assert.equal(formatNumberText(1e12, 'en'), '1 × 10^12');
+  assert.equal(formatNumberText(8.03e37, 'fr'), '8,03 × 10^37');
+  assert.equal(formatNumberText(1e-12, 'en'), '1 × 10^−12');
+  assert.equal(formatNumberText(1234, 'fr'), formatNumberHtml(1234, 'fr'));
+  assert.equal(formatNumberText(0, 'en'), '0');
 });

@@ -1,0 +1,70 @@
+---
+// Share of sunlight to remove and the size of Angel's sunshade that does it, recomputed live.
+import Slider from '../../../components/Slider.astro';
+import { formatLargeCount } from '../../../lib/format';
+import type { Locale } from '../../../lib/i18n';
+import { SLIDER, angelFor } from './data';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+const start = angelFor(SLIDER.value / 100);
+---
+
+<div class="shade-slider" data-locale={locale}>
+  <Slider
+    id="shade-share"
+    label={fr ? 'Part de la lumière du Soleil à retirer, en %' : 'Share of sunlight to remove, in %'}
+    min={SLIDER.min}
+    max={SLIDER.max}
+    step={SLIDER.step}
+    scale="linear"
+    value={SLIDER.value}
+    {locale}
+  />
+  <p class="sentence" aria-live="polite">
+    {fr ? 'Surface du parasol : ' : 'Sunshade area: '}<b class="result area">{formatLargeCount(start.areaKm2, locale)}</b>{fr ? ' de km²' : ' km²'}
+    <br />
+    {fr ? 'Masse : ' : 'Mass: '}<b class="result mass">{formatLargeCount(start.massT, locale)}</b>{fr ? ' de tonnes' : ' tonnes'}
+    <br />
+    {fr ? 'Disques : ' : 'Discs: '}<b class="result flyers">{formatLargeCount(start.flyers, locale)}</b>
+  </p>
+</div>
+
+<script>
+  import { formatLargeCount } from '../../../lib/format';
+  import { angelFor } from './data';
+
+  for (const box of document.querySelectorAll<HTMLElement>('.shade-slider')) {
+    const input = box.querySelector<HTMLInputElement>('input[type="range"]')!;
+    const locale = box.dataset.locale === 'en' ? 'en' : 'fr';
+    const out = (cls: string) => box.querySelector(`.${cls}`)!;
+    input.addEventListener('input', () => {
+      const shade = angelFor(Number(input.value) / 100);
+      out('area').textContent = formatLargeCount(shade.areaKm2, locale);
+      out('mass').textContent = formatLargeCount(shade.massT, locale);
+      out('flyers').textContent = formatLargeCount(shade.flyers, locale);
+    });
+  }
+</script>
+
+<style>
+  .shade-slider {
+    padding: 1rem 0;
+  }
+
+  .sentence {
+    color: var(--chalk);
+    font-size: 1.2rem;
+    line-height: 1.9;
+  }
+
+  .result {
+    color: var(--chalk-yellow);
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+</style>

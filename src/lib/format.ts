@@ -2,7 +2,7 @@ import type { Locale } from './i18n.ts';
 
 // [singular, plural] per locale.
 type Forms = Record<Locale, [string, string]>;
-type Entry = { factor: number; forms: Forms };
+type Entry = { factor: number; forms: Partial<Forms> };
 
 // Tables run from the largest entry to the smallest, each step a factor of 1 000.
 const UNITS: Entry[] = [
@@ -14,7 +14,9 @@ const UNITS: Entry[] = [
   { factor: 1e-15, forms: { fr: ['femtoseconde', 'femtosecondes'], en: ['femtosecond', 'femtoseconds'] } },
 ];
 
+// French keeps "milliers de milliards", more familiar than "billions"; English says trillion.
 const SCALES: Entry[] = [
+  { factor: 1e12, forms: { en: ['trillion', 'trillion'] } },
   { factor: 1e9, forms: { fr: ['milliard', 'milliards'], en: ['billion', 'billion'] } },
   { factor: 1e6, forms: { fr: ['million', 'millions'], en: ['million', 'million'] } },
 ];
@@ -32,10 +34,10 @@ const pick = (table: Entry[], amount: number): Entry | undefined => {
 
 // The number as shown (2 significant digits) and the word in its form.
 // FR plural from 2, EN plural for anything but 1, judged on the shown number.
-const phrase = (value: number, locale: Locale, forms: Forms): string => {
+const phrase = (value: number, locale: Locale, forms: Partial<Forms>): string => {
   const shown = Math.abs(Number(value.toPrecision(2)));
   const many = locale === 'fr' ? shown >= 2 : shown !== 1;
-  const [one, plural] = forms[locale];
+  const [one, plural] = forms[locale]!;
   return `${value.toLocaleString(locale, { maximumSignificantDigits: 2 })} ${many ? plural : one}`;
 };
 
@@ -46,7 +48,7 @@ export const formatDuration = (seconds: number, locale: Locale): string => {
 };
 
 export const formatLargeCount = (n: number, locale: Locale): string => {
-  const scale = pick(SCALES, n);
+  const scale = pick(SCALES.filter((e) => e.forms[locale]), n);
   return scale ? phrase(n / scale.factor, locale, scale.forms) : n.toLocaleString(locale);
 };
 

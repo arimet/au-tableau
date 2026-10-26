@@ -1,0 +1,119 @@
+---
+// Opening scene: sunlight crosses a cloud of small discs at L1; the rays that pass through it are bent
+// aside and miss the Earth. Not to scale.
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchCircle, sketchLine, arrowHead, hatch, type Pt } from '../../../lib/chalk';
+import type { Locale } from '../../../lib/i18n';
+import { figures } from './data';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng(2028);
+
+const sun = { x: 70, y: 190, r: 52 };
+const earth = { x: 520, y: 190, r: 44 };
+const cloud = { x: 330, y: 190, rx: 14, ry: 28 };
+
+const sunOutline = sketchCircle(rand, sun.x, sun.y, sun.r);
+const sunHatch = hatch(rand, sun.x, sun.y, sun.r, 7, 0.9);
+const sunRays = Array.from({ length: 10 }, (_, i) => {
+  const a = Math.PI / 2 + (i * Math.PI) / 9;
+  return sketchLine(rand, [sun.x + (sun.r + 8) * Math.cos(a), sun.y + (sun.r + 8) * Math.sin(a)], [sun.x + (sun.r + 22) * Math.cos(a), sun.y + (sun.r + 22) * Math.sin(a)], 0.4);
+});
+const earthOutline = sketchCircle(rand, earth.x, earth.y, earth.r);
+const earthHatch = hatch(rand, earth.x, earth.y, earth.r, 6.5, 0.62);
+
+// Light rays from the Sun towards the Earth. The outer ones reach it; the inner ones cross the cloud and bend away.
+const rays = [-46, -14, 14, 46].map((dy) => {
+  const start: Pt = [sun.x + sun.r + 30, sun.y + dy];
+  const crosses = Math.abs(dy) < cloud.ry;
+  const mid: Pt = [cloud.x, sun.y + dy];
+  const end: Pt = crosses ? [earth.x - 24, sun.y + dy + Math.sign(dy) * 96] : [earth.x - earth.r - 6, earth.y + dy * 0.6];
+  return { a: sketchLine(rand, start, mid, 0.8), b: sketchLine(rand, mid, end, 0.8), head: arrowHead(rand, end, Math.atan2(end[1] - mid[1], end[0] - mid[0]), 8) };
+});
+// The cloud: small discs scattered in an ellipse.
+const discs = Array.from({ length: 26 }, () => {
+  const a = rand() * 2 * Math.PI, k = Math.sqrt(rand());
+  return [cloud.x + cloud.rx * k * Math.cos(a), cloud.y + cloud.ry * k * Math.sin(a)] as Pt;
+});
+const distance = [sketchLine(rand, [cloud.x, 336], [earth.x, 336], 0.6), sketchLine(rand, [cloud.x, 328], [cloud.x, 344], 0.3), sketchLine(rand, [earth.x, 328], [earth.x, 344], 0.3)];
+
+const text = fr
+  ? {
+      label: `Schéma, pas à l’échelle : la lumière du Soleil traverse un nuage de petits disques placé près du point L1, à environ ${f.l1} de kilomètres de la Terre. Les rayons qui le traversent sont déviés et manquent la Terre.`,
+      sun: 'Soleil',
+      earth: 'Terre',
+      cloud: 'parasol près de L1',
+      missed: ['la lumière déviée', 'manque la Terre'],
+      distance: `${f.l1} de km`,
+      scale: 'pas à l’échelle',
+    }
+  : {
+      label: `Diagram, not to scale: sunlight crosses a cloud of small discs near the L1 point, about ${f.l1} kilometres from the Earth. The rays that cross it are bent and miss the Earth.`,
+      sun: 'Sun',
+      earth: 'Earth',
+      cloud: 'sunshade near L1',
+      missed: ['the bent light', 'misses the Earth'],
+      distance: `${f.l1} km`,
+      scale: 'not to scale',
+    };
+const line = (d: string, t: number, dur: number) => ({ d, style: `--t:${t}s;--d:${dur}s` });
+---
+
+<Scene viewBox="0 0 600 380" label={text.label} {locale}>
+  <defs>
+    <clipPath id="shade-hero-sun"><circle cx={sun.x} cy={sun.y} r={sun.r - 1} /></clipPath>
+    <clipPath id="shade-hero-earth"><circle cx={earth.x} cy={earth.y} r={earth.r - 1} /></clipPath>
+  </defs>
+
+  <g clip-path="url(#shade-hero-sun)" stroke="var(--chalk-yellow)" stroke-width="1.6" opacity="0.7" fill="none" stroke-linecap="round">
+    {sunHatch.map((d, i) => <path class="draw" pathLength="1" {d} style={`--t:${(0.6 + i * 0.03).toFixed(2)}s;--d:.2s`} />)}
+  </g>
+  <g clip-path="url(#shade-hero-earth)" stroke="var(--blue)" stroke-width="1.5" opacity="0.6" fill="none" stroke-linecap="round">
+    {earthHatch.map((d, i) => <path class="draw" pathLength="1" {d} style={`--t:${(1.5 + i * 0.03).toFixed(2)}s;--d:.2s`} />)}
+  </g>
+
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path class="draw" pathLength="1" {...line(sunOutline, 0, 0.8)} stroke="var(--chalk-yellow)" stroke-width="2.3" />
+    {sunRays.map((d, i) => <path class="draw" pathLength="1" {...line(d, 0.8 + i * 0.04, 0.12)} stroke="var(--chalk-yellow)" stroke-width="2" />)}
+    <path class="draw" pathLength="1" {...line(earthOutline, 1, 0.8)} stroke="var(--chalk)" stroke-width="2.3" />
+    {
+      rays.map((r, i) => (
+        <g stroke="var(--chalk-yellow)" stroke-width="1.6" opacity="0.85">
+          <path class="draw" pathLength="1" {...line(r.a, 2.4 + i * 0.1, 0.5)} />
+          <path class="draw" pathLength="1" {...line(r.b, 3.6 + i * 0.1, 0.5)} />
+          {r.head.map((d) => <path class="draw" pathLength="1" {...line(d, 4.1 + i * 0.1, 0.1)} />)}
+        </g>
+      ))
+    }
+    {distance.map((d, i) => <path class="draw" pathLength="1" {...line(d, 4.8 + i * 0.1, 0.4)} stroke="var(--chalk)" stroke-width="1.4" opacity="0.8" />)}
+  </g>
+  <g class="pop" style="--t:3s" fill="var(--blue)" fill-opacity="0.5" stroke="var(--chalk)" stroke-width="1.2">
+    {discs.map(([x, y]) => <ellipse cx={x} cy={y} rx="2.2" ry="4" />)}
+  </g>
+
+  <g class="labels">
+    <Annotation x={sun.x} y={sun.y + sun.r + 46} t={1} anchor="middle">{text.sun}</Annotation>
+    <Annotation x={earth.x} y={earth.y + earth.r + 30} t={1.9} anchor="middle">{text.earth}</Annotation>
+    <Annotation x={cloud.x} y={cloud.y - cloud.ry - 20} t={3.2} anchor="middle">{text.cloud}</Annotation>
+    <Annotation x={earth.x + 64} y={34} t={4.4} anchor="end">{text.missed[0]}</Annotation>
+    <Annotation x={earth.x + 64} y={58} t={4.55} anchor="end">{text.missed[1]}</Annotation>
+    <Annotation x={(cloud.x + earth.x) / 2} y={366} t={5.1} anchor="middle">{text.distance}</Annotation>
+    <Annotation x={16} y={366} t={5.3}>{text.scale}</Annotation>
+  </g>
+</Scene>
+
+<style>
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

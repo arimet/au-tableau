@@ -21,6 +21,8 @@ test('femtoseconds are the smallest unit', () => {
 test('large counts', () => {
   assert.equal(formatLargeCount(2.5e11, 'fr'), '250 milliards');
   assert.equal(formatLargeCount(2.5e11, 'en'), '250 billion');
+  assert.equal(formatLargeCount(1.6e13, 'en'), '16 trillion');
+  assert.equal(formatLargeCount(1.6e13, 'fr'), '16\u202f000 milliards');
   assert.equal(formatLargeCount(1.5e6, 'fr'), '1,5 million');
   assert.equal(formatLargeCount(2e6, 'fr'), '2 millions');
   assert.equal(formatLargeCount(250000, 'fr'), '250 000');

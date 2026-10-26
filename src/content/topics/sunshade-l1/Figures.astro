@@ -1,0 +1,258 @@
+---
+// Small figures for the story: the sunlight budget, the L1 point, one of Angel's discs, the lunar dust
+// stream, and what a sunshade leaves uncorrected.
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchArc, sketchCircle, sketchLine, arrowHead, hatch, smoothPath, type Pt } from '../../../lib/chalk';
+import type { Locale } from '../../../lib/i18n';
+import { figures } from './data';
+
+interface Props {
+  name: 'budget' | 'l1' | 'flyer' | 'dust' | 'residual';
+  locale: Locale;
+}
+
+const { name, locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng({ budget: 31, l1: 32, flyer: 33, dust: 34, residual: 35 }[name]);
+
+const arrow = (from: Pt, to: Pt, size = 10) => {
+  const angle = Math.atan2(to[1] - from[1], to[0] - from[0]);
+  return [sketchLine(rand, from, to, 1), ...arrowHead(rand, to, angle, size)];
+};
+const draw = (t: number, d: number) => `--t:${t}s;--d:${d}s`;
+
+// Budget: parallel sunrays from the left hit the Earth; part of the light goes back to space.
+const B = { x: 300, y: 150, r: 72 };
+const budgetEarth = sketchCircle(rand, B.x, B.y, B.r);
+const budgetHatch = hatch(rand, B.x, B.y, B.r, 6.5, 0.62);
+const budgetRays = [-54, -27, 0, 27, 54].map((dy) =>
+  arrow([20, B.y + dy], [B.x - Math.sqrt(B.r ** 2 - dy ** 2) - 4, B.y + dy], 8),
+);
+const reflected = arrow([B.x - 60, B.y - 50], [B.x - 130, B.y - 116], 9);
+
+// L1: the Sun on the left, the Earth on the right; both the Earth and L1 go round the Sun in a year.
+const L = { sun: [-250, 120] as Pt, earthX: 410, l1X: 330, y: 120 };
+const orbitArc = (x: number) => {
+  const r = x - L.sun[0];
+  return sketchArc(rand, L.sun[0], L.sun[1], r, 0.2, -0.2, 0.002);
+};
+const earthOrbit = orbitArc(L.earthX);
+const l1Orbit = orbitArc(L.l1X);
+const sunEdge = sketchArc(rand, L.sun[0], L.sun[1], 290, 0.4, -0.4, 0.004).d;
+const l1Earth = sketchCircle(rand, L.earthX, L.y, 16);
+const l1Mark = [sketchLine(rand, [L.l1X - 7, L.y - 7], [L.l1X + 7, L.y + 7], 0.3), sketchLine(rand, [L.l1X - 7, L.y + 7], [L.l1X + 7, L.y - 7], 0.3)];
+const unstable = [...arrow([L.l1X - 12, L.y + 30], [L.l1X - 52, L.y + 30], 8), ...arrow([L.l1X + 12, L.y + 30], [L.l1X + 52, L.y + 30], 8)];
+const dimension = [sketchLine(rand, [L.l1X, 196], [L.earthX, 196], 0.5), sketchLine(rand, [L.l1X, 189], [L.l1X, 203], 0.3), sketchLine(rand, [L.earthX, 189], [L.earthX, 203], 0.3)];
+
+// Flyer: one disc seen edge-on bends the light; seen face-on, a disc riddled with tiny holes.
+const F = { x: 190, y: 120 };
+const flyerEdge = sketchLine(rand, [F.x, F.y - 60], [F.x, F.y + 60], 0.6);
+const flyerRays = [-36, 0, 36].map((dy) => ({
+  inc: sketchLine(rand, [24, F.y + dy], [F.x - 4, F.y + dy], 0.6),
+  out: arrow([F.x + 4, F.y + dy], [F.x + 124, F.y + dy + 28], 8),
+  straight: sketchLine(rand, [F.x + 4, F.y + dy], [F.x + 124, F.y + dy], 0.4),
+}));
+const face = { x: 400, y: 104, r: 44 };
+const faceOutline = sketchCircle(rand, face.x, face.y, face.r);
+const holes = Array.from({ length: 30 }, (_, i) => {
+  const a = i * 2.39996, k = Math.sqrt((i + 0.5) / 30) * (face.r - 8);
+  return [face.x + k * Math.cos(a), face.y + k * Math.sin(a)] as Pt;
+});
+
+// Dust: grains thrown from the Moon cross the Sun–Earth line, then drift away.
+const D = { earth: [390, 170] as Pt, moon: [400, 52] as Pt };
+const dustEarth = sketchCircle(rand, D.earth[0], D.earth[1], 24);
+const dustMoon = sketchCircle(rand, D.moon[0], D.moon[1], 14);
+const dustSun = sketchArc(rand, -260, 170, 290, 0.35, -0.35, 0.004).d;
+const sunLine = sketchLine(rand, [40, 170], [D.earth[0] - 30, 170], 0.4);
+const stream: Pt[] = Array.from({ length: 29 }, (_, i) => {
+  const t = i / 33;
+  return [D.moon[0] - 20 - 300 * t + 40 * t * t, D.moon[1] + 10 + 160 * t * t + 30 * t];
+});
+const dustDots = stream.map(([x, y]) => [x + (rand() - 0.5) * 6, y + (rand() - 0.5) * 6] as Pt);
+
+// Residual: the globe with polar caps still too warm and tropics a little too cool.
+const R = { x: 130, y: 150, r: 92 };
+const resEarth = sketchCircle(rand, R.x, R.y, R.r);
+const warm = hatch(rand, R.x, R.y, R.r, 6, -0.62);
+const cool = hatch(rand, R.x, R.y, R.r, 6, 0.62);
+const [TROPIC, POLAR] = [0.3, 0.66];
+const cloudPath = smoothPath(([[330, 150], [326, 128], [346, 118], [362, 100], [392, 104], [410, 120], [430, 124], [436, 146], [420, 156], [340, 156], [330, 150]] as Pt[]).map(([x, y]) => [x, y + 30] as Pt));
+const drops = [342, 362, 382, 402, 422].map((x, i) => sketchLine(rand, [x, 198 + (i % 2) * 6], [x - 5, 214 + (i % 2) * 6], 0.3));
+
+const labels = {
+  budget: fr
+    ? { scene: `Schéma : la lumière du Soleil, ${f.solar} watts par mètre carré, frappe la Terre. Étalée sur toute sa surface, cela fait ${f.perSquareMetre} W/m² en moyenne, dont ${f.albedo} repartent vers l’espace dans les modèles.`, a: `${f.solar} W/m²`, b: `en moyenne : ${f.perSquareMetre} W/m²`, c: `${f.albedo} renvoyés` }
+    : { scene: `Diagram: sunlight, ${f.solar} watts per square metre, strikes the Earth. Spread over its whole surface, that is ${f.perSquareMetre} W/m² on average, of which ${f.albedo} goes back to space in the models.`, a: `${f.solar} W/m²`, b: `on average: ${f.perSquareMetre} W/m²`, c: `${f.albedo} sent back` },
+  l1: fr
+    ? { scene: `Schéma : le point L1 est entre le Soleil et la Terre, à ${f.l1} de km de la Terre. Il fait le tour du Soleil en un an, comme la Terre. L’équilibre y est instable : un objet qui s’en écarte s’en éloigne de plus en plus.`, a: 'Soleil', b: 'L1', c: 'Terre', d: `${f.l1} de km`, e: 'instable', g: 'un tour du Soleil en un an', h: 'pas à l’échelle' }
+    : { scene: `Diagram: the L1 point lies between the Sun and the Earth, ${f.l1} km from the Earth. It goes round the Sun in one year, like the Earth. The balance there is unstable: an object that drifts off keeps moving further away.`, a: 'Sun', b: 'L1', c: 'Earth', d: `${f.l1} km`, e: 'unstable', g: 'one turn round the Sun a year', h: 'not to scale' },
+  flyer: fr
+    ? { scene: `Schéma : un disque transparent, vu par la tranche, dévie un peu la lumière, qui manque alors la Terre. Vu de face, c’est un disque de ${f.flyerDiameter} cm percé de minuscules trous, qui pèse ${f.flyerGrams} g.`, a: 'lumière', b: 'déviée', c: 'vers la Terre', d: `${f.flyerDiameter} cm, ${f.flyerGrams} g`, e: 'angle exagéré' }
+    : { scene: `Diagram: a transparent disc, seen edge-on, bends the light a little, so it misses the Earth. Seen face-on, it is a ${f.flyerDiameter} cm disc riddled with tiny holes, weighing ${f.flyerGrams} g.`, a: 'light', b: 'bent', c: 'towards Earth', d: `${f.flyerDiameter} cm, ${f.flyerGrams} g`, e: 'angle exaggerated' },
+  dust: fr
+    ? { scene: `Schéma : de la poussière lancée depuis la Lune passe entre le Soleil et la Terre, environ ${f.dustDays} jours par grain, puis s’éloigne.`, a: 'Lune', b: 'Terre', c: 'Soleil', d: 'poussière lunaire', e: `≈ ${f.dustDays} jours devant le Soleil` }
+    : { scene: `Diagram: dust launched from the Moon passes between the Sun and the Earth, about ${f.dustDays} days per grain, then drifts away.`, a: 'Moon', b: 'Earth', c: 'Sun', d: 'lunar dust', e: `≈ ${f.dustDays} days in front of the Sun` },
+  residual: fr
+    ? { scene: `Schéma : dans un cas extrême où un Soleil plus faible compense un quadruplement du CO2, les pôles restent plus chauds de ${f.g1Poles} °C, les tropiques plus froids de ${f.g1Tropics} °C, et il pleut ${f.g1Rain} de moins.`, a: `pôles : +${f.g1Poles} °C`, b: `tropiques : −${f.g1Tropics} °C`, c: `pluie : −${f.g1Rain}` }
+    : { scene: `Diagram: in an extreme case where a dimmer Sun offsets a quadrupling of CO2, the poles stay ${f.g1Poles} °C warmer, the tropics ${f.g1Tropics} °C cooler, and there is ${f.g1Rain} less rain.`, a: `poles: +${f.g1Poles} °C`, b: `tropics: −${f.g1Tropics} °C`, c: `rain: −${f.g1Rain}` },
+}[name];
+const viewBox = { budget: '0 0 460 280', l1: '0 0 460 240', flyer: '0 0 460 250', dust: '0 0 460 262', residual: '0 0 460 290' }[name];
+---
+
+<Scene {viewBox} label={labels.scene} {locale}>
+  {
+    name === 'budget' && (
+      <>
+        <defs>
+          <clipPath id="shade-budget-earth">
+            <circle cx={B.x} cy={B.y} r={B.r - 1} />
+          </clipPath>
+        </defs>
+        <g clip-path="url(#shade-budget-earth)" stroke="var(--blue)" stroke-width="1.5" opacity="0.6" fill="none" stroke-linecap="round">
+          {budgetHatch.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(0.6 + i * 0.03, 0.2)} />)}
+        </g>
+        <path class="draw" pathLength="1" d={budgetEarth} fill="none" stroke="var(--chalk)" stroke-width="2.3" style={draw(0, 0.9)} />
+        <g fill="none" stroke="var(--chalk-yellow)" stroke-width="2" stroke-linecap="round">
+          {budgetRays.flatMap((ray, i) => ray.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(1.2 + i * 0.12 + (j ? 0.5 : 0), j ? 0.1 : 0.5)} />))}
+        </g>
+        <g fill="none" stroke="var(--chalk)" stroke-width="2" stroke-linecap="round" opacity="0.85">
+          {reflected.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(2.8 + (j ? 0.4 : 0), j ? 0.1 : 0.4)} />)}
+        </g>
+        <g class="labels">
+          <Annotation x={24} y={B.y - 70} t={1.1}>{labels.a}</Annotation>
+          <Annotation x={B.x} y={B.y + B.r + 36} t={2.2} anchor="middle">{labels.b}</Annotation>
+          <Annotation x={B.x - 120} y={B.y - 124} t={3.2}>{labels.c}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'l1' && (
+      <>
+        <path class="draw" pathLength="1" d={sunEdge} fill="none" stroke="var(--chalk-yellow)" stroke-width="2.3" stroke-linecap="round" style={draw(0, 0.6)} />
+        <g fill="none" stroke="var(--chalk)" stroke-width="1.4" stroke-linecap="round" opacity="0.7">
+          <path class="draw" pathLength="1" d={earthOrbit.d} style={draw(0.6, 0.6)} />
+          <path class="draw" pathLength="1" d={l1Orbit.d} style={draw(0.9, 0.6)} />
+          {[...arrowHead(rand, earthOrbit.tip, earthOrbit.angle, 8), ...arrowHead(rand, l1Orbit.tip, l1Orbit.angle, 8)].map((d) => (
+            <path class="draw" pathLength="1" {d} style={draw(1.5, 0.1)} />
+          ))}
+        </g>
+        <path class="draw" pathLength="1" d={l1Earth} fill="var(--blue)" fill-opacity="0.35" stroke="var(--chalk)" stroke-width="2" style={draw(1.6, 0.5)} />
+        <g fill="none" stroke="var(--chalk-yellow)" stroke-width="2.3" stroke-linecap="round">
+          {l1Mark.map((d) => <path class="draw" pathLength="1" {d} style={draw(2, 0.15)} />)}
+        </g>
+        <g fill="none" stroke="var(--pink)" stroke-width="2" stroke-linecap="round">
+          {unstable.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(2.8 + (i % 3 ? 0.3 : 0), i % 3 ? 0.1 : 0.3)} />)}
+        </g>
+        <g fill="none" stroke="var(--chalk)" stroke-width="1.4" stroke-linecap="round">
+          {dimension.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(2.2 + i * 0.1, 0.3)} />)}
+        </g>
+        <g class="labels">
+          <Annotation x={50} y={124} t={0.4}>{labels.a}</Annotation>
+          <Annotation x={L.l1X} y={L.y - 18} t={2.1} anchor="middle">{labels.b}</Annotation>
+          <Annotation x={L.earthX} y={L.y - 26} t={1.8} anchor="middle">{labels.c}</Annotation>
+          <Annotation x={(L.l1X + L.earthX) / 2} y={222} t={2.5} anchor="middle">{labels.d}</Annotation>
+          <Annotation x={L.l1X} y={L.y + 58} t={3.2} anchor="middle">{labels.e}</Annotation>
+          <Annotation x={70} y={36} t={1.6}>{labels.g}</Annotation>
+          <Annotation x={50} y={232} t={2.6}>{labels.h}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'flyer' && (
+      <>
+        <g fill="none" stroke-linecap="round">
+          {flyerRays.map((r, i) => (
+            <>
+              <path class="draw" pathLength="1" d={r.inc} stroke="var(--chalk-yellow)" stroke-width="2" style={draw(0.6 + i * 0.1, 0.4)} />
+              <path class="draw" pathLength="1" d={r.straight} stroke="var(--chalk)" stroke-width="1.2" stroke-dasharray="4 6" opacity="0.5" style={draw(1.6 + i * 0.1, 0.4)} />
+              {r.out.map((d, j) => <path class="draw" pathLength="1" {d} stroke="var(--chalk-yellow)" stroke-width="2" style={draw(1.1 + i * 0.1 + (j ? 0.4 : 0), j ? 0.1 : 0.4)} />)}
+            </>
+          ))}
+          <path class="draw" pathLength="1" d={flyerEdge} stroke="var(--blue)" stroke-width="5" style={draw(0, 0.5)} />
+          <path class="draw" pathLength="1" d={faceOutline} stroke="var(--chalk)" stroke-width="2" style={draw(2.2, 0.6)} />
+        </g>
+        <g class="pop" style="--t:2.8s" fill="var(--chalk)" opacity="0.7">
+          {holes.map(([x, y]) => <circle cx={x} cy={y} r="1.6" />)}
+        </g>
+        <g class="labels">
+          <Annotation x={24} y={F.y - 50} t={0.6}>{labels.a}</Annotation>
+          <Annotation x={F.x + 90} y={F.y + 92} t={1.6}>{labels.b}</Annotation>
+          <Annotation x={F.x + 30} y={F.y - 50} t={1.9}>{labels.c}</Annotation>
+          <Annotation x={face.x} y={face.y + face.r + 30} t={3} anchor="middle">{labels.d}</Annotation>
+          <Annotation x={24} y={238} t={3.3}>{labels.e}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'dust' && (
+      <>
+        <path class="draw" pathLength="1" d={dustSun} fill="none" stroke="var(--chalk-yellow)" stroke-width="2.3" stroke-linecap="round" style={draw(0, 0.6)} />
+        <path class="draw" pathLength="1" d={sunLine} fill="none" stroke="var(--chalk-yellow)" stroke-width="1.4" stroke-dasharray="3 7" stroke-linecap="round" opacity="0.6" style={draw(0.5, 0.6)} />
+        <path class="draw" pathLength="1" d={dustEarth} fill="var(--blue)" fill-opacity="0.35" stroke="var(--chalk)" stroke-width="2" style={draw(0.8, 0.5)} />
+        <path class="draw" pathLength="1" d={dustMoon} fill="var(--chalk)" fill-opacity="0.2" stroke="var(--chalk)" stroke-width="2" style={draw(1.1, 0.4)} />
+        <g fill="var(--chalk)" opacity="0.9">
+          {dustDots.map(([x, y], i) => <circle class="pop" cx={x} cy={y} r={2.4} style={`--t:${(1.6 + i * 0.05).toFixed(2)}s`} />)}
+        </g>
+        <g class="labels">
+          <Annotation x={D.moon[0]} y={D.moon[1] - 22} t={1.2} anchor="middle">{labels.a}</Annotation>
+          <Annotation x={D.earth[0]} y={D.earth[1] + 50} t={0.9} anchor="middle">{labels.b}</Annotation>
+          <Annotation x={50} y={204} t={0.3}>{labels.c}</Annotation>
+          <Annotation x={190} y={60} t={2.2}>{labels.d}</Annotation>
+          <Annotation x={60} y={254} t={3.4}>{labels.e}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'residual' && (
+      <>
+        <defs>
+          <clipPath id="shade-res-earth"><circle cx={R.x} cy={R.y} r={R.r - 1} /></clipPath>
+          <clipPath id="shade-res-tropics"><rect x="0" y={R.y - TROPIC * R.r} width="460" height={2 * TROPIC * R.r} /></clipPath>
+          <clipPath id="shade-res-poles">
+            <rect x="0" y="0" width="460" height={R.y - POLAR * R.r} />
+            <rect x="0" y={R.y + POLAR * R.r} width="460" height="290" />
+          </clipPath>
+        </defs>
+        <g clip-path="url(#shade-res-earth)" fill="none" stroke-width="1.6" stroke-linecap="round" opacity="0.75">
+          <g clip-path="url(#shade-res-poles)" stroke="var(--pink)">
+            {warm.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(1 + i * 0.02, 0.2)} />)}
+          </g>
+          <g clip-path="url(#shade-res-tropics)" stroke="var(--blue)">
+            {cool.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(1.8 + i * 0.02, 0.2)} />)}
+          </g>
+        </g>
+        <path class="draw" pathLength="1" d={resEarth} fill="none" stroke="var(--chalk)" stroke-width="2.3" style={draw(0, 0.9)} />
+        <path class="draw" pathLength="1" d={cloudPath} fill="none" stroke="var(--chalk)" stroke-width="2" style={draw(2.6, 0.6)} />
+        <g fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round">
+          {drops.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(3.2 + i * 0.08, 0.1)} />)}
+        </g>
+        <g class="labels">
+          <Annotation x={R.x + 80} y={R.y - R.r + 4} t={1.4}>{labels.a}</Annotation>
+          <Annotation x={R.x + 80} y={R.y + R.r + 4} t={1.5}>{labels.a}</Annotation>
+          <Annotation x={R.x} y={R.y + 7} t={2.2} anchor="middle">{labels.b}</Annotation>
+          <Annotation x={320} y={116} t={3.6}>{labels.c}</Annotation>
+        </g>
+      </>
+    )
+  }
+</Scene>
+
+<style>
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

@@ -1,4 +1,4 @@
-# Au tableau !
+# Au tableau!
 
 Science popularisation on a chalkboard: short answers to surprising questions, with the calculation shown step by step. Diagrams draw themselves, every number is sourced, and every page exists in French and English.
 
@@ -13,14 +13,16 @@ Live site: https://arimet.github.io/au-tableau/
 ```sh
 npm install
 npm run dev      # http://localhost:4321
-npm test         # unit tests, including the source check of every topic
+npm test         # unit tests, plus the source check of each topic that has its own test file
 npm run build    # static site in dist/
 ```
 
 For a build served under a sub-path, as on GitHub Pages:
 
 ```sh
-BASE_PATH=/au-tableau/ npm run build && npx astro preview
+export BASE_PATH=/au-tableau/   # preview needs it too, or every page is a 404
+npm run build
+npx astro preview
 ```
 
 `SITE_URL` sets the origin used for canonical and Open Graph URLs. Both variables are set by `.github/workflows/deploy.yml`.
@@ -33,7 +35,7 @@ A topic is one folder in `src/content/topics/`. The folder name is the topic key
 2. **Write the story twice**, in `fr.mdx` and `en.mdx`. The frontmatter is validated by `src/content.config.ts`:
    `topic` (the folder name), `locale` (`fr` or `en`), `slug` (kebab-case, used in the URL), `question`, `hook`, `discipline`, `date` and `answer` (the short answer). A topic dated in the future is published by the first build after that date. A topic without both languages fails the build.
 3. **Add `data.ts`** with the facts behind the story:
-   - `sources: Source[]`, peer-reviewed only (`peerReviewed: true`, with a DOI or URL), ordered by first citation on the page;
+   - `sources: Source[]`, peer-reviewed only (`peerReviewed: true`, with the required `url` and, when there is one, the `doi`), ordered by first citation on the page;
    - `calcs: Calc[]`, the calculations. Each step is either taken from a source (`sourceIds`) or derived (`formula`), never neither;
    - the model functions that compute the numbers, so the text and the figures read from one place.
 4. **Add `Hero.astro`**, the opening drawing, with a single prop `{ locale }`. Build it with `Scene` and `Annotation` from `src/components/chalk/` and the sketch helpers in `src/lib/chalk.ts`. The story itself is assembled from `Step`, `ShowCalc`, `Magnitude`, `Slider`, `Aside` and `SourceRef` in `src/components/`.

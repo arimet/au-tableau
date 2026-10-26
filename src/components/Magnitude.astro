@@ -3,7 +3,7 @@ import Scene from './chalk/Scene.astro';
 import Annotation from './chalk/Annotation.astro';
 import SourceRef from './SourceRef.astro';
 import { sketchLine, rng } from '../lib/chalk';
-import { logPosition } from '../lib/scale';
+import { logPosition, assignLanes } from '../lib/scale';
 import { formatDuration } from '../lib/format';
 import type { Locale } from '../lib/i18n';
 import type { Source } from '../lib/sources';
@@ -17,53 +17,79 @@ interface Props {
 
 const { items, locale, sources = [] } = Astro.props;
 
-// The ruler spans whole decades around the items.
+for (const i of items)
+  if (!(i.seconds > 0) || !Number.isFinite(i.seconds))
+    throw new Error(`Magnitude: "${i.label}" needs a positive duration, got ${i.seconds}`);
+if (items.length === 0) throw new Error('Magnitude: no items');
+
+// The ruler spans whole decades around the items, at least one.
 const exps = items.map((i) => Math.log10(i.seconds));
 const lo = Math.floor(Math.min(...exps));
-const hi = Math.ceil(Math.max(...exps));
+const hi = Math.max(Math.ceil(Math.max(...exps)), lo + 1);
 const [min, max] = [10 ** lo, 10 ** hi];
 
-const X0 = 40, X1 = 760, AXIS = 150;
+const X0 = 40, X1 = 600, CHAR = 12; // CHAR: estimated width of one character of a label
 const xOf = (seconds: number) => X0 + logPosition(seconds, min, max) * (X1 - X0);
 const rand = rng(11);
 
 const decades = Array.from({ length: hi - lo + 1 }, (_, i) => lo + i);
 const labelEvery = Math.ceil(decades.length / 6);
+const labelled = decades.filter((e) => (e - lo) % labelEvery === 0);
 
-const sorted = [...items].sort((a, b) => a.seconds - b.seconds);
-const marks = sorted.map((item, i) => {
+const texts = items.map((i) => `${i.label}, ${formatDuration(i.seconds, locale)}`);
+const spans = items.map((item, i) => {
   const x = xOf(item.seconds);
-  // Alternate above and below the axis, over three heights, so neighbours do not collide.
-  const up = i % 2 === 0;
-  const reach = 40 + (Math.floor(i / 2) % 3) * 30;
-  const y = up ? AXIS - reach : AXIS + reach;
+  const w = texts[i].length * CHAR;
+  return { x, from: x, to: x + w }; // labels run rightwards from their stem
+});
+const WIDTH = Math.max(800, Math.ceil(Math.max(...spans.map((s) => s.to))) + 20); // the board grows to hold the longest label
+// "10" plus its exponent, centred on the tick, padded so no stem goes close to it.
+const blocked = labelled.map((e) => {
+  const x = xOf(10 ** e);
+  const half = (22 + 9 * String(e).length) / 2 + 6;
+  return { x, from: x - half, to: x + half };
+});
+const lanes = assignLanes(spans, blocked);
+
+const STEP = 34;
+const reach = (lane: number) => 44 + lane * STEP;
+const maxUp = Math.max(-1, ...lanes.filter((l) => l.side === 'up').map((l) => l.lane));
+const maxDown = Math.max(-1, ...lanes.filter((l) => l.side === 'down').map((l) => l.lane));
+const AXIS = maxUp >= 0 ? reach(maxUp) + 34 : 30;
+const HEIGHT = AXIS + (maxDown >= 0 ? reach(maxDown) + 40 : 60);
+
+const sorted = items.map((item, i) => ({ item, i })).sort((a, b) => a.item.seconds - b.item.seconds);
+const marks = items.map((item, i) => {
+  const { x, from } = spans[i];
+  const up = lanes[i].side === 'up';
+  const y = up ? AXIS - reach(lanes[i].lane) : AXIS + reach(lanes[i].lane) + 14;
   return {
-    item,
     x,
     y,
+    from,
+    textY: y + (up ? -8 : 20),
     line: sketchLine(rand, [x, AXIS], [x, y], 1),
-    anchor: x > (X0 + X1) / 2 ? ('end' as const) : ('start' as const),
-    text: `${item.label}, ${formatDuration(item.seconds, locale)}`,
-    t: 0.9 + i * 0.35,
+    text: texts[i],
+    t: 0.9 + sorted.findIndex((m) => m.i === i) * 0.35,
   };
 });
 
 const axis = sketchLine(rand, [X0, AXIS], [X1, AXIS], 1.5);
 const ticks = decades.map((e) => {
   const x = xOf(10 ** e);
-  return { e, x, d: sketchLine(rand, [x, AXIS - 7], [x, AXIS + 7], 0.8) };
+  return { e, x, d: sketchLine(rand, [x, AXIS - 7], [x, AXIS + 7], 0.8), shown: labelled.includes(e) };
 });
-const label = sorted.map((i) => `${i.label}: ${formatDuration(i.seconds, locale)}`).join('; ');
-const cited = sorted.filter((i) => i.sourceId);
+const label = sorted.map(({ item }) => `${item.label}: ${formatDuration(item.seconds, locale)}`).join('; ');
+const cited = sorted.map(({ item }) => item).filter((i) => i.sourceId);
 ---
 
-<Scene viewBox="0 0 800 300" {label} {locale}>
+<Scene viewBox={`0 0 ${WIDTH} ${HEIGHT}`} {label} {locale}>
   <path class="draw" pathLength="1" d={axis} fill="none" stroke="var(--chalk)" stroke-width="2.5" stroke-linecap="round" style="--d:1.2s" />
   {
     ticks.map((tick) => (
       <>
         <path class="draw" pathLength="1" d={tick.d} fill="none" stroke="var(--chalk)" stroke-width="2" stroke-linecap="round" style="--t:0.3s;--d:0.3s" />
-        {(tick.e - lo) % labelEvery === 0 && (
+        {tick.shown && (
           <Annotation x={tick.x} y={AXIS + 26} t={0.5} anchor="middle">
             {`10`}
             <tspan dy="-9" font-size="14">{tick.e}</tspan>
@@ -77,7 +103,7 @@ const cited = sorted.filter((i) => i.sourceId);
       <>
         <path class="draw" pathLength="1" d={m.line} fill="none" stroke="var(--chalk-yellow)" stroke-width="3" stroke-linecap="round" style={`--t:${m.t}s;--d:0.4s`} />
         <circle class="pop" cx={m.x} cy={AXIS} r="5" fill="var(--chalk-yellow)" style={`--t:${m.t}s`} />
-        <Annotation x={m.x} y={m.y + (m.y < AXIS ? -8 : 20)} t={m.t + 0.3} anchor={m.anchor}>{m.text}</Annotation>
+        <Annotation x={m.from} y={m.textY} t={m.t + 0.3}>{m.text}</Annotation>
       </>
     ))
   }

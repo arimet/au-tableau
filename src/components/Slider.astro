@@ -3,6 +3,11 @@ import { sliderToValue, type Scale } from '../lib/scale';
 import { formatNumberHtml } from '../lib/format';
 import type { Locale } from '../lib/i18n';
 
+/**
+ * Contract: the <output id="<id>-out"> always echoes the slider's own value (for a log slider, 10 to
+ * the position), formatted for `locale`. A topic wires its own `input` listener and shows its
+ * computed result in an element of its own, never in this output.
+ */
 interface Props {
   id: string;
   label: string;
@@ -12,15 +17,15 @@ interface Props {
   step: number;
   scale: Scale;
   value: number;
-  locale?: Locale;
+  locale: Locale;
 }
 
-const { id, label, min, max, step, scale, value, locale = 'fr' } = Astro.props;
+const { id, label, min, max, step, scale, value, locale } = Astro.props;
 ---
 
 <div class="slider">
   <label for={id} class="hand">{label}</label>
-  <input type="range" {id} {min} {max} {step} {value} data-scale={scale} aria-describedby={`${id}-out`} />
+  <input type="range" {id} {min} {max} {step} {value} data-scale={scale} />
   <output id={`${id}-out`} for={id} class="result" set:html={formatNumberHtml(sliderToValue(value, scale), locale)} />
 </div>
 

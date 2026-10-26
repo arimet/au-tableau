@@ -3,14 +3,17 @@
 // `stack` puts a wide figure (a ruler, a long chart) under the text, at full width; on a phone it scrolls sideways.
 interface Props {
   stack?: boolean;
+  /** Names the stacked figure for assistive tech: on a phone it is a keyboard-focusable sideways scroller. */
+  figureLabel?: string;
 }
 
-const { stack = false } = Astro.props;
+const { stack = false, figureLabel } = Astro.props;
+const scroller = stack && figureLabel ? { tabindex: 0, role: 'region', 'aria-label': figureLabel } : {};
 ---
 
 <section class:list={['step', { stack }]}>
   <div class="text"><slot /></div>
-  <div class="figure"><slot name="figure" /></div>
+  <div class="figure" {...scroller}><slot name="figure" /></div>
 </section>
 
 <style>
@@ -52,6 +55,13 @@ const { stack = false } = Astro.props;
     /* A wide figure keeps a legible size and scrolls sideways instead of shrinking. */
     .stack .figure {
       overflow-x: auto;
+      /* Chalk-dust fades on the edges that still hide something. The `local` layers scroll with the
+         content and cover the fixed ones, so each fade disappears once that end is reached. */
+      background:
+        linear-gradient(to right, var(--slate) 30%, transparent) left center / 2.5rem 100% no-repeat local,
+        linear-gradient(to left, var(--slate) 30%, transparent) right center / 2.5rem 100% no-repeat local,
+        linear-gradient(to right, rgba(244, 241, 232, 0.28), transparent) left center / 1.75rem 100% no-repeat scroll,
+        linear-gradient(to left, rgba(244, 241, 232, 0.28), transparent) right center / 1.75rem 100% no-repeat scroll;
     }
 
     .stack .figure :global(.scene) {

@@ -25,7 +25,7 @@ const formatDate = (d: Date) => d.toLocaleDateString(locale, { day: 'numeric', m
 
 <Base locale={locale} title={title} description={description} alternateHref={url(localePath(other, '/'))}>
   <main class="home">
-    <h1 class="hand brand">Au tableau !</h1>
+    <h1 class="hand brand">{locale === 'fr' ? 'Au tableau !' : 'Au tableau!'}</h1>
     {
       latest ? (
         <section class="latest">

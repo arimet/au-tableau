@@ -21,7 +21,7 @@ const { Content } = await render(entry);
 
 <Base
   locale={locale}
-  title={`${question} · Au tableau !`}
+  title={`${question} · ${locale === 'fr' ? 'Au tableau !' : 'Au tableau!'}`}
   description={hook}
   alternateHref={url(localePath(alternate.data.locale, `/${alternate.data.slug}`))}
 >

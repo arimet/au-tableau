@@ -4,7 +4,7 @@ interface Props {
   y: number;
   /** Start time of the writing, in seconds. */
   t: number;
-  anchor?: 'start' | 'end';
+  anchor?: 'start' | 'middle' | 'end';
 }
 
 const { x, y, t, anchor = 'start' } = Astro.props;

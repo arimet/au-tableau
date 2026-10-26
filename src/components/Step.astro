@@ -1,0 +1,38 @@
+---
+// One beat of the story: text on the left, its figure pinned beside it while the text scrolls.
+---
+
+<section class="step">
+  <div class="text"><slot /></div>
+  <div class="figure"><slot name="figure" /></div>
+</section>
+
+<style>
+  .step {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 2rem 3rem;
+    align-items: start;
+    margin-block: 4rem;
+  }
+
+  .figure {
+    position: sticky;
+    top: 2rem;
+  }
+
+  .text :global(p) {
+    max-width: 60ch;
+  }
+
+  @media (max-width: 759px) {
+    .step {
+      grid-template-columns: minmax(0, 1fr);
+      margin-block: 2.5rem;
+    }
+
+    .figure {
+      position: static;
+    }
+  }
+</style>

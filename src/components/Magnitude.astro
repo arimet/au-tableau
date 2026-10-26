@@ -1,0 +1,105 @@
+---
+import Scene from './chalk/Scene.astro';
+import Annotation from './chalk/Annotation.astro';
+import SourceRef from './SourceRef.astro';
+import { sketchLine, rng } from '../lib/chalk';
+import { logPosition } from '../lib/scale';
+import { formatDuration } from '../lib/format';
+import type { Locale } from '../lib/i18n';
+import type { Source } from '../lib/sources';
+
+interface Props {
+  items: { label: string; seconds: number; sourceId?: string }[];
+  locale: Locale;
+  /** Needed only to number the `sourceId` references. */
+  sources?: Source[];
+}
+
+const { items, locale, sources = [] } = Astro.props;
+
+// The ruler spans whole decades around the items.
+const exps = items.map((i) => Math.log10(i.seconds));
+const lo = Math.floor(Math.min(...exps));
+const hi = Math.ceil(Math.max(...exps));
+const [min, max] = [10 ** lo, 10 ** hi];
+
+const X0 = 40, X1 = 760, AXIS = 150;
+const xOf = (seconds: number) => X0 + logPosition(seconds, min, max) * (X1 - X0);
+const rand = rng(11);
+
+const decades = Array.from({ length: hi - lo + 1 }, (_, i) => lo + i);
+const labelEvery = Math.ceil(decades.length / 6);
+
+const sorted = [...items].sort((a, b) => a.seconds - b.seconds);
+const marks = sorted.map((item, i) => {
+  const x = xOf(item.seconds);
+  // Alternate above and below the axis, over three heights, so neighbours do not collide.
+  const up = i % 2 === 0;
+  const reach = 40 + (Math.floor(i / 2) % 3) * 30;
+  const y = up ? AXIS - reach : AXIS + reach;
+  return {
+    item,
+    x,
+    y,
+    line: sketchLine(rand, [x, AXIS], [x, y], 1),
+    anchor: x > (X0 + X1) / 2 ? ('end' as const) : ('start' as const),
+    text: `${item.label}, ${formatDuration(item.seconds, locale)}`,
+    t: 0.9 + i * 0.35,
+  };
+});
+
+const axis = sketchLine(rand, [X0, AXIS], [X1, AXIS], 1.5);
+const ticks = decades.map((e) => {
+  const x = xOf(10 ** e);
+  return { e, x, d: sketchLine(rand, [x, AXIS - 7], [x, AXIS + 7], 0.8) };
+});
+const label = sorted.map((i) => `${i.label}: ${formatDuration(i.seconds, locale)}`).join('; ');
+const cited = sorted.filter((i) => i.sourceId);
+---
+
+<Scene viewBox="0 0 800 300" {label} {locale}>
+  <path class="draw" pathLength="1" d={axis} fill="none" stroke="var(--chalk)" stroke-width="2.5" stroke-linecap="round" style="--d:1.2s" />
+  {
+    ticks.map((tick) => (
+      <>
+        <path class="draw" pathLength="1" d={tick.d} fill="none" stroke="var(--chalk)" stroke-width="2" stroke-linecap="round" style="--t:0.3s;--d:0.3s" />
+        {(tick.e - lo) % labelEvery === 0 && (
+          <Annotation x={tick.x} y={AXIS + 26} t={0.5} anchor="middle">
+            {`10`}
+            <tspan dy="-9" font-size="14">{tick.e}</tspan>
+          </Annotation>
+        )}
+      </>
+    ))
+  }
+  {
+    marks.map((m) => (
+      <>
+        <path class="draw" pathLength="1" d={m.line} fill="none" stroke="var(--chalk-yellow)" stroke-width="3" stroke-linecap="round" style={`--t:${m.t}s;--d:0.4s`} />
+        <circle class="pop" cx={m.x} cy={AXIS} r="5" fill="var(--chalk-yellow)" style={`--t:${m.t}s`} />
+        <Annotation x={m.x} y={m.y + (m.y < AXIS ? -8 : 20)} t={m.t + 0.3} anchor={m.anchor}>{m.text}</Annotation>
+      </>
+    ))
+  }
+</Scene>
+{
+  cited.length > 0 && (
+    <p class="refs hand">
+      {cited.map((i) => (
+        <span>
+          {i.label}
+          <SourceRef id={i.sourceId!} {sources} />
+        </span>
+      ))}
+    </p>
+  )
+}
+
+<style>
+  .refs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.25rem;
+    margin: 0.5rem 0 0;
+  }
+</style>

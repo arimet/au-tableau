@@ -1,0 +1,24 @@
+---
+// A short side note, set apart from the story.
+---
+
+<aside class="aside">
+  <slot />
+</aside>
+
+<style>
+  .aside {
+    max-width: 44rem;
+    margin-block: 2rem;
+    padding: 0.25rem 0 0.25rem 1.25rem;
+    border-left: 3px solid var(--blue);
+  }
+
+  .aside :global(:first-child) {
+    margin-top: 0;
+  }
+
+  .aside :global(:last-child) {
+    margin-bottom: 0;
+  }
+</style>

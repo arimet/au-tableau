@@ -1,0 +1,79 @@
+---
+import { ui, type Locale } from '../lib/i18n';
+import { formatNumberHtml } from '../lib/format';
+import type { Calc, Source } from '../lib/sources';
+import SourceRef from './SourceRef.astro';
+
+interface Props {
+  calc: Calc;
+  sources: Source[];
+  locale: Locale;
+}
+
+const { calc, sources, locale } = Astro.props;
+---
+
+<details class="calc">
+  <summary class="hand">{ui[locale].showCalc}</summary>
+  <ol>
+    {
+      calc.steps.map((step) => (
+        <li>
+          <span class="label">{step.label[locale]}</span>
+          <span class="result value">
+            <Fragment set:html={formatNumberHtml(step.value, locale)} /> {step.unit}
+          </span>
+          <span class="how">
+            {step.formula && <span class="formula">{step.formula}</span>}
+            {step.sourceIds?.map((id) => <SourceRef {id} {sources} />)}
+          </span>
+        </li>
+      ))
+    }
+  </ol>
+</details>
+
+<style>
+  .calc {
+    border: 1.5px dashed var(--text);
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    max-width: 44rem;
+  }
+
+  summary {
+    cursor: pointer;
+    color: var(--chalk-yellow);
+    font-size: 1.2rem;
+  }
+
+  ol {
+    list-style: none;
+    margin: 0.75rem 0 0.5rem;
+    padding: 0;
+  }
+
+  li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0 1rem;
+    padding-block: 0.5rem;
+    border-top: 1px solid rgba(244, 241, 232, 0.2);
+  }
+
+  .value {
+    color: var(--chalk);
+    font-size: 1.25rem;
+    text-align: right;
+  }
+
+  .how {
+    grid-column: 1 / -1;
+    font-size: 0.9rem;
+  }
+
+  .formula {
+    font-family: var(--font-hand);
+    margin-right: 0.5rem;
+  }
+</style>

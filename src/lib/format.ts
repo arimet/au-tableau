@@ -48,3 +48,13 @@ export const formatLargeCount = (n: number, locale: Locale): string => {
   const scale = pick(SCALES, n);
   return scale ? phrase(n / scale.factor, locale, scale.forms) : n.toLocaleString(locale);
 };
+
+/** A number for display, HTML-safe: plain up to 10^9, then mantissa × 10<sup>exp</sup>. Never "e+37". */
+export const formatNumberHtml = (value: number, locale: Locale): string => {
+  const abs = Math.abs(value);
+  if (abs === 0 || (abs >= 1e-3 && abs < 1e9))
+    return value.toLocaleString(locale, { maximumSignificantDigits: 3 });
+  const [mantissa, exp] = value.toExponential(2).split('e');
+  const shown = Number(mantissa).toLocaleString(locale, { maximumSignificantDigits: 3 });
+  return `${shown} × 10<sup>${exp.replace('+', '').replace('-', '−')}</sup>`;
+};

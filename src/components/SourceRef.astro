@@ -1,0 +1,21 @@
+---
+import type { Source } from '../lib/sources';
+
+interface Props {
+  id: string;
+  sources: Source[];
+}
+
+const { id, sources } = Astro.props;
+const index = sources.findIndex((s) => s.id === id);
+if (index === -1) throw new Error(`SourceRef: unknown source "${id}"`);
+---
+
+<sup class="source-ref"><a href={`#source-${id}`} title={sources[index].citation}>{index + 1}</a></sup>
+
+<style>
+  a {
+    padding: 0.2em 0.25em;
+    font-family: var(--font-hand);
+  }
+</style>

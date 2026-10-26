@@ -1,0 +1,46 @@
+---
+import { ui, type Locale } from '../lib/i18n';
+import type { Source } from '../lib/sources';
+
+interface Props {
+  sources: Source[];
+  locale: Locale;
+}
+
+const { sources, locale } = Astro.props;
+---
+
+<section class="sources" aria-labelledby="sources-title">
+  <h2 id="sources-title">{ui[locale].sources}</h2>
+  <ol>
+    {
+      sources.map((source) => (
+        <li id={`source-${source.id}`}>
+          {source.citation}{' '}
+          {source.doi ? (
+            <a href={`https://doi.org/${source.doi}`}>doi:{source.doi}</a>
+          ) : (
+            <a href={source.url}>{source.url}</a>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+</section>
+
+<style>
+  ol {
+    padding-left: 1.5rem;
+  }
+
+  li {
+    margin-block: 0.75rem;
+    max-width: 70ch;
+    overflow-wrap: anywhere;
+  }
+
+  li:target {
+    outline: 2px dashed var(--chalk-yellow);
+    outline-offset: 6px;
+  }
+</style>

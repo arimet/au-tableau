@@ -1,0 +1,65 @@
+---
+import { sliderToValue, type Scale } from '../lib/scale';
+import { formatNumberHtml } from '../lib/format';
+import type { Locale } from '../lib/i18n';
+
+interface Props {
+  id: string;
+  label: string;
+  /** For a log slider, min, max and value are exponents of ten. */
+  min: number;
+  max: number;
+  step: number;
+  scale: Scale;
+  value: number;
+  locale?: Locale;
+}
+
+const { id, label, min, max, step, scale, value, locale = 'fr' } = Astro.props;
+---
+
+<div class="slider">
+  <label for={id} class="hand">{label}</label>
+  <input type="range" {id} {min} {max} {step} {value} data-scale={scale} aria-describedby={`${id}-out`} />
+  <output id={`${id}-out`} for={id} class="result" set:html={formatNumberHtml(sliderToValue(value, scale), locale)} />
+</div>
+
+<script>
+  import '../scripts/slider';
+</script>
+
+<style>
+  .slider {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.25rem 1rem;
+    align-items: center;
+    max-width: 32rem;
+  }
+
+  label {
+    grid-column: 1 / -1;
+    color: var(--chalk);
+    font-size: 1.15rem;
+  }
+
+  input {
+    width: 100%;
+    min-height: 2rem;
+    accent-color: var(--chalk-yellow);
+    cursor: pointer;
+  }
+
+  input:focus-visible {
+    outline: 2px solid var(--chalk-yellow);
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+
+  output {
+    min-width: 5ch;
+    color: var(--chalk-yellow);
+    font-size: 1.4rem;
+    text-align: right;
+  }
+</style>

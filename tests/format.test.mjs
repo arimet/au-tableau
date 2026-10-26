@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatDuration, formatLargeCount } from '../src/lib/format.ts';
+import { formatDuration, formatLargeCount, formatNumberHtml } from '../src/lib/format.ts';
 
 test('durations', () => {
   assert.equal(formatDuration(4e-13, 'fr'), '0,4 picoseconde');
@@ -28,4 +28,12 @@ test('negative values pluralise like positive ones', () => {
   assert.equal(formatDuration(-3, 'en'), '-3 seconds');
   assert.equal(formatDuration(-1, 'en'), '-1 second');
   assert.equal(formatDuration(-2.5e-9, 'fr'), '-2,5 nanosecondes');
+});
+
+test('numbers never use scientific notation, they use a power of ten', () => {
+  assert.equal(formatNumberHtml(1234.5, 'en'), '1,230');
+  assert.equal(formatNumberHtml(0.0123, 'fr'), '0,0123');
+  assert.equal(formatNumberHtml(8.03e37, 'fr'), '8,03 × 10<sup>37</sup>');
+  assert.equal(formatNumberHtml(1e-12, 'en'), '1 × 10<sup>−12</sup>');
+  assert.equal(formatNumberHtml(0, 'en'), '0');
 });

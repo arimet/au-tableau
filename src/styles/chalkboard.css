@@ -1,0 +1,93 @@
+:root {
+  --slate: #26473c;
+  --chalk: #f4f1e8;
+  --chalk-yellow: #f3d36b;
+  --blue: #8cc3df;
+  --green: #b9dca0;
+  --pink: #f2a39b;
+  --text: #cfdcd2;
+
+  --font-heading: 'Young Serif', Georgia, serif;
+  --font-body: 'Figtree Variable', system-ui, sans-serif;
+  --font-hand: 'Kalam', 'Comic Sans MS', cursive;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--slate);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.07), transparent 60%),
+    var(--slate);
+  background-attachment: fixed;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--chalk);
+  font-family: var(--font-heading);
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+a {
+  color: var(--chalk-yellow);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--chalk);
+}
+
+/* Handwritten annotations and key numbers. */
+.hand {
+  font-family: var(--font-hand);
+}
+
+/* Calculation results: digits line up. */
+.result {
+  font-family: var(--font-hand);
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background: var(--chalk-yellow);
+  color: var(--slate);
+}
+
+:focus-visible {
+  outline: 2px solid var(--chalk-yellow);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+html {
+  scrollbar-color: rgba(244, 241, 232, 0.35) var(--slate);
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--slate);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(244, 241, 232, 0.35);
+  border-radius: 6px;
+  border: 3px solid var(--slate);
+}

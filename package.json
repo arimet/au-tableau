@@ -1,0 +1,30 @@
+{
+  "name": "au-tableau",
+  "description": "Science popularisation on a chalkboard: short answers to surprising questions, with the calculation shown step by step.",
+  "license": "MIT",
+  "author": "Anthony Rimet (https://github.com/arimet)",
+  "homepage": "https://arimet.github.io/au-tableau/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arimet/au-tableau.git"
+  },
+  "bugs": {
+    "url": "https://github.com/arimet/au-tableau/issues"
+  },
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@astrojs/markdown-satteri": "^0.4.5",
+    "@astrojs/mdx": "^8.1.1",
+    "@fontsource-variable/figtree": "^5.3.0",
+    "@fontsource/kalam": "^5.3.0",
+    "@fontsource/young-serif": "^5.3.0",
+    "astro": "^7.3.4"
+  }
+}

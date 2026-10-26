@@ -1,0 +1,52 @@
+---
+import '@fontsource/young-serif';
+import '@fontsource-variable/figtree';
+import '@fontsource/kalam/400.css';
+import '@fontsource/kalam/700.css';
+import '../styles/chalkboard.css';
+import LangSwitch from '../components/LangSwitch.astro';
+import { url } from '../lib/url';
+import type { Locale } from '../lib/i18n';
+
+interface Props {
+  locale: Locale;
+  title: string;
+  description: string;
+  alternateHref: string;
+}
+
+const { locale, title, description, alternateHref } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const alternate = new URL(alternateHref, Astro.site).href;
+const [fr, en] = locale === 'fr' ? [canonical, alternate] : [alternate, canonical];
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#26473c" />
+    <link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="fr" href={fr} />
+    <link rel="alternate" hreflang="en" href={en} />
+    <link rel="alternate" hreflang="x-default" href={fr} />
+  </head>
+  <body>
+    <header class="site-header">
+      <LangSwitch locale={locale} alternateHref={alternateHref} />
+    </header>
+    <slot />
+  </body>
+</html>
+
+<style>
+  .site-header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem 1.25rem;
+  }
+</style>

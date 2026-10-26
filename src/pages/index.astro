@@ -1,0 +1,16 @@
+---
+import Base from '../layouts/Base.astro';
+import { localePath } from '../lib/i18n';
+import { url } from '../lib/url';
+---
+
+<Base
+  locale="fr"
+  title="Au tableau !"
+  description="Des questions de science qui surprennent, avec le calcul montré pas à pas."
+  alternateHref={url(localePath('en', '/'))}
+>
+  <main>
+    <h1>Au tableau !</h1>
+  </main>
+</Base>

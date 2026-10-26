@@ -1,0 +1,20 @@
+---
+import { ui, type Locale } from '../lib/i18n';
+
+interface Props {
+  locale: Locale;
+  alternateHref: string;
+}
+
+const { locale, alternateHref } = Astro.props;
+const other: Locale = locale === 'fr' ? 'en' : 'fr';
+---
+
+<a class="lang-switch" href={alternateHref} hreflang={other} lang={other}>{ui[locale].switchTo}</a>
+
+<style>
+  .lang-switch {
+    font-family: var(--font-hand);
+    font-size: 1.1rem;
+  }
+</style>

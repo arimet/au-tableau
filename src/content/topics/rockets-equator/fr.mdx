@@ -3,10 +3,92 @@ topic: rockets-equator
 locale: fr
 slug: fusees-equateur-terre-ralentit
 question: "Si on lance des fusées depuis l’équateur, la Terre ralentit-elle ?"
-hook: "TODO(task-8) : accroche à écrire."
+hook: "Une fusée qui part vers l’est prend un peu d’élan à la Terre. On suit cet élan du pas de tir jusqu’à l’orbite, puis on le mesure."
 discipline: Physique
 date: 2026-10-26
-answer: "TODO(task-8) : réponse courte à écrire."
+answer: "Oui, d’une durée infime. Les gaz de la fusée rendent leur élan à la Terre par l’atmosphère. Seul le satellite resté en orbite emporte le sien : chaque tonne allonge la journée d’une durée de l’ordre de la femtoseconde."
 ---
 
-{/* TODO(task-8): story steps */}
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import Magnitude from '../../../components/Magnitude.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import OrbitSlider from './OrbitSlider.astro';
+import { sources, calcs, figures, magnitudeItems } from './data';
+
+export const f = figures('fr');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="ground" locale="fr" />
+
+## Au départ, la fusée tourne déjà
+
+La Terre fait un tour sur elle-même chaque jour. À l’équateur, le sol file vers l’est à {f.groundSpeed} mètres par seconde.
+
+Une fusée posée sur son pas de tir file avec lui. Avant même d’allumer ses moteurs, elle a déjà de l’élan. Les physiciens appellent cet élan de rotation le moment cinétique.
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="gases" locale="fr" />
+
+## Les gaz restent sur Terre
+
+Pour monter et filer vers l’est, la fusée pousse ses gaz vers l’arrière. En retour, les gaz sont poussés dans l’autre sens.
+
+Ils ne quittent pas la Terre. L’air les freine, puis le frottement de l’air sur le sol transmet leur élan à la Terre. Les étages qui retombent rendent aussi le leur. Tant que tout reste sur Terre ou dans son air, l’élan total ne change pas : il passe d’une partie à l’autre.
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="orbit" locale="fr" />
+
+## Le satellite emporte de l’élan
+
+En orbite basse, à {f.leoAltitude} kilomètres d’altitude, un satellite tourne autour de la Terre à {f.leoSpeed} mètres par seconde. Le sol de l’équateur n’avance qu’à {f.groundSpeed}. Le satellite tourne aussi un peu plus loin de l’axe, et l’élan de rotation grandit avec cette distance.
+
+Il a donc plus d’élan qu’au départ. Ce surplus vient de la Terre, qui tourne un peu moins vite. S’il retombe un jour, il le lui rend.
+
+</Step>
+
+<Step>
+  <OrbitSlider slot="figure" locale="fr" />
+
+## De combien la journée s’allonge
+
+Une tonne placée en orbite basse, à {f.leoAltitude} kilomètres d’altitude, allonge la journée de **{f.perTonne}**. Une femtoseconde vaut {f.femtosecond}. En orbite géostationnaire, plus haut, la même tonne l’allonge de **{f.perTonneGeo}**.
+
+En {f.launchesYear}, un inventaire des émissions des fusées compte {f.launches} lancements, échecs compris<SourceRef id="barker2024" sources={sources} />. On n’a trouvé aucune publication relue qui donne la masse placée en orbite. Le curseur la fait varier jusqu’à {f.sliderMax} de tonnes.
+
+<ShowCalc calc={calc('one-tonne')} sources={sources} locale="fr">
+
+Ce que le calcul laisse de côté. Il suppose un départ depuis l’équateur et une orbite circulaire au-dessus de l’équateur, parcourue vers l’est. Il ne compte que la masse placée en orbite : il ignore l’étage de la fusée et les gaz éjectés hors de l’atmosphère. Comme Zhang<SourceRef id="zhang2013" sources={sources} />, il suppose que tout l’élan des gaz revient à la Terre. Le jour calculé est le jour sidéral, un tour complet par rapport aux étoiles. L’effet dure tant que la masse reste en orbite.
+
+</ShowCalc>
+
+</Step>
+
+<Step stack>
+  <Magnitude slot="figure" items={magnitudeItems('fr')} sources={sources} locale="fr" />
+  <ShowCalc slot="figure" calc={calc('comparisons')} sources={sources} locale="fr" />
+
+## À côté des marées, d’un séisme et des barrages
+
+Le frottement des marées allonge la journée de {f.tidesYear} chaque année<SourceRef id="stephenson2016" sources={sources} />. D’après un modèle, le séisme de Sumatra de {f.sumatraYear} l’a raccourcie de {f.sumatra}<SourceRef id="gross-chao2006" sources={sources} />. Les barrages construits de {f.damsFrom} à {f.damsTo} l’ont raccourcie d’environ {f.dams}<SourceRef id="valencic2026" sources={sources} />. L’eau qu’ils retiennent allonge la journée, mais la baisse du niveau de l’océan qui en découle la raccourcit davantage.
+
+Pour égaler le séisme de Sumatra, il faudrait placer **{f.sumatraTonnes}** de tonnes en orbite basse.
+
+</Step>
+
+<Aside>
+
+## Et la température ?
+
+Le lien publié va dans l’autre sens : la fonte des glaces due au réchauffement allonge la journée de {f.climatePerCentury} par siècle depuis {f.climateSince}<SourceRef id="kiani2024" sources={sources} />. Un siècle de cet effet équivaut à placer **{f.climateTonnes}** de tonnes en orbite basse. Le réchauffement atteint {f.warming} °C en moyenne sur {f.warmingPeriod[0]}–{f.warmingPeriod[1]}, par rapport à {f.baselinePeriod[0]}–{f.baselinePeriod[1]}, et il vient des activités humaines<SourceRef id="forster2024" sources={sources} />.
+
+<ShowCalc calc={calc('climate')} sources={sources} locale="fr" />
+
+</Aside>

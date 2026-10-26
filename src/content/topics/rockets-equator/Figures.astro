@@ -1,0 +1,181 @@
+---
+// Small figures for the first three steps: the rocket on the ground, its gases, the satellite.
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchArc, sketchCircle, sketchLine, arrowHead, hatch, smoothPath, type Pt } from '../../../lib/chalk';
+import type { Locale } from '../../../lib/i18n';
+import { figures } from './data';
+
+interface Props {
+  name: 'ground' | 'gases' | 'orbit';
+  locale: Locale;
+}
+
+const { name, locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng({ ground: 11, gases: 12, orbit: 13 }[name]);
+
+const arrow = (from: Pt, to: Pt, size = 10) => {
+  const angle = Math.atan2(to[1] - from[1], to[0] - from[0]);
+  return [sketchLine(rand, from, to, 1), ...arrowHead(rand, to, angle, size)];
+};
+// The ground seen from the side: an arc of a large circle, hatched underneath.
+const ground = (top: number) => {
+  const R = 700, cy = top + R;
+  const surface = sketchArc(rand, 200, cy, R, -Math.PI / 2 - 0.28, -Math.PI / 2 + 0.28, 0.002).d;
+  const lines = Array.from({ length: 56 }, (_, i) => sketchLine(rand, [-40 + i * 8, top - 10], [i * 8, top + 50], 0.6));
+  return { R, cy, surface, lines };
+};
+const rocketBody = 'M0,-27 C7.5,-17 8,-5 7,12 L-7,12 C-8,-5 -7.5,-17 0,-27Z';
+const rocketFins = 'M-7,3 L-14,16 L-7,13 M7,3 L14,16 L7,13';
+const spiral = (x: number, y: number, size: number) =>
+  smoothPath(
+    Array.from({ length: 20 }, (_, i): Pt => {
+      const t = i / 19, a = t * 4 * Math.PI, rr = 1.5 + size * t;
+      return [x + rr * Math.cos(a), y + rr * Math.sin(a)];
+    }),
+  );
+
+const g = name === 'orbit' ? undefined : ground(name === 'ground' ? 200 : 225);
+const atmosphereTop = g && sketchArc(rand, 200, g.cy, g.R + 120, -Math.PI / 2 - 0.23, -Math.PI / 2 + 0.23, 0.001).d;
+
+// Orbit figure, seen from above the North Pole: east is anticlockwise.
+const [ox, oy, er, orr] = [170, 150, 62, 74];
+const earthTop = sketchCircle(rand, ox, oy, er);
+const earthHatch = hatch(rand, ox, oy, er, 6.5, 0.62);
+const orbit = sketchCircle(rand, ox, oy, orr, { wobble: 0.006, overshoot: 0.1, grow: 0.005 });
+const groundAt: Pt = [ox + er * Math.cos(2.4), oy + er * Math.sin(2.4)];
+const groundDir = [Math.sin(2.4), -Math.cos(2.4)];
+
+const labels = {
+  ground: fr
+    ? { scene: `Schéma : à l’équateur, le sol et la fusée posée dessus filent vers l’est à ${f.groundSpeed} mètres par seconde.`, a: `sol et fusée : ${f.groundSpeed} m/s vers l’est` }
+    : { scene: `Diagram: at the equator, the ground and the rocket standing on it move east at ${f.groundSpeed} metres per second.`, a: `ground and rocket: ${f.groundSpeed} m/s eastward` },
+  gases: fr
+    ? { scene: 'Schéma : la fusée monte ; ses gaz restent dans l’atmosphère, qui les freine et rend leur élan au sol.', a: 'l’air freine les gaz,', b: 'puis rend leur élan', d: 'au sol', c: 'atmosphère' }
+    : { scene: 'Diagram: the rocket climbs; its gases stay in the atmosphere, which slows them and hands their momentum to the ground.', a: 'the air slows the gases,', b: 'then hands their momentum', d: 'to the ground', c: 'atmosphere' },
+  orbit: fr
+    ? { scene: `Schéma vu du pôle Nord : le sol de l’équateur tourne à ${f.groundSpeed} m/s, le satellite en orbite basse à ${f.leoSpeed} m/s, dans le même sens.`, a: 'vu du pôle Nord', b: `satellite : ${f.leoSpeed} m/s`, c: `sol : ${f.groundSpeed} m/s` }
+    : { scene: `Diagram seen from the North Pole: the ground at the equator turns at ${f.groundSpeed} m/s, the satellite in low orbit at ${f.leoSpeed} m/s, the same way.`, a: 'seen from the North Pole', b: `satellite: ${f.leoSpeed} m/s`, c: `ground: ${f.groundSpeed} m/s` },
+}[name];
+const draw = (t: number, d: number) => `--t:${t}s;--d:${d}s`;
+---
+
+<Scene viewBox={name === 'orbit' ? '0 0 460 290' : '0 0 400 250'} label={labels.scene} {locale}>
+  {
+    g && (
+      <>
+        <defs>
+          <clipPath id={`rockets-${name}-ground`}>
+            <circle cx="200" cy={g.cy} r={g.R - 1} />
+          </clipPath>
+        </defs>
+        <g clip-path={`url(#rockets-${name}-ground)`} stroke="var(--blue)" stroke-width="1.5" opacity="0.5" fill="none" stroke-linecap="round">
+          {g.lines.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(0.4 + i * 0.012, 0.2)} />)}
+        </g>
+        <path class="draw" pathLength="1" d={g.surface} fill="none" stroke="var(--chalk)" stroke-width="2.3" stroke-linecap="round" style={draw(0, 0.8)} />
+      </>
+    )
+  }
+
+  {
+    name === 'ground' && (
+      <>
+        <g class="pop" style="--t:1.1s" transform="translate(200 184) scale(1.3)">
+          <path d={rocketBody} fill="var(--pink)" />
+          <path d="M-7,3 L-14,16 L-7,13Z M7,3 L14,16 L7,13Z" fill="var(--pink)" />
+          <g fill="none" stroke="var(--chalk)" stroke-width="1.6" stroke-linejoin="round">
+            <path d={rocketBody} />
+            <path d={rocketFins} />
+            <circle cx="0" cy="-7" r="3.6" />
+          </g>
+        </g>
+        <g fill="none" stroke="var(--chalk-yellow)" stroke-width="2.3" stroke-linecap="round">
+          {arrow([70, 110], [330, 110], 12).map((d, i) => <path class="draw" pathLength="1" {d} style={draw(1.5 + (i ? 0.6 : 0), i ? 0.15 : 0.6)} />)}
+        </g>
+        <g class="labels">
+          <Annotation x={200} y={86} t={2} anchor="middle">{labels.a}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'gases' && g && (
+      <>
+        <path class="draw" pathLength="1" d={atmosphereTop} fill="none" stroke="var(--blue)" stroke-width="1.5" opacity="0.7" style={draw(0.8, 0.8)} />
+        <path class="draw" pathLength="1" d={smoothPath([[150, 226], [200, 190], [262, 135], [312, 82]])} fill="none" stroke="var(--chalk)" stroke-width="2" stroke-linecap="round" style={draw(1.2, 0.5)} />
+        <g class="pop" style="--t:1.6s" transform="translate(326 64) rotate(42) scale(1.2)">
+          <path class="flame" d="M-5.5,13 Q-9,27 0,40 Q9,27 5.5,13Z" fill="var(--chalk-yellow)" />
+          <path d={rocketBody} fill="var(--pink)" />
+          <path d="M-7,3 L-14,16 L-7,13Z M7,3 L14,16 L7,13Z" fill="var(--pink)" />
+          <g fill="none" stroke="var(--chalk)" stroke-width="1.6" stroke-linejoin="round">
+            <path d={rocketBody} />
+            <path d={rocketFins} />
+          </g>
+        </g>
+        <g fill="none" stroke="var(--chalk-yellow)" stroke-width="2" stroke-linecap="round">
+          <path class="draw" pathLength="1" d={spiral(226, 184, 9)} style={draw(1.9, 0.5)} />
+          <path class="draw" pathLength="1" d={spiral(280, 138, 8)} style={draw(2.1, 0.5)} />
+          {[...arrow([228, 196], [236, 222], 9), ...arrow([280, 150], [290, 220], 9)].map((d, i) => (
+            <path class="draw" pathLength="1" {d} style={draw(2.6 + (i % 3 ? 0.3 : 0), i % 3 ? 0.12 : 0.3)} />
+          ))}
+        </g>
+        <g class="labels">
+          <Annotation x={20} y={30} t={3}>{labels.a}</Annotation>
+          <Annotation x={20} y={54} t={3.15}>{labels.b}</Annotation>
+          <Annotation x={20} y={78} t={3.3}>{labels.d}</Annotation>
+          <Annotation x={20} y={152} t={1.3}>{labels.c}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'orbit' && (
+      <>
+        <defs>
+          <clipPath id="rockets-orbit-earth">
+            <circle cx={ox} cy={oy} r={er - 1} />
+          </clipPath>
+        </defs>
+        <g clip-path="url(#rockets-orbit-earth)" stroke="var(--blue)" stroke-width="1.5" opacity="0.6" fill="none" stroke-linecap="round">
+          {earthHatch.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(0.6 + i * 0.03, 0.2)} />)}
+        </g>
+        <g fill="none" stroke="var(--chalk)" stroke-linecap="round">
+          <path class="draw" pathLength="1" d={earthTop} stroke-width="2.3" style={draw(0, 0.9)} />
+          <circle class="pop" cx={ox} cy={oy} r="2.5" fill="var(--chalk)" style="--t:0.9s" />
+          <path class="draw" pathLength="1" d={orbit} stroke-width="1.6" opacity="0.8" style={draw(1.2, 0.9)} />
+        </g>
+        <g fill="none" stroke="var(--chalk-yellow)" stroke-width="2.3" stroke-linecap="round">
+          {arrow(groundAt, [groundAt[0] + 14 * groundDir[0], groundAt[1] + 14 * groundDir[1]], 7).map((d, i) => (
+            <path class="draw" pathLength="1" {d} style={draw(2.1 + (i ? 0.2 : 0), i ? 0.1 : 0.2)} />
+          ))}
+          {arrow([ox + orr, oy - 4], [ox + orr, oy - 118], 11).map((d, i) => (
+            <path class="draw" pathLength="1" {d} style={draw(2.6 + (i ? 0.5 : 0), i ? 0.12 : 0.5)} />
+          ))}
+        </g>
+        <g class="pop" style="--t:2.4s" transform={`translate(${ox + orr} ${oy})`}>
+          <rect x="-5" y="-16" width="10" height="9" fill="var(--blue)" fill-opacity="0.6" stroke="var(--chalk)" stroke-width="1.3" />
+          <rect x="-5" y="7" width="10" height="9" fill="var(--blue)" fill-opacity="0.6" stroke="var(--chalk)" stroke-width="1.3" />
+          <rect x="-5" y="-5" width="10" height="10" fill="var(--slate)" stroke="var(--chalk)" stroke-width="1.6" />
+        </g>
+        <g class="labels">
+          <Annotation x={16} y={28} t={0.9}>{labels.a}</Annotation>
+          <Annotation x={ox + orr + 14} y={oy - 72} t={3.2}>{labels.b}</Annotation>
+          <Annotation x={34} y={oy + 86} t={2.4}>{labels.c}</Annotation>
+        </g>
+      </>
+    )
+  }
+</Scene>
+
+<style>
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

@@ -1,7 +1,9 @@
 ---
-// Placeholder hero: a sketched Earth. Task 8 replaces it with the real opening scene.
+// Opening scene: where the momentum goes. The rocket leaves the equator; its gases stay in the
+// atmosphere, which hands their momentum back to the Earth; the satellite on its orbit carries some away.
 import Scene from '../../../components/chalk/Scene.astro';
-import { rng, sketchCircle } from '../../../lib/chalk';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchCircle, sketchLine, arrowHead, hatch, smoothPath, type Pt } from '../../../lib/chalk';
 import type { Locale } from '../../../lib/i18n';
 
 interface Props {
@@ -9,10 +11,159 @@ interface Props {
 }
 
 const { locale } = Astro.props;
-const earth = sketchCircle(rng(7), 150, 100, 70);
-const label = locale === 'fr' ? 'La Terre, esquissée à la craie.' : 'The Earth, sketched in chalk.';
+const fr = locale === 'fr';
+const rand = rng(2026);
+
+const [cx, cy, r] = [250, 200, 100];
+const ATMOSPHERE = 128;
+const ORBIT = { rx: 225, ry: 56 };
+
+/** Points of an ellipse from angle a0 to a1, with a faint hand tremor. */
+const ellipse = (ex: number, ey: number, rx: number, ry: number, a0: number, a1: number): Pt[] => {
+  const n = Math.max(8, Math.round(Math.abs(a1 - a0) * 12));
+  return Array.from({ length: n + 1 }, (_, i) => {
+    const a = a0 + ((a1 - a0) * i) / n;
+    return [ex + rx * Math.cos(a) + (rand() - 0.5) * 0.8, ey + ry * Math.sin(a) + (rand() - 0.5) * 0.8];
+  });
+};
+/** Tangent at the end of a point list, in the direction of travel. */
+const endAngle = (p: Pt[]) => Math.atan2(p[p.length - 1][1] - p[p.length - 2][1], p[p.length - 1][0] - p[p.length - 2][0]);
+
+const outline = sketchCircle(rand, cx, cy, r);
+const outline2 = sketchCircle(rand, cx, cy, r - 1.5, { wobble: 0.016, grow: -0.02 });
+const hatching = hatch(rand, cx, cy, r, 6.5, 0.62);
+const land = ([[-38, -30, 26], [34, -52, 13], [44, 0, 16], [-56, 40, 9]] as const).map(
+  ([x, y, s]) => `${sketchCircle(rand, cx + x, cy + y, s, { wobble: 0.22, overshoot: 0, grow: 0 })}Z`,
+);
+// Equator: the near half of a flat ellipse, seen from a little above.
+const equator = smoothPath(ellipse(cx, cy, r - 1, 18, Math.PI, 0));
+const atmosphere = sketchCircle(rand, cx, cy, ATMOSPHERE, { wobble: 0.01, grow: 0.01 });
+
+// Rotation: an arrow around the axis above the North Pole, its near side moving east (right).
+const axis = sketchLine(rand, [cx, cy - r + 2], [cx, cy - r - 62], 0.6);
+const spinPts = ellipse(cx, cy - r - 46, 44, 13, 3.0, 0.25);
+const spin = smoothPath(spinPts);
+const spinHead = arrowHead(rand, spinPts[spinPts.length - 1], endAngle(spinPts), 11);
+
+// Rocket: leaves the equator at the right edge, heading up and east.
+const launch: Pt[] = [[cx + r, cy], [cx + 112, cy - 22], [cx + 130, cy - 47], [cx + 150, cy - 66]];
+const trajectory = smoothPath(launch);
+// Gases curl inside the atmosphere band, then an arrow takes their momentum into the ground.
+const curl = smoothPath(
+  Array.from({ length: 22 }, (_, i): Pt => {
+    const t = i / 21, a = -0.6 + t * 4.4 * Math.PI, rr = 1.5 + 6.5 * t;
+    return [cx + 100 + rr * Math.cos(a), cy - 50 + rr * Math.sin(a)];
+  }),
+);
+const back: Pt[] = [[cx + 96, cy - 41], [cx + 90, cy - 30], [cx + 80, cy - 19]];
+const backArrow = smoothPath(back);
+const backHead = arrowHead(rand, back[2], endAngle(back), 9);
+
+// Orbit: the equatorial plane again, wider. Its far half is hidden where the Earth stands in front.
+const visible = Math.acos(Math.sqrt((r ** 2 - ORBIT.ry ** 2) / (ORBIT.rx ** 2 - ORBIT.ry ** 2)));
+const orbitFront = smoothPath(ellipse(cx, cy, ORBIT.rx, ORBIT.ry, Math.PI, 0));
+const orbitBackLeft = smoothPath(ellipse(cx, cy, ORBIT.rx, ORBIT.ry, Math.PI, Math.PI + visible));
+const orbitBackRight = smoothPath(ellipse(cx, cy, ORBIT.rx, ORBIT.ry, 2 * Math.PI - visible, 2 * Math.PI));
+const satAngle = 2.3;
+const sat: Pt = [cx + ORBIT.rx * Math.cos(satAngle), cy + ORBIT.ry * Math.sin(satAngle)];
+const motionPts = ellipse(cx, cy, ORBIT.rx + 14, ORBIT.ry + 14, 2.08, 1.72);
+const motion = smoothPath(motionPts);
+const motionHead = arrowHead(rand, motionPts[motionPts.length - 1], endAngle(motionPts), 9);
+const gasLeader = sketchLine(rand, [cx + 110, cy - 40], [cx + 150, cy + 90], 1.5);
+
+const text = fr
+  ? {
+      label:
+        'Schéma : la Terre tourne vers l’est. Une fusée part de l’équateur. Ses gaz restent dans l’atmosphère, qui rend leur élan à la Terre. Un satellite sur son orbite emporte de l’élan.',
+      spin: 'la Terre tourne',
+      atmosphere: 'atmosphère',
+      equator: 'équateur',
+      gases: ['les gaz rendent', 'leur élan à la Terre'],
+      satellite: ['le satellite', 'emporte de l’élan'],
+    }
+  : {
+      label:
+        'Diagram: the Earth turns eastward. A rocket leaves the equator. Its gases stay in the atmosphere, which hands their momentum back to the Earth. A satellite on its orbit carries momentum away.',
+      spin: 'the Earth turns',
+      atmosphere: 'atmosphere',
+      equator: 'equator',
+      gases: ['the gases return', 'their momentum to Earth'],
+      satellite: ['the satellite', 'carries momentum away'],
+    };
+const line = (d: string, t: number, dur: number) => ({ d, style: `--t:${t}s;--d:${dur}s` });
 ---
 
-<Scene viewBox="0 0 300 200" label={label} locale={locale}>
-  <path class="draw" pathLength="1" style="--t:0s;--d:1.2s" d={earth} fill="none" stroke="var(--blue)" stroke-width="4" stroke-linecap="round" />
+<Scene viewBox="0 0 600 380" label={text.label} {locale}>
+  <defs>
+    <clipPath id="rockets-hero-earth"><circle {cx} {cy} r={r - 1} /></clipPath>
+  </defs>
+
+  <g clip-path="url(#rockets-hero-earth)" stroke="var(--blue)" stroke-width="1.5" opacity="0.6" fill="none" stroke-linecap="round">
+    {hatching.map((d, i) => <path class="draw" pathLength="1" {d} style={`--t:${(0.9 + i * 0.03).toFixed(2)}s;--d:.22s`} />)}
+  </g>
+  <g clip-path="url(#rockets-hero-earth)" fill="var(--green)" fill-opacity="0.5">
+    {land.map((d, i) => <path class="pop" {d} style={`--t:${1.4 + i * 0.12}s`} />)}
+  </g>
+
+  <g fill="none" stroke="var(--chalk)" stroke-linecap="round" stroke-linejoin="round">
+    <path class="draw" pathLength="1" d={outline} stroke-width="2.3" style="--d:1.1s" />
+    <path class="draw" pathLength="1" d={outline2} stroke-width="1.3" opacity="0.55" style="--t:.25s;--d:1.1s" />
+    <path class="draw" pathLength="1" {...line(equator, 1.2, 0.7)} stroke-width="1.6" />
+    <path class="draw" pathLength="1" {...line(atmosphere, 1.7, 1)} stroke="var(--blue)" stroke-width="1.5" opacity="0.7" />
+    <path class="draw" pathLength="1" {...line(axis, 2.2, 0.3)} stroke-width="1.3" />
+    <path class="draw" pathLength="1" {...line(spin, 2.4, 0.5)} stroke-width="2.3" />
+    {spinHead.map((d) => <path class="draw" pathLength="1" {...line(d, 2.9, 0.15)} stroke-width="2.3" />)}
+
+    <path class="draw" pathLength="1" {...line(trajectory, 3.2, 0.5)} stroke-width="2" />
+    <path class="draw" pathLength="1" {...line(curl, 3.9, 0.6)} stroke="var(--chalk-yellow)" stroke-width="1.8" />
+    <path class="draw" pathLength="1" {...line(backArrow, 4.5, 0.3)} stroke="var(--chalk-yellow)" stroke-width="2.3" />
+    {backHead.map((d) => <path class="draw" pathLength="1" {...line(d, 4.8, 0.12)} stroke="var(--chalk-yellow)" stroke-width="2.3" />)}
+    <path class="draw" pathLength="1" {...line(gasLeader, 4.9, 0.3)} stroke-width="1" opacity="0.6" />
+
+    <path class="draw" pathLength="1" {...line(orbitBackLeft, 5.3, 0.3)} stroke-width="1.6" />
+    <path class="draw" pathLength="1" {...line(orbitFront, 5.6, 0.8)} stroke-width="1.6" />
+    <path class="draw" pathLength="1" {...line(orbitBackRight, 6.4, 0.25)} stroke-width="1.6" />
+    <path class="draw" pathLength="1" {...line(motion, 6.8, 0.35)} stroke-width="2.3" />
+    {motionHead.map((d) => <path class="draw" pathLength="1" {...line(d, 7.15, 0.12)} stroke-width="2.3" />)}
+  </g>
+
+  <g class="pop" style="--t:3.6s" transform={`translate(${cx + 162} ${cy - 84}) rotate(35) scale(1.2)`}>
+    <path class="flame" d="M-5.5,13 Q-9,27 0,40 Q9,27 5.5,13Z" fill="var(--chalk-yellow)" />
+    <g fill="var(--pink)">
+      <path d="M0,-27 C7.5,-17 8,-5 7,12 L-7,12 C-8,-5 -7.5,-17 0,-27Z" />
+      <path d="M-7,3 L-14,16 L-7,13Z M7,3 L14,16 L7,13Z" />
+    </g>
+    <g fill="none" stroke="var(--chalk)" stroke-width="1.8" stroke-linejoin="round">
+      <path d="M0,-27 C7.5,-17 8,-5 7,12 L-7,12 C-8,-5 -7.5,-17 0,-27Z" />
+      <path d="M-7,3 L-14,16 L-7,13 M7,3 L14,16 L7,13" />
+      <circle cx="0" cy="-7" r="3.6" />
+    </g>
+  </g>
+
+  <g class="pop" style="--t:6.6s" transform={`translate(${sat[0]} ${sat[1]}) rotate(-8)`}>
+    <rect x="-22" y="-5" width="14" height="10" fill="var(--blue)" fill-opacity="0.6" stroke="var(--chalk)" stroke-width="1.4" />
+    <rect x="8" y="-5" width="14" height="10" fill="var(--blue)" fill-opacity="0.6" stroke="var(--chalk)" stroke-width="1.4" />
+    <path d="M-8,0 H8" stroke="var(--chalk)" stroke-width="1.4" />
+    <rect x="-5" y="-6" width="10" height="12" fill="var(--slate)" stroke="var(--chalk)" stroke-width="1.8" />
+  </g>
+
+  <g class="labels">
+    <Annotation x={cx - 52} y={cy - r - 40} t={3} anchor="end">{text.spin}</Annotation>
+    <Annotation x={cx - 122} y={cy - 92} t={2.7} anchor="end">{text.atmosphere}</Annotation>
+    <Annotation x={cx} y={cy + 42} t={1.9} anchor="middle">{text.equator}</Annotation>
+    <Annotation x={cx + 140} y={cy + 114} t={5}>{text.gases[0]}</Annotation>
+    <Annotation x={cx + 140} y={cy + 140} t={5.15}>{text.gases[1]}</Annotation>
+    <Annotation x={20} y={cy + 94} t={7.3}>{text.satellite[0]}</Annotation>
+    <Annotation x={20} y={cy + 120} t={7.45}>{text.satellite[1]}</Annotation>
+  </g>
 </Scene>
+
+<style>
+  /* A slate halo keeps the writing legible where it crosses a line or the hatching. */
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

@@ -1,0 +1,62 @@
+---
+// Tonnes placed in low orbit (log scale) and the day lengthening they cause, recomputed live.
+import Slider from '../../../components/Slider.astro';
+import { formatDuration } from '../../../lib/format';
+import type { Locale } from '../../../lib/i18n';
+import { SECONDS_PER_TONNE, SLIDER } from './data';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+---
+
+<div class="orbit-slider" data-locale={locale} data-per-tonne={SECONDS_PER_TONNE}>
+  <Slider
+    id="tonnes"
+    label={fr ? 'Tonnes placées en orbite basse' : 'Tonnes placed in low orbit'}
+    min={SLIDER.minExp}
+    max={SLIDER.maxExp}
+    step={0.01}
+    scale="log"
+    value={SLIDER.minExp}
+    {locale}
+  />
+  <p class="sentence" aria-live="polite">
+    {fr ? 'La journée s’allonge de ' : 'The day gets longer by '}
+    <b class="result lengthening">{formatDuration(10 ** SLIDER.minExp * SECONDS_PER_TONNE, locale)}</b>.
+  </p>
+</div>
+
+<script>
+  import { formatDuration } from '../../../lib/format';
+
+  for (const box of document.querySelectorAll<HTMLElement>('.orbit-slider')) {
+    const input = box.querySelector<HTMLInputElement>('input[type="range"]')!;
+    const result = box.querySelector('.lengthening')!;
+    const locale = box.dataset.locale === 'en' ? 'en' : 'fr';
+    const perTonne = Number(box.dataset.perTonne);
+    input.addEventListener('input', () => {
+      result.textContent = formatDuration(10 ** Number(input.value) * perTonne, locale);
+    });
+  }
+</script>
+
+<style>
+  .orbit-slider {
+    padding: 1rem 0;
+  }
+
+  .sentence {
+    color: var(--chalk);
+    font-size: 1.2rem;
+  }
+
+  .lengthening {
+    color: var(--chalk-yellow);
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+</style>

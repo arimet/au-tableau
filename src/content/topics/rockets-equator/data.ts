@@ -134,7 +134,7 @@ const launches2022 = 186; // launches in the emissions inventory, failures inclu
 /** Slider range: tonnes placed in orbit, as powers of ten. */
 export const SLIDER = { minExp: 0, maxExp: 10 };
 
-const step = (fr: string, en: string, value: number, unit: string, how: Pick<CalcStep, 'sourceIds' | 'formula'>): CalcStep => ({
+const step = (fr: string, en: string, value: number, unit: string, how: Pick<CalcStep, 'sourceIds' | 'formula' | 'digits'>): CalcStep => ({
   label: { fr, en },
   value,
   unit,
@@ -145,26 +145,26 @@ export const calcs: Calc[] = [
   {
     id: 'one-tonne',
     steps: [
-      step('Moment d’inertie de la Terre, C', 'Moment of inertia of the Earth, C', EARTH.momentOfInertia, 'kg·m²', { sourceIds: ['chen2015'] }),
-      step('Rayon de la Terre à l’équateur, R', 'Equatorial radius of the Earth, R', EARTH.equatorialRadius, 'm', { sourceIds: ['chen2015'] }),
-      step('Constante de gravitation de la Terre, GM', 'Gravitational constant of the Earth, GM', EARTH.gm, 'm³/s²', { sourceIds: ['chen2015'] }),
-      step('Vitesse de rotation de la Terre, Ω', 'Rotation rate of the Earth, Ω', omega, 'rad/s', { sourceIds: ['gottl2021'] }),
-      step('Durée d’un tour, le jour sidéral', 'Time for one turn, the sidereal day', EARTH.siderealDay, 's', { formula: 'T = 2π / Ω' }),
-      step('Élan de la Terre', 'Momentum of the Earth', earthL, 'kg·m²/s', { formula: 'L = C × Ω' }),
+      step('Moment d’inertie de la Terre, C', 'Moment of inertia of the Earth, C', EARTH.momentOfInertia, 'kg·m²', { sourceIds: ['chen2015'], digits: 6 }),
+      step('Rayon de la Terre à l’équateur, R', 'Equatorial radius of the Earth, R', EARTH.equatorialRadius, 'm', { sourceIds: ['chen2015'], digits: 8 }),
+      step('Constante de gravitation de la Terre, GM', 'Gravitational constant of the Earth, GM', EARTH.gm, 'm³/s²', { sourceIds: ['chen2015'], digits: 10 }),
+      step('Vitesse de rotation de la Terre, Ω', 'Rotation rate of the Earth, Ω', omega, 'rad/s', { sourceIds: ['gottl2021'], digits: 7 }),
+      step('Durée d’un tour, le jour sidéral', 'Time for one turn, the sidereal day', EARTH.siderealDay, 's', { formula: 'T = 2π / Ω', digits: 6 }),
+      step('Élan de la Terre', 'Angular momentum of the Earth', earthL, 'kg·m²/s', { formula: 'L = C × Ω' }),
       step('Vitesse du sol à l’équateur', 'Speed of the ground at the equator', groundSpeed, 'm/s', { formula: 'Ω × R' }),
-      step('Élan d’une tonne posée sur l’équateur', 'Momentum of one tonne resting on the equator', groundL, 'kg·m²/s', { formula: 'L₀ = 1 t × Ω × R²' }),
+      step('Élan d’une tonne posée sur l’équateur', 'Angular momentum of one tonne resting on the equator', groundL, 'kg·m²/s', { formula: 'L₀ = 1 t × Ω × R²' }),
       step(
         `Rayon de l’orbite basse choisie, à ${LEO_ALTITUDE_KM} km d’altitude`,
         `Radius of the chosen low orbit, ${LEO_ALTITUDE_KM} km up`,
         REFERENCE_LAUNCH.orbitRadiusM, 'm', { formula: `r = R + ${LEO_ALTITUDE_KM} km` },
       ),
       step('Vitesse sur cette orbite', 'Speed on that orbit', REFERENCE_LAUNCH.orbitalSpeedMs, 'm/s', { formula: 'v = √(GM / r)' }),
-      step('Élan d’une tonne sur cette orbite', 'Momentum of one tonne on that orbit', leoL, 'kg·m²/s', { formula: 'L₁ = 1 t × r × v' }),
-      step('Élan emporté', 'Momentum carried away', leoDeltaL, 'kg·m²/s', { formula: 'ΔL = L₁ − L₀' }),
+      step('Élan d’une tonne sur cette orbite', 'Angular momentum of one tonne on that orbit', leoL, 'kg·m²/s', { formula: 'L₁ = 1 t × r × v' }),
+      step('Élan emporté', 'Angular momentum carried away', leoDeltaL, 'kg·m²/s', { formula: 'ΔL = L₁ − L₀' }),
       step('Allongement du jour', 'Lengthening of the day', SECONDS_PER_TONNE, 's', { formula: 'ΔT = T × ΔL / L' }),
-      step('Rayon de l’orbite géostationnaire', 'Radius of the geostationary orbit', GEO.orbitRadiusM, 'm', { formula: 'r = ∛(GM / Ω²)' }),
+      step('Rayon de l’orbite géostationnaire', 'Radius of the geostationary orbit', GEO.orbitRadiusM, 'm', { formula: 'r = ∛(GM / Ω²)', digits: 6 }),
       step('Vitesse sur cette orbite', 'Speed on that orbit', GEO.orbitalSpeedMs, 'm/s', { formula: 'v = Ω × r' }),
-      step('Élan emporté par une tonne', 'Momentum carried away by one tonne', geoDeltaL, 'kg·m²/s', { formula: 'ΔL = 1 t × (r × v − Ω × R²)' }),
+      step('Élan emporté par une tonne', 'Angular momentum carried away by one tonne', geoDeltaL, 'kg·m²/s', { formula: 'ΔL = 1 t × (r × v − Ω × R²)' }),
       step('Allongement du jour', 'Lengthening of the day', geoSeconds, 's', { formula: 'ΔT = T × ΔL / L' }),
     ],
   },

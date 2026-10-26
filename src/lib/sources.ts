@@ -9,6 +9,8 @@ export type CalcStep = {
   unit: string;
   sourceIds?: string[];
   formula?: string;
+  /** Significant digits shown; 3 when absent. Sourced inputs use the precision printed in the source. */
+  digits?: number;
 };
 
 export type Calc = { id: string; steps: CalcStep[] };

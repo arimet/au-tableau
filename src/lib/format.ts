@@ -50,26 +50,26 @@ export const formatLargeCount = (n: number, locale: Locale): string => {
   return scale ? phrase(n / scale.factor, locale, scale.forms) : n.toLocaleString(locale);
 };
 
-// A number as shown: 3 significant digits, plain from 10^-3 to under 10^9, otherwise a mantissa and an exponent.
-const numberParts = (value: number, locale: Locale): { mantissa: string; exp?: string } => {
+// A number as shown: `digits` significant digits (3 by default), plain from 10^-3 to under 10^9, otherwise a mantissa and an exponent.
+const numberParts = (value: number, locale: Locale, digits: number): { mantissa: string; exp?: string } => {
   const abs = Math.abs(value);
   if (abs === 0 || (abs >= 1e-3 && abs < 1e9))
-    return { mantissa: value.toLocaleString(locale, { maximumSignificantDigits: 3 }) };
-  const [mantissa, exp] = value.toExponential(2).split('e');
+    return { mantissa: value.toLocaleString(locale, { maximumSignificantDigits: digits }) };
+  const [mantissa, exp] = value.toExponential(digits - 1).split('e');
   return {
-    mantissa: `${Number(mantissa).toLocaleString(locale, { maximumSignificantDigits: 3 })} ×`,
+    mantissa: `${Number(mantissa).toLocaleString(locale, { maximumSignificantDigits: digits })} ×`,
     exp: exp.replace('+', '').replace('-', '−'),
   };
 };
 
 /** A number for display, HTML-safe: mantissa × 10<sup>exp</sup> when out of the plain range. Never "e+37". */
-export const formatNumberHtml = (value: number, locale: Locale): string => {
-  const { mantissa, exp } = numberParts(value, locale);
+export const formatNumberHtml = (value: number, locale: Locale, digits = 3): string => {
+  const { mantissa, exp } = numberParts(value, locale, digits);
   return exp === undefined ? mantissa : `${mantissa} 10<sup>${exp}</sup>`;
 };
 
 /** Same number as plain text, for attributes and screen readers: "8,03 × 10^37". */
-export const formatNumberText = (value: number, locale: Locale): string => {
-  const { mantissa, exp } = numberParts(value, locale);
+export const formatNumberText = (value: number, locale: Locale, digits = 3): string => {
+  const { mantissa, exp } = numberParts(value, locale, digits);
   return exp === undefined ? mantissa : `${mantissa} 10^${exp}`;
 };

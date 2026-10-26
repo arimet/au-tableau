@@ -21,7 +21,7 @@ const { calc, sources, locale } = Astro.props;
         <li>
           <span class="label">{step.label[locale]}</span>
           <span class="result value">
-            <Fragment set:html={formatNumberHtml(step.value, locale)} /> {step.unit}
+            <Fragment set:html={formatNumberHtml(step.value, locale, step.digits)} /> {step.unit}
           </span>
           <span class="how">
             {step.formula && <span class="formula">{step.formula}</span>}

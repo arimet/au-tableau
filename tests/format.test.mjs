@@ -45,6 +45,15 @@ test('numbers never use scientific notation, they use a power of ten', () => {
   assert.equal(formatNumberHtml(0, 'en'), '0');
 });
 
+test('number digits default to 3 and can show a sourced input as printed', () => {
+  assert.equal(formatNumberHtml(6378136.6, 'fr'), '6\u202f380\u202f000');
+  assert.equal(formatNumberHtml(6378136.6, 'fr', 8), '6\u202f378\u202f136,6');
+  assert.equal(formatNumberHtml(7.292115e-5, 'en', 7), '7.292115 × 10<sup>−5</sup>');
+  assert.equal(formatNumberHtml(7.292115e-5, 'en'), '7.29 × 10<sup>−5</sup>');
+  assert.equal(formatNumberHtml(3.986004418e14, 'fr', 10), '3,986004418 × 10<sup>14</sup>');
+  assert.equal(formatNumberText(8.0349e37, 'en', 6), '8.0349 × 10^37');
+});
+
 test('plain-text numbers keep the exponent unambiguous', () => {
   assert.equal(formatNumberText(1e12, 'en'), '1 × 10^12');
   assert.equal(formatNumberText(8.03e37, 'fr'), '8,03 × 10^37');

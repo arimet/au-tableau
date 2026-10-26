@@ -1,0 +1,143 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { localePath, ui, type Locale } from '../lib/i18n';
+import { publishedTopics } from '../lib/topics';
+import { topicHero } from '../lib/topic-assets';
+import { url } from '../lib/url';
+
+interface Props {
+  locale: Locale;
+  title: string;
+  description: string;
+  emptyText: string;
+}
+
+const { locale, title, description, emptyText } = Astro.props;
+const other: Locale = locale === 'fr' ? 'en' : 'fr';
+
+// Evaluated at build time: a future-dated topic appears only after a rebuild.
+const [latest, ...previous] = publishedTopics(await getCollection('topics'), locale, new Date());
+const Hero = latest && topicHero(latest.data.topic);
+const href = (e: NonNullable<typeof latest>) => url(localePath(locale, `/${e.data.slug}`));
+const formatDate = (d: Date) => d.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<Base locale={locale} title={title} description={description} alternateHref={url(localePath(other, '/'))}>
+  <main class="home">
+    <h1 class="hand brand">Au tableau !</h1>
+    {
+      latest ? (
+        <section class="latest">
+          <div class="hero">
+            <Hero locale={locale} />
+          </div>
+          <div>
+            <p class="hand discipline">{latest.data.discipline}</p>
+            <h2>{latest.data.question}</h2>
+            <p>{latest.data.hook}</p>
+            <a class="hand read" href={href(latest)}>
+              {ui[locale].readAnswer}
+            </a>
+          </div>
+        </section>
+      ) : (
+        <p class="hand empty">{emptyText}</p>
+      )
+    }
+    {
+      previous.length > 0 && (
+        <section class="previous" aria-labelledby="previous-title">
+          <h2 id="previous-title">{ui[locale].previousQuestions}</h2>
+          <ul>
+            {previous.map((e) => (
+              <li>
+                <a class="hand question" href={href(e)}>
+                  {e.data.question}
+                </a>
+                <span class="meta">
+                  {formatDate(e.data.date)} · {e.data.discipline}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </main>
+</Base>
+
+<style>
+  .home {
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 0 1.25rem 5rem;
+  }
+
+  .brand {
+    margin: 0 0 2rem;
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+
+  .latest {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 2rem 3rem;
+    align-items: center;
+  }
+
+  .latest h2 {
+    margin: 0.25rem 0 1rem;
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+  }
+
+  .discipline {
+    margin: 0;
+    color: var(--chalk-yellow);
+    font-size: 1.2rem;
+  }
+
+  .read {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-size: 1.4rem;
+  }
+
+  .empty {
+    font-size: 1.4rem;
+  }
+
+  .previous {
+    margin-top: 5rem;
+  }
+
+  ul {
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.5rem;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-block: 0.75rem;
+    border-bottom: 1px dashed rgba(244, 241, 232, 0.3);
+  }
+
+  .question {
+    font-size: 1.35rem;
+  }
+
+  .meta {
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 759px) {
+    .latest {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

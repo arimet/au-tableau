@@ -1,0 +1,86 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { render } from 'astro:content';
+import type { Source } from '../lib/sources';
+import Base from './Base.astro';
+import SourceList from '../components/SourceList.astro';
+import { localePath, ui } from '../lib/i18n';
+import { url } from '../lib/url';
+
+interface Props {
+  entry: CollectionEntry<'topics'>;
+  alternate: CollectionEntry<'topics'>;
+  sources: Source[];
+  Hero: (props: { locale: 'fr' | 'en' }) => unknown;
+}
+
+const { entry, alternate, sources, Hero } = Astro.props;
+const { locale, question, hook, answer } = entry.data;
+const { Content } = await render(entry);
+---
+
+<Base
+  locale={locale}
+  title={`${question} · Au tableau !`}
+  description={hook}
+  alternateHref={url(localePath(alternate.data.locale, `/${alternate.data.slug}`))}
+>
+  <main>
+    <article class="topic">
+      <header>
+        <p class="hand discipline">{entry.data.discipline}</p>
+        <h1>{question}</h1>
+        <p class="hook">{hook}</p>
+      </header>
+      <div class="hero"><Hero locale={locale} /></div>
+      <Content />
+      <section class="answer" aria-labelledby="answer-title">
+        <h2 id="answer-title">{ui[locale].shortAnswer}</h2>
+        <p class="hand">{answer}</p>
+      </section>
+      <SourceList sources={sources} locale={locale} />
+    </article>
+  </main>
+</Base>
+
+<style>
+  .topic {
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 1rem 1.25rem 5rem;
+  }
+
+  h1 {
+    max-width: 24ch;
+    margin: 0.25rem 0 1rem;
+    font-size: clamp(2rem, 5vw, 3.25rem);
+  }
+
+  .discipline {
+    margin: 0;
+    color: var(--chalk-yellow);
+    font-size: 1.2rem;
+  }
+
+  .hook {
+    max-width: 60ch;
+    font-size: 1.2rem;
+  }
+
+  .hero {
+    max-width: 36rem;
+    margin: 2rem 0;
+  }
+
+  .answer {
+    max-width: 60ch;
+    margin-block: 4rem;
+    padding-left: 1.25rem;
+    border-left: 3px solid var(--chalk-yellow);
+  }
+
+  .answer p {
+    color: var(--chalk);
+    font-size: 1.35rem;
+  }
+</style>

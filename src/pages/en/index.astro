@@ -1,16 +1,10 @@
 ---
-import Base from '../../layouts/Base.astro';
-import { localePath } from '../../lib/i18n';
-import { url } from '../../lib/url';
+import Home from '../../components/Home.astro';
 ---
 
-<Base
+<Home
   locale="en"
   title="Au tableau!"
   description="Surprising science questions, with the calculation shown step by step."
-  alternateHref={url(localePath('fr', '/'))}
->
-  <main>
-    <h1>Au tableau !</h1>
-  </main>
-</Base>
+  emptyText="The first question is coming soon."
+/>

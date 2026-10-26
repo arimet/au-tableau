@@ -2,11 +2,11 @@
 topic: sunshade-l1
 locale: en
 slug: sunshade-space-cool-earth
-question: "Could a sunshade in space cool the Earth?"
-hook: "Putting the Earth a little in the shade, from space. We measure how much sunlight would have to go, then look at the two published projects: a cloud of small discs and a cloud of Moon dust."
+question: "Could a Sunshade in Space Cool the Earth?"
+hook: "Removing a small share of the sunlight would be enough. Two published projects manage it on paper: a cloud of small discs and a cloud of Moon dust."
 discipline: Climate
 date: 2026-11-09
-answer: "In principle, yes: removing a small share of the sunlight would offset, on average, the forcing from human activities. But it would take millions of tonnes of material placed near the L1 point, more than a million kilometres away, and held there without a break. And the sunshade does not fix everything: there would be less rain, and CO2 would keep acidifying the ocean."
+answer: "In principle, yes: removing a small share of the sunlight would offset, on average, the forcing from human activities. But it would take millions of tonnes of material near the L1 point, more than a million kilometres away, held there without a break. And the sunshade does not fix everything: there would be less rain, and CO2 would keep acidifying the ocean."
 ---
 
 import Step from '../../../components/Step.astro';
@@ -23,15 +23,19 @@ export const calc = (id) => calcs.find((c) => c.id === id);
 <Step>
   <Figures slot="figure" name="budget" locale="en" />
 
-## About {f.shareToday} less sunlight
+## Removing About {f.shareToday} of the Sunlight Would Be Enough
 
-Above the atmosphere, the Sun delivers {f.solar} watts per square metre<SourceRef id="kopp2016" sources={sources} />. The Earth catches this light like a disc, but spreads it over its whole sphere, four times larger. On average, each square metre therefore gets {f.perSquareMetre} watts. In climate models, {f.albedo} of it is reflected back to space<SourceRef id="kravitz2013" sources={sources} />.
+Above the atmosphere, the Sun delivers {f.solar} watts per square metre<SourceRef id="kopp2016" sources={sources} />. The Earth catches this light like a disc, but spreads it over its whole sphere, four times larger. Each square metre therefore gets {f.perSquareMetre} watts on average. In climate models, {f.albedo} of it is reflected back to space<SourceRef id="kravitz2013" sources={sources} />.
 
-In {f.forcingYear}, human activities exert a “forcing” of {f.forcing} watts per square metre on the Earth compared with pre-industrial times: they weigh on its energy budget as much as {f.forcing} W/m² of extra absorbed sunlight would<SourceRef id="forster2024" sources={sources} />. To offset that forcing, about **{f.shareToday}** of the sunlight would have to go, by our calculation. Sunshade studies often aim for {f.doubling}, enough to offset a doubling of CO2<SourceRef id="sanchez2015" sources={sources} />.
+In {f.forcingYear}, human activities exert a “forcing” of {f.forcing} watts per square metre on the Earth, compared with pre-industrial times<SourceRef id="forster2024" sources={sources} />. It weighs on the Earth’s energy budget as much as {f.forcing} W/m² of extra absorbed sunlight would.
+
+By our calculation, removing about **{f.shareToday}** of the sunlight would offset it. Sunshade studies often aim for {f.doubling}, enough to offset a doubling of CO2<SourceRef id="sanchez2015" sources={sources} />.
 
 <ShowCalc calc={calc('today')} sources={sources} locale="en">
 
-This calculation sets two forcings equal: it gives an order of magnitude, not the output of a climate model. It leaves out the warming still to come from the energy the Earth is already storing, and it assumes one watt less of sunlight acts like one watt of CO2 forcing, which is not exactly true. With the full uncertainty range on the effect of human activities, it gives {f.shareRange}.
+This calculation sets two forcings equal: it gives an order of magnitude, not the output of a climate model. It leaves out the warming still to come from the energy the Earth is already storing.
+
+It also assumes one watt less of sunlight acts like one watt of CO2 forcing, which is not quite true. With the full uncertainty range on the forcing, the calculation gives {f.shareRange}.
 
 </ShowCalc>
 
@@ -40,33 +44,37 @@ This calculation sets two forcings equal: it gives an order of magnitude, not th
 <Step>
   <Figures slot="figure" name="l1" locale="en" />
 
-## L1, an unstable balance
+## At L1, the Position Needs Constant Correction
 
-To cast shade all the time, you have to stay between the Sun and the Earth. The L1 point lies on that line, about {f.l1} kilometres from the Earth<SourceRef id="sanchez2015" sources={sources} />. An object placed there goes round the Sun in one year, like the Earth, so it stays between the two<SourceRef id="bromley2023" sources={sources} />. Closer to the Sun it would have to orbit faster; the Earth’s pull holds it back just enough.
+To cast shade all the time, a sunshade has to stay between the Sun and the Earth. The L1 point lies on that line, about {f.l1} kilometres from the Earth<SourceRef id="sanchez2015" sources={sources} />. An object placed there goes round the Sun in one year, like the Earth, so it stays between the two<SourceRef id="bromley2023" sources={sources} />.
 
-But the balance is unstable. Without correction, the distance from L1 is multiplied by {f.efoldFactor} every {f.efoldDays} days<SourceRef id="angel2006" sources={sources} />. An object placed {f.driftFrom} kilometre from L1 drifts {f.driftTo} kilometres away in under a year<SourceRef id="bromley2023" sources={sources} />. Its position has to be corrected all the time.
+Closer to the Sun, an object would have to orbit faster. At L1, the Earth’s pull holds it back by the right amount.
 
-A sunshade orbiting the Earth would go round it instead and would not stay in front of the Sun. It would take a whole ring around the Earth, an idea that has already been studied<SourceRef id="salazar2016" sources={sources} />.
+But the balance is unstable. Without correction, the distance from L1 is multiplied by {f.efoldFactor} every {f.efoldDays} days<SourceRef id="angel2006" sources={sources} />. An object placed {f.driftFrom} kilometre from L1 drifts {f.driftTo} kilometres away in under a year<SourceRef id="bromley2023" sources={sources} />.
+
+A sunshade orbiting the Earth would go round it, and would not stay in front of the Sun. It would take a whole ring around the Earth, an idea that has already been studied<SourceRef id="salazar2016" sources={sources} />.
 
 </Step>
 
 <Step>
   <Figures slot="figure" name="flyer" locale="en" />
 
-## Roger Angel’s cloud of discs
+## Roger Angel Proposes Trillions of Transparent Discs
 
-In {f.angelYear}, the astronomer Roger Angel worked out a sunshade made of small transparent discs, {f.flyerDiameter} centimetres across and weighing {f.flyerGrams} grams each<SourceRef id="angel2006" sources={sources} />. They do not block the light: they bend it by at least {f.deflection} degrees, enough for it to miss the Earth. An opaque screen would be pushed by the light, like a sail, and its balance point would move away from L1, towards the Sun. Even transparent discs get a little of that push, so their cloud sits a little further out than L1.
+In {f.angelYear}, the astronomer Roger Angel worked out a sunshade made of small transparent discs, {f.flyerDiameter} centimetres across and weighing {f.flyerGrams} grams each<SourceRef id="angel2006" sources={sources} />. The discs bend the light by at least {f.deflection} degrees, enough for it to miss the Earth.
 
-To remove {f.angelShare} of the sunlight, his reference design places {f.angelFlyers} discs {f.angelDistance} kilometres from the Earth, in a cloud about {f.cloudLength} kilometres long. Their total area reaches {f.angelArea} square kilometres, for {f.angelMass} tonnes.
+Blocking the light would cause a problem. An opaque screen would be pushed by it, like a sail, and its balance point would move towards the Sun, away from L1. Even transparent discs get a little of that push, so their cloud sits a little further out than L1.
+
+To remove {f.angelShare} of the sunlight, Angel’s reference design places {f.angelFlyers} of them {f.angelDistance} kilometres from the Earth, in a cloud about {f.cloudLength} kilometres long. Their total area reaches {f.angelArea} square kilometres, for {f.angelMass} tonnes.
 
 </Step>
 
 <Step>
   <ShadeSlider slot="figure" locale="en" />
 
-## {f.angelMass} tonnes to launch
+## It Would Take Millions of One-Tonne Launches
 
-Angel does not rely on rockets to leave the ground. He pictures {f.launchers} electromagnetic launchers, each firing one tonne every {f.launchMinutes} minutes: {f.launches} launches in {f.launchYears} years. He puts the cost below {f.cost} dollars, for a sunshade designed to last at least {f.lifetimeYears} years<SourceRef id="angel2006" sources={sources} />.
+To leave the ground, Angel prefers {f.launchers} electromagnetic launchers to rockets. Each one would fire a tonne every {f.launchMinutes} minutes for {f.launchYears} years. That makes {f.launches} launches. He puts the cost below {f.cost} dollars, for a sunshade designed to last at least {f.lifetimeYears} years<SourceRef id="angel2006" sources={sources} />.
 
 The slider moves the share of sunlight removed from {f.sliderMin} to {f.sliderMax}%. The area, the mass and the number of discs follow in proportion.
 
@@ -81,9 +89,9 @@ The slider scales Angel’s reference design up or down, at the same distance fr
 <Step>
   <Figures slot="figure" name="dust" locale="en" />
 
-## Moon dust
+## Moon Dust Does Not Stay in Place
 
-In {f.bromleyYear}, three astrophysicists proposed another material: dust from the Moon<SourceRef id="bromley2023" sources={sources} />. It already exists, its grains are just the size that casts the most shade, and the Moon’s pull is weak: the potential-energy gap between the Moon and L1 is only about {f.moonEnergy} of the gap between the Earth and L1. It still has to be sifted or milled.
+In {f.bromleyYear}, three astrophysicists proposed another material: dust from the Moon<SourceRef id="bromley2023" sources={sources} />. It already exists, its grains are the size that casts the most shade, and the Moon’s pull is weak. The potential-energy gap between the Moon and L1 is only about {f.moonEnergy} of the gap between the Earth and L1. The dust still has to be sifted or milled.
 
 But dust does not stay. Each grain spends about {f.dustDays} days in front of the Sun, then drifts away. Something like {f.dustPerYear} tonnes would have to be launched every year, {f.dustScenario} in their lunar scenario, with no end. The authors say so themselves: nobody controls a cloud of dust.
 
@@ -92,17 +100,19 @@ But dust does not stay. Each grain spends about {f.dustDays} days in front of th
 <Step>
   <Figures slot="figure" name="residual" locale="en" />
 
-## What the sunshade does not fix
+## The Sunshade Leaves Less Rain and a More Acidic Ocean
 
-To see what is left over, twelve climate models tested an extreme case: a quadrupling of CO2, offset by a Sun dimmed by {f.g1Share}, far more than the share worked out above<SourceRef id="kravitz2013" sources={sources} />. The result is uneven: compared with the pre-industrial climate, the poles stay {f.g1Poles} °C warmer and the tropics {f.g1Tropics} °C cooler.
+To see what is left over, twelve climate models tested an extreme case. They offset a quadrupling of CO2 with a Sun dimmed by {f.g1Share}, far more than the share worked out above<SourceRef id="kravitz2013" sources={sources} />. Compared with the pre-industrial climate, the poles stay {f.g1Poles} °C warmer, and the tropics {f.g1Tropics} °C cooler.
 
-There is also {f.g1Rain} less rain on Earth, and monsoons lose {f.g1Monsoon} of their rain over land<SourceRef id="tilmes2013" sources={sources} />. Finally, the sunshade removes no CO2 from the air. Ocean acidification goes on, and could even get worse, because a cooler ocean absorbs more CO2<SourceRef id="kravitz2013" sources={sources} />.
+There is also {f.g1Rain} less rain on Earth, and monsoons lose {f.g1Monsoon} of their rain over land<SourceRef id="tilmes2013" sources={sources} />.
+
+Last, the sunshade removes no CO2 from the air. Ocean acidification goes on, and could even get worse, because a cooler ocean absorbs more CO2<SourceRef id="kravitz2013" sources={sources} />.
 
 </Step>
 
 <Aside>
 
-## What the sunshade’s author says
+## Its Author Rejects a Sunshade Race
 
 Roger Angel says it himself: building ever larger sunshades so as to keep burning ever more coal, oil and gas would make no sense. His sunshade does not undo the chemical effects of CO2 either<SourceRef id="angel2006" sources={sources} />.
 

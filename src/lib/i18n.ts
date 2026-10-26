@@ -20,11 +20,11 @@ export type UiKey = keyof typeof fr;
 
 const en: Record<UiKey, string> = {
   replay: 'Replay',
-  showCalc: 'Show the calculation',
+  showCalc: 'Show the Calculation',
   sources: 'Sources',
-  previousQuestions: 'Previous questions',
+  previousQuestions: 'Previous Questions',
   readAnswer: 'Read the answer',
-  shortAnswer: 'The short answer',
+  shortAnswer: 'The Short Answer',
   switchTo: 'Français',
 };
 

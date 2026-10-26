@@ -3,10 +3,10 @@ topic: sunshade-l1
 locale: fr
 slug: parasol-espace-refroidir-terre
 question: "Un parasol dans l’espace pourrait-il refroidir la Terre ?"
-hook: "Mettre la Terre un peu à l’ombre, depuis l’espace. On mesure la lumière qu’il faudrait retirer, puis on regarde les deux projets publiés : un nuage de petits disques et un nuage de poussière de Lune."
+hook: "Il suffirait de retirer une petite part de la lumière du Soleil. Deux projets publiés y parviennent sur le papier : un nuage de petits disques et un nuage de poussière de Lune."
 discipline: Climat
 date: 2026-11-09
-answer: "En principe, oui : retirer une petite part de la lumière du Soleil compenserait, en moyenne, le forçage des activités humaines. Mais il faudrait placer des millions de tonnes de matériel près du point L1, à plus d’un million de kilomètres, et l’y tenir sans relâche. Et le parasol ne corrige pas tout : il pleuvrait moins, et le CO2 continuerait d’acidifier l’océan."
+answer: "En principe, oui : retirer une petite part de la lumière du Soleil compenserait, en moyenne, le forçage des activités humaines. Mais il faudrait placer des millions de tonnes de matériel près du point L1, à plus d’un million de kilomètres. Il faudrait aussi les y tenir sans relâche. Et le parasol ne corrige pas tout : il pleuvrait moins, et le CO2 continuerait d’acidifier l’océan."
 ---
 
 import Step from '../../../components/Step.astro';
@@ -23,15 +23,19 @@ export const calc = (id) => calcs.find((c) => c.id === id);
 <Step>
   <Figures slot="figure" name="budget" locale="fr" />
 
-## Environ {f.shareToday} de lumière en moins
+## Il suffirait de retirer environ {f.shareToday} de la lumière du Soleil
 
-Au-dessus de l’atmosphère, le Soleil apporte {f.solar} watts par mètre carré<SourceRef id="kopp2016" sources={sources} />. La Terre intercepte cette lumière comme un disque, mais la répartit sur toute sa sphère, quatre fois plus grande. En moyenne, chaque mètre carré reçoit donc {f.perSquareMetre} watts. Dans les modèles de climat, {f.albedo} de cette lumière repartent vers l’espace<SourceRef id="kravitz2013" sources={sources} />.
+Au-dessus de l’atmosphère, le Soleil apporte {f.solar} watts par mètre carré<SourceRef id="kopp2016" sources={sources} />. La Terre intercepte cette lumière comme un disque, mais la répartit sur toute sa sphère, quatre fois plus grande. Chaque mètre carré reçoit donc {f.perSquareMetre} watts en moyenne. Dans les modèles de climat, {f.albedo} de cette lumière repartent vers l’espace<SourceRef id="kravitz2013" sources={sources} />.
 
-En {f.forcingYear}, les activités humaines exercent sur la Terre un « forçage » de {f.forcing} watts par mètre carré par rapport à l’époque préindustrielle : elles pèsent sur son bilan d’énergie autant que {f.forcing} W/m² de lumière absorbée en plus<SourceRef id="forster2024" sources={sources} />. Pour compenser ce forçage, il faudrait retirer environ **{f.shareToday}** de la lumière du Soleil, selon notre calcul. Les études de parasols visent souvent {f.doubling}, de quoi compenser un doublement du CO2<SourceRef id="sanchez2015" sources={sources} />.
+En {f.forcingYear}, les activités humaines exercent sur la Terre un « forçage » de {f.forcing} watts par mètre carré, par rapport à l’époque préindustrielle<SourceRef id="forster2024" sources={sources} />. Il pèse sur son bilan d’énergie autant que {f.forcing} W/m² de lumière absorbée en plus.
+
+Selon notre calcul, retirer environ **{f.shareToday}** de la lumière du Soleil le compenserait. Les études de parasols visent souvent {f.doubling}, de quoi compenser un doublement du CO2<SourceRef id="sanchez2015" sources={sources} />.
 
 <ShowCalc calc={calc('today')} sources={sources} locale="fr">
 
-Ce calcul égale deux forçages : il donne un ordre de grandeur, pas le résultat d’un modèle de climat. Il ne compte pas le réchauffement encore à venir, dû à l’énergie que la Terre accumule déjà, et suppose qu’un watt de lumière en moins agit autant qu’un watt de forçage du CO2, ce qui n’est pas exact. Avec toute la fourchette d’incertitude sur l’effet des activités humaines, on obtient {f.shareRange}.
+Ce calcul égale deux forçages : il donne un ordre de grandeur, pas le résultat d’un modèle de climat. Il ne compte pas le réchauffement encore à venir, dû à l’énergie que la Terre accumule déjà.
+
+Il suppose aussi qu’un watt de lumière en moins agit autant qu’un watt de forçage du CO2, ce qui n’est pas tout à fait vrai. Avec toute la fourchette d’incertitude sur le forçage, le calcul donne {f.shareRange}.
 
 </ShowCalc>
 
@@ -40,33 +44,37 @@ Ce calcul égale deux forçages : il donne un ordre de grandeur, pas le résulta
 <Step>
   <Figures slot="figure" name="l1" locale="fr" />
 
-## Le point L1, un équilibre instable
+## Au point L1, il faut corriger sa position sans cesse
 
-Pour faire de l’ombre en permanence, il faut rester entre le Soleil et la Terre. Le point L1 est sur cette ligne, à environ {f.l1} de kilomètres de la Terre<SourceRef id="sanchez2015" sources={sources} />. Un objet placé là fait le tour du Soleil en un an, comme la Terre, et reste donc entre les deux<SourceRef id="bromley2023" sources={sources} />. Plus près du Soleil, il devrait tourner plus vite ; l’attraction de la Terre le retient juste assez.
+Pour faire de l’ombre en permanence, un parasol doit rester entre le Soleil et la Terre. Le point L1 est sur cette ligne, à environ {f.l1} de kilomètres de la Terre<SourceRef id="sanchez2015" sources={sources} />. Un objet placé là fait le tour du Soleil en un an, comme la Terre, et reste donc entre les deux<SourceRef id="bromley2023" sources={sources} />.
 
-Mais cet équilibre est instable. Sans correction, l’écart avec L1 est multiplié par {f.efoldFactor} tous les {f.efoldDays} jours<SourceRef id="angel2006" sources={sources} />. Un objet placé à {f.driftFrom} kilomètre de L1 s’en éloigne de {f.driftTo} kilomètres en moins d’un an<SourceRef id="bromley2023" sources={sources} />. Il faut corriger sa position sans cesse.
+Plus près du Soleil, un objet devrait tourner plus vite. À L1, l’attraction de la Terre le retient juste assez.
 
-Un parasol en orbite autour de la Terre, lui, en ferait le tour et ne resterait pas devant le Soleil. Il faudrait un anneau entier autour de la Terre, une idée déjà étudiée<SourceRef id="salazar2016" sources={sources} />.
+Mais cet équilibre est instable. Sans correction, l’écart avec L1 est multiplié par {f.efoldFactor} tous les {f.efoldDays} jours<SourceRef id="angel2006" sources={sources} />. Un objet placé à {f.driftFrom} kilomètre de L1 s’en éloigne de {f.driftTo} kilomètres en moins d’un an<SourceRef id="bromley2023" sources={sources} />.
+
+Un parasol en orbite autour de la Terre en ferait le tour, et ne resterait pas devant le Soleil. Il faudrait un anneau entier autour de la Terre, une idée déjà étudiée<SourceRef id="salazar2016" sources={sources} />.
 
 </Step>
 
 <Step>
   <Figures slot="figure" name="flyer" locale="fr" />
 
-## Le nuage de disques de Roger Angel
+## Roger Angel propose {f.angelFlyers} de disques transparents
 
-En {f.angelYear}, l’astronome Roger Angel a chiffré un parasol fait de petits disques transparents de {f.flyerDiameter} centimètres, qui pèsent {f.flyerGrams} gramme chacun<SourceRef id="angel2006" sources={sources} />. Ils ne bloquent pas la lumière : ils la dévient d’au moins {f.deflection} degré, assez pour qu’elle manque la Terre. Un écran opaque recevrait la poussée de la lumière, comme une voile, et son point d’équilibre serait repoussé loin de L1, vers le Soleil. Même transparents, les disques en reçoivent un peu : leur nuage se tient donc un peu plus loin que L1.
+En {f.angelYear}, l’astronome Roger Angel a chiffré un parasol fait de petits disques transparents de {f.flyerDiameter} centimètres, qui pèsent {f.flyerGrams} gramme chacun<SourceRef id="angel2006" sources={sources} />. Les disques dévient la lumière d’au moins {f.deflection} degré, assez pour qu’elle manque la Terre.
 
-Pour retirer {f.angelShare} de la lumière, sa version de référence place {f.angelFlyers} de disques à {f.angelDistance} de kilomètres de la Terre, dans un nuage d’environ {f.cloudLength} kilomètres de long. Leur surface totale atteint {f.angelArea} de kilomètres carrés, pour {f.angelMass} de tonnes.
+Bloquer la lumière poserait un problème. Un écran opaque recevrait sa poussée, comme une voile, et son point d’équilibre partirait vers le Soleil, loin de L1. Même transparents, les disques en reçoivent un peu : leur nuage se tient donc un peu plus loin que L1.
+
+Pour retirer {f.angelShare} de la lumière, la version de référence d’Angel les place à {f.angelDistance} de kilomètres de la Terre. Ils y forment un nuage d’environ {f.cloudLength} kilomètres de long. Leur surface totale atteint {f.angelArea} de kilomètres carrés, pour {f.angelMass} de tonnes.
 
 </Step>
 
 <Step>
   <ShadeSlider slot="figure" locale="fr" />
 
-## {f.angelMass} de tonnes à lancer
+## Il faudrait {f.launches} de lancements d’une tonne
 
-Angel ne compte pas sur des fusées pour quitter le sol. Il imagine {f.launchers} canons électromagnétiques qui lanceraient chacun une tonne toutes les {f.launchMinutes} minutes : {f.launches} de lancements en {f.launchYears} ans. Il estime le coût à moins de {f.cost} de dollars, pour un parasol conçu pour durer au moins {f.lifetimeYears} ans<SourceRef id="angel2006" sources={sources} />.
+Pour quitter le sol, Angel préfère aux fusées {f.launchers} canons électromagnétiques. Chacun lancerait une tonne toutes les {f.launchMinutes} minutes pendant {f.launchYears} ans. Il estime le coût à moins de {f.cost} de dollars, pour un parasol conçu pour durer au moins {f.lifetimeYears} ans<SourceRef id="angel2006" sources={sources} />.
 
 Le curseur fait varier la part de lumière retirée de {f.sliderMin} à {f.sliderMax} %. La surface, la masse et le nombre de disques suivent en proportion.
 
@@ -81,29 +89,31 @@ Le curseur agrandit ou réduit la version de référence d’Angel, à la même 
 <Step>
   <Figures slot="figure" name="dust" locale="fr" />
 
-## De la poussière de Lune
+## La poussière de Lune ne reste pas en place
 
-En {f.bromleyYear}, trois astrophysiciens proposent une autre matière : la poussière de la Lune<SourceRef id="bromley2023" sources={sources} />. Elle existe déjà, ses grains ont justement la taille qui fait le plus d’ombre, et la Lune attire peu : l’écart d’énergie potentielle entre la Lune et L1 ne vaut qu’environ {f.moonEnergy} de celui entre la Terre et L1. Il faut tout de même la trier ou la broyer.
+En {f.bromleyYear}, trois astrophysiciens proposent une autre matière : la poussière de la Lune<SourceRef id="bromley2023" sources={sources} />. Elle existe déjà, ses grains ont la taille qui fait le plus d’ombre, et la Lune attire peu. L’écart d’énergie potentielle entre la Lune et L1 ne vaut qu’environ {f.moonEnergy} de celui entre la Terre et L1. Il faut tout de même trier ou broyer cette poussière.
 
-Mais la poussière ne reste pas. Chaque grain passe environ {f.dustDays} jours devant le Soleil, puis s’éloigne. Il faudrait en lancer de l’ordre de {f.dustPerYear} de tonnes chaque année, {f.dustScenario} dans leur scénario lunaire, sans jamais s’arrêter. Les auteurs le reconnaissent : on ne contrôle pas un nuage de poussière.
+Mais la poussière ne reste pas. Chaque grain passe environ {f.dustDays} jours devant le Soleil, puis s’éloigne. Il faudrait en lancer de l’ordre de {f.dustPerYear} de tonnes chaque année, {f.dustScenario} dans leur scénario lunaire, sans jamais s’arrêter. Les auteurs le reconnaissent : personne ne contrôle un nuage de poussière.
 
 </Step>
 
 <Step>
   <Figures slot="figure" name="residual" locale="fr" />
 
-## Ce que le parasol ne corrige pas
+## Le parasol laisse moins de pluie et un océan plus acide
 
-Pour voir ce qui reste, douze modèles de climat ont testé un cas extrême : un quadruplement du CO2, compensé par un Soleil plus faible de {f.g1Share}, bien plus que la part calculée plus haut<SourceRef id="kravitz2013" sources={sources} />. Le résultat n’est pas uniforme : par rapport au climat préindustriel, les pôles restent plus chauds de {f.g1Poles} °C, les tropiques plus froids de {f.g1Tropics} °C.
+Pour voir ce qui reste, douze modèles de climat ont testé un cas extrême. Ils compensent un quadruplement du CO2 par un Soleil plus faible de {f.g1Share}, bien plus que la part calculée plus haut<SourceRef id="kravitz2013" sources={sources} />. Par rapport au climat préindustriel, les pôles restent plus chauds de {f.g1Poles} °C, et les tropiques plus froids de {f.g1Tropics} °C.
 
-Il pleut aussi {f.g1Rain} de moins sur la Terre, et les moussons perdent {f.g1Monsoon} de leurs pluies sur les continents<SourceRef id="tilmes2013" sources={sources} />. Enfin, le parasol ne retire pas de CO2 de l’air. L’acidification de l’océan continue, et pourrait même s’aggraver, car un océan plus frais absorbe plus de CO2<SourceRef id="kravitz2013" sources={sources} />.
+Il pleut aussi {f.g1Rain} de moins sur la Terre, et les moussons perdent {f.g1Monsoon} de leurs pluies sur les continents<SourceRef id="tilmes2013" sources={sources} />.
+
+Enfin, le parasol ne retire pas de CO2 de l’air. L’acidification de l’océan continue, et pourrait même s’aggraver, car un océan plus frais absorbe plus de CO2<SourceRef id="kravitz2013" sources={sources} />.
 
 </Step>
 
 <Aside>
 
-## Ce qu’en dit l’auteur du parasol
+## Son auteur refuse une course aux parasols
 
-Roger Angel le dit lui-même : construire des parasols toujours plus grands pour continuer à brûler toujours plus de charbon, de pétrole et de gaz n’aurait aucun sens. Son parasol ne corrige pas non plus les effets chimiques du CO2<SourceRef id="angel2006" sources={sources} />.
+Roger Angel le dit lui-même : construire des parasols toujours plus grands pour brûler toujours plus de charbon, de pétrole et de gaz n’aurait aucun sens. Son parasol ne corrige pas non plus les effets chimiques du CO2<SourceRef id="angel2006" sources={sources} />.
 
 </Aside>

@@ -2,11 +2,11 @@
 topic: rockets-equator
 locale: en
 slug: rockets-equator-earth-slow-down
-question: "If we launch rockets from the equator, does the Earth slow down?"
-hook: "A rocket heading east takes a little momentum from the Earth. We follow that momentum from the launch pad to orbit, then measure it."
+question: "Does Launching Rockets From the Equator Slow the Earth Down?"
+hook: "A rocket heading east takes a little momentum from the Earth, and the satellite is what carries it away. The calculation rests on published geodesy measurements."
 discipline: Physics
 date: 2026-10-26
-answer: "Yes, by a tiny amount. Gases released in the atmosphere stay there and hand their momentum back to the Earth. Only what stays in orbit, such as the satellite, carries its own away: each tonne makes the day longer by something on the order of a femtosecond."
+answer: "Yes, by a tiny amount. The engine’s gases stay in the atmosphere and hand their momentum back to the Earth. Only what stays in orbit keeps its own: each tonne makes the day longer by about a femtosecond."
 ---
 
 import Step from '../../../components/Step.astro';
@@ -24,48 +24,52 @@ export const calc = (id) => calcs.find((c) => c.id === id);
 <Step>
   <Figures slot="figure" name="ground" locale="en" />
 
-## Before lift-off, the rocket is already turning
+## Before Lift-Off, the Rocket Already Turns With the Earth
 
-The Earth turns once on its axis every day. At the equator, the ground moves east at {f.groundSpeed} metres per second.
+The Earth turns once on its axis every day. At the equator, the ground therefore moves east at {f.groundSpeed} metres per second.
 
-A rocket standing on its launch pad moves with it. Even before it lights its engines, it already has momentum. Physicists call this turning momentum angular momentum.
+A rocket standing on its launch pad moves with it. Even before ignition, it has momentum. Physicists call this turning momentum angular momentum.
 
 </Step>
 
 <Step>
   <Figures slot="figure" name="gases" locale="en" />
 
-## Gases released in the air stay there
+## The Gases Hand Their Momentum Back to the Earth
 
-To gain speed, the rocket pushes its gases backward. In return, the gases push the rocket forward.
+Our first sketch told another story: the rocket pushes its gases, and the gases push the Earth. We got it wrong.
 
-Gases released in the atmosphere stay there. The air slows them, then air friction on the ground passes their momentum to the Earth. The stages that fall back return theirs too. As long as everything stays on Earth or in its air, the total momentum does not change: it moves from one part to another.
+The rocket does push its gases backward, and the gases push it forward. But those gases stay in the atmosphere. The air slows them, then rubs against the ground and passes their momentum to the Earth.
+
+The stages that fall back return theirs too. As long as everything stays on Earth or in its air, the total momentum does not change: it moves from one part to another.
 
 </Step>
 
 <Step>
   <Figures slot="figure" name="orbit" locale="en" />
 
-## The satellite carries momentum away
+## The Satellite Carries Momentum Away
 
-In low orbit, {f.leoAltitude} kilometres up, a satellite circles the Earth at {f.leoSpeed} metres per second. The ground at the equator moves at only {f.groundSpeed}. The satellite also turns a little farther from the axis, and turning momentum grows with that distance.
+In low orbit, {f.leoAltitude} kilometres up, a satellite circles the Earth at {f.leoSpeed} metres per second. The ground at the equator moves at only {f.groundSpeed}. The satellite also turns farther from the axis, and turning momentum grows with that distance.
 
-So it has more momentum than at the start. This extra comes from the Earth, which turns a little more slowly. If the satellite falls back one day, it gives it back.
+So it has more momentum than at the start, and the extra comes from the Earth, which now turns a little slower. If the satellite falls back one day, it gives it back.
 
 </Step>
 
 <Step>
   <OrbitSlider slot="figure" locale="en" />
 
-## How much longer the day gets
+## One Tonne in Orbit Adds Less Than a Femtosecond to the Day
 
-One tonne placed in low orbit, {f.leoAltitude} kilometres up, makes the day longer by **{f.perTonne}**. A femtosecond is {f.femtosecond}. In geostationary orbit, higher up, the same tonne makes it longer by **{f.perTonneGeo}**.
+One tonne placed in low orbit, {f.leoAltitude} kilometres up, makes the day longer by **{f.perTonne}**. A femtosecond is {f.femtosecond}. In geostationary orbit, higher up, the same tonne makes the day longer by **{f.perTonneGeo}**.
 
-In {f.launchesYear}, an inventory of rocket emissions counts {f.launches} launches, failures included<SourceRef id="barker2024" sources={sources} />. We found no peer-reviewed publication that gives the mass placed in orbit. The slider varies that mass up to {f.sliderMax} tonnes.
+In {f.launchesYear}, an inventory of rocket emissions counts {f.launches} launches, failures included<SourceRef id="barker2024" sources={sources} />. We found no peer-reviewed publication that gives the mass placed in orbit. So the slider varies that mass, up to {f.sliderMax} tonnes.
 
 <ShowCalc calc={calc('one-tonne')} sources={sources} locale="en">
 
-What the calculation leaves out. It assumes a launch from the equator and a circular orbit above the equator, travelled eastward. It only counts the mass placed in orbit: it ignores the rocket stage and the gases ejected outside the atmosphere. Like Zhang<SourceRef id="zhang2013" sources={sources} />, it assumes that all the momentum of the gases returns to the Earth. The day computed is the sidereal day, one full turn relative to the stars. The effect lasts as long as the mass stays in orbit.
+What the calculation leaves out. It assumes a launch from the equator and a circular orbit above it, travelled eastward. It only counts the mass placed in orbit, without the rocket stage or the gases ejected outside the atmosphere. Like Zhang<SourceRef id="zhang2013" sources={sources} />, it assumes all the momentum of the gases returns to the Earth.
+
+The day computed is the sidereal day, one full turn relative to the stars. The effect lasts as long as the mass stays in orbit.
 
 </ShowCalc>
 
@@ -75,19 +79,23 @@ What the calculation leaves out. It assumes a launch from the equator and a circ
   <Magnitude slot="figure" items={magnitudeItems('en')} sources={sources} locale="en" />
   <ShowCalc slot="figure" calc={calc('comparisons')} sources={sources} locale="en" />
 
-## Next to the tides, an earthquake and dams
+## Tides, Earthquakes and Dams Weigh Far More
 
-Tidal friction makes the day longer by {f.tidesYear} each year<SourceRef id="stephenson2016" sources={sources} />. According to a model, the {f.sumatraYear} Sumatra earthquake made it shorter by {f.sumatra}<SourceRef id="gross-chao2006" sources={sources} />. The dams built from {f.damsFrom} to {f.damsTo} made it shorter by about {f.dams}<SourceRef id="valencic2026" sources={sources} />. The water they hold back makes the day longer, but the resulting fall in sea level makes it shorter by more.
+Tidal friction makes the day longer by {f.tidesYear} each year<SourceRef id="stephenson2016" sources={sources} />. According to a model, the {f.sumatraYear} Sumatra earthquake made it shorter by {f.sumatra}<SourceRef id="gross-chao2006" sources={sources} />.
 
-For an effect of the same size as the Sumatra earthquake, in the opposite direction, we would have to place **{f.sumatraTonnes}** tonnes in low orbit.
+The dams built from {f.damsFrom} to {f.damsTo} made it shorter by about {f.dams}<SourceRef id="valencic2026" sources={sources} />. The water they hold back makes the day longer, but the resulting fall in sea level makes it shorter by more.
+
+To match the Sumatra earthquake in the opposite direction, we would have to place **{f.sumatraTonnes}** tonnes in low orbit.
 
 </Step>
 
 <Aside>
 
-## What about temperature?
+## No Known Effect on Temperature
 
-As far as we found, no peer-reviewed publication links a change of a few femtoseconds to temperature. The known link runs the other way: ice melting under global warming makes the day longer by {f.climatePerCentury} per century since {f.climateSince}<SourceRef id="kiani2024" sources={sources} />. One century of this effect is the same as placing **{f.climateTonnes}** tonnes in low orbit. Warming reaches {f.warming} °C on average over {f.warmingPeriod[0]}–{f.warmingPeriod[1]}, relative to {f.baselinePeriod[0]}–{f.baselinePeriod[1]}, and it comes from human activities<SourceRef id="forster2024" sources={sources} />.
+We found no peer-reviewed publication that links a few femtoseconds to temperature. The known link runs the other way: ice melting under global warming makes the day longer by {f.climatePerCentury} per century since {f.climateSince}<SourceRef id="kiani2024" sources={sources} />.
+
+One century of this effect is the same as placing **{f.climateTonnes}** tonnes in low orbit. Warming reaches {f.warming} °C on average from {f.warmingPeriod[0]} to {f.warmingPeriod[1]}, compared with the years {f.baselinePeriod[0]} to {f.baselinePeriod[1]}. It comes from human activities<SourceRef id="forster2024" sources={sources} />.
 
 <ShowCalc calc={calc('climate')} sources={sources} locale="en" />
 

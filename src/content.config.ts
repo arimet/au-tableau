@@ -9,7 +9,8 @@ const topics = defineCollection({
     topic: z.string(),
     locale: z.enum(['fr', 'en']),
     slug: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'slug must be kebab-case'),
-    question: z.string(),
+    // Narrow no-break space before ? ! : ; so the mark never wraps alone onto the next line.
+    question: z.string().transform((s) => s.replace(/ ([?!:;])/g, ' $1')),
     hook: z.string(),
     discipline: z.string(),
     date: z.coerce.date(),

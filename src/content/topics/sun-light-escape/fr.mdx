@@ -1,0 +1,118 @@
+---
+topic: sun-light-escape
+locale: fr
+slug: lumiere-soleil-temps-sortir
+question: "Combien de temps met la lumière pour sortir du Soleil ?"
+hook: "Depuis la surface du Soleil, la lumière nous atteint en quelques minutes. Depuis le cœur, la matière l’absorbe et la réémet sans cesse, et ce zigzag dure des dizaines de milliers d’années."
+discipline: Astronomie
+date: 2026-11-09
+answer: "Depuis la surface du Soleil, la lumière nous atteint en un peu plus de huit minutes. Du cœur jusqu’à la zone convective, la matière l’absorbe et la réémet sans cesse : ce zigzag dure environ trente mille ans. Le chiffre souvent cité de cent soixante-dix mille ans vient d’une formule qui donne six fois plus que le calcul standard. L’énergie, elle, se trouve surtout dans le gaz chaud, et séjourne dans le Soleil de l’ordre de dix millions d’années."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import StepSlider from './StepSlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('fr');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="trip" locale="fr" />
+
+## Depuis la surface, la lumière met {f.fromSurfaceMinutes} minutes à nous parvenir
+
+Entre la Terre et le Soleil, les astronomes prennent pour référence l’unité astronomique, environ {f.auKm} de kilomètres<SourceRef id="prsa2016" sources={sources} />. Le Soleil a un rayon d’environ {f.radiusKm} km. Depuis sa surface, la lumière parcourt le reste du trajet en **{f.fromSurface}**.
+
+Si la matière du Soleil était transparente, la lumière irait de son centre à sa surface en à peine plus de {f.transparentSeconds} secondes<SourceRef id="balian1999" sources={sources} />. Mais la matière l’arrête sans cesse, et cette traversée prend des dizaines de milliers d’années.
+
+<ShowCalc calc={calc('trip')} sources={sources} locale="fr">
+
+L’unité astronomique est une longueur de référence fixée par convention. La distance entre la Terre et le Soleil varie un peu au fil de l’année.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="zigzag" locale="fr" />
+
+## Dans le Soleil, la lumière avance en zigzag
+
+À l’intérieur du Soleil, la matière émet, absorbe et dévie la lumière<SourceRef id="balian1999" sources={sources} />. Entre deux rencontres, la lumière parcourt une distance appelée libre parcours moyen. Elle dépend de la densité de la matière et de son opacité, sa capacité à arrêter la lumière<SourceRef id="mitalas1992" sources={sources} />.
+
+Dans un Soleil de densité uniforme, où seuls les électrons dévieraient la lumière, ce pas mesurerait {f.uniformStep} cm<SourceRef id="balian1999" sources={sources} />. Dans un modèle du Soleil, avec sa densité et son opacité réelles, le pas reste sous {f.localStep} cm sur près de la moitié du rayon. Il ne dépasse {f.localMax} cm que près de la surface<SourceRef id="mitalas1992" sources={sources} />.
+
+</Step>
+
+<Step>
+  <StepSlider slot="figure" locale="fr" />
+
+## Plus les pas sont courts, plus la sortie prend de temps
+
+Après chaque rencontre, la lumière repart dans une direction au hasard, et ses pas s’annulent en partie. Pour aller deux fois plus loin, il lui faut quatre fois plus de pas<SourceRef id="balian1999" sources={sources} />.
+
+Les manuels prenaient souvent un pas de {f.textbookStep} cm, ce qui donne {f.textbookYears} ans. En {f.msYear}, Mitalas et Sills jugent ce temps trop court. Ils tirent d’un modèle du Soleil un pas moyen de {f.meanStep} cm<SourceRef id="mitalas1992" sources={sources} />.
+
+Avec ce pas, une marche au hasard en trois dimensions met environ **{f.walkYears} ans** à atteindre la base de la zone convective<SourceRef id="balian1999" sources={sources} />. Mitalas et Sills donnent {f.msYears} ans, le chiffre souvent repris<SourceRef id="mitalas1992" sources={sources} />.
+
+Leur formule demande que l’écart au départ, mesuré le long d’un seul axe, atteigne le rayon, et prend tous les pas égaux au pas moyen. En trois dimensions, avec des pas de longueur aléatoire, le calcul de la marche au hasard donne {f.ratio} fois moins.
+
+Le curseur fait varier le pas de {f.sliderMin} à {f.sliderMax} cm, comme si le Soleil avait le même pas partout.
+
+<ShowCalc calc={calc('walk')} sources={sources} locale="fr">
+
+Mitalas et Sills choisissent leur pas moyen pour que leur formule donne le temps jusqu’à la base de la zone convective. Avec des pas de longueurs différentes, ils comptent environ 10<sup>{f.msStepsExp}</sup> pas<SourceRef id="mitalas1992" sources={sources} />.
+
+Dans une marche au hasard, le carré de la distance au départ vaut le nombre de pas fois le carré moyen d’un pas. Des pas de longueur aléatoire, de moyenne ℓ, ont un carré moyen de 2ℓ²<SourceRef id="balian1999" sources={sources} />. Balian et Blaizot ne citent pas Mitalas et Sills.
+
+Mitalas et Sills rappellent que ces estimations ne donnent qu’un ordre de grandeur<SourceRef id="mitalas1992" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="zones" locale="fr" />
+
+## Sur la fin du trajet, le gaz chaud prend le relais
+
+Le zigzag ne va pas jusqu’à la surface. La zone convective commence à {f.convectiveBase} fois le rayon du Soleil. Les héliosismologues la repèrent grâce aux vibrations du Soleil<SourceRef id="bahcall2005" sources={sources} />. Elle occupe les {f.convectiveShare} extérieurs du rayon, environ {f.convectiveKm} km.
+
+Dans cette zone, le gaz chaud monte, se refroidit et redescend, et il emporte l’énergie avec lui. Ce transport est bien plus rapide que le zigzag. Mitalas et Sills arrêtent donc leur calcul à la base de cette zone<SourceRef id="mitalas1992" sources={sources} />.
+
+<ShowCalc calc={calc('zone')} sources={sources} locale="fr">
+
+Les héliosismologues mesurent la base de la zone convective en étudiant les vibrations du Soleil<SourceRef id="bahcall2005" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="surface" locale="fr" />
+
+## La lumière qui sort n’est pas celle du cœur
+
+Pendant tout ce trajet, la matière absorbe la lumière et en émet de nouvelle<SourceRef id="balian1999" sources={sources} />. Ce temps de sortie est celui du rayonnement. L’énergie, elle, se trouve surtout dans le gaz chaud, et séjourne dans le Soleil environ {f.residence} en moyenne<SourceRef id="osacar2020" sources={sources} />.
+
+La lumière que nous voyons part de la photosphère, la couche où la matière devient transparente. Les astronomes y placent le bord du Soleil, là où la profondeur optique vaut {f.tau}<SourceRef id="prsa2016" sources={sources} />. Au-dessus, la lumière file en ligne droite vers la Terre.
+
+<ShowCalc calc={calc('energy')} sources={sources} locale="fr">
+
+Ce temps de séjour divise l’énergie stockée dans le Soleil par la puissance qu’il rayonne. Il est proche du temps qu’il faudrait au Soleil pour retrouver son équilibre après une perturbation<SourceRef id="osacar2020" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Aside>
+
+## Les neutrinos traversent le Soleil sans s’arrêter
+
+Le cœur du Soleil produit aussi des neutrinos<SourceRef id="bahcall2005" sources={sources} />. Pour ces particules, la matière est transparente<SourceRef id="balian1999" sources={sources} />. Elles sortent du Soleil sans zigzag, et nous atteignent en quelques minutes.
+
+</Aside>

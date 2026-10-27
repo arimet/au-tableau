@@ -1,0 +1,118 @@
+---
+topic: sun-light-escape
+locale: en
+slug: how-long-light-escape-sun
+question: "How Long Does Light Take to Escape the Sun?"
+hook: "From the surface of the Sun, light reaches us in a few minutes. From the core, matter absorbs and re-emits it again and again, and this zigzag lasts tens of thousands of years."
+discipline: Astronomy
+date: 2026-11-09
+answer: "From the surface of the Sun, light reaches us in a little over eight minutes. From the core to the convective zone, matter absorbs and re-emits it again and again: this zigzag lasts about thirty thousand years. The often-quoted figure of a hundred and seventy thousand years comes from a formula that gives six times more than the standard calculation. Most of the energy sits in the hot gas, and stays in the Sun for around ten million years."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import StepSlider from './StepSlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('en');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="trip" locale="en" />
+
+## From the Surface, Light Takes {f.fromSurfaceMinutes} Minutes to Reach Us
+
+Between the Earth and the Sun, astronomers use the astronomical unit as a reference, about {f.auKm} kilometres<SourceRef id="prsa2016" sources={sources} />. The Sun has a radius of about {f.radiusKm} km. From its surface, light covers the rest of the trip in **{f.fromSurface}**.
+
+If the Sun’s matter were transparent, light would go from its centre to its surface in a little over {f.transparentSeconds} seconds<SourceRef id="balian1999" sources={sources} />. But matter stops it again and again, and that crossing takes tens of thousands of years.
+
+<ShowCalc calc={calc('trip')} sources={sources} locale="en">
+
+The astronomical unit is a reference length fixed by convention. The distance between the Earth and the Sun changes a little over the year.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="zigzag" locale="en" />
+
+## Inside the Sun, Light Zigzags
+
+Inside the Sun, matter emits, absorbs and scatters light<SourceRef id="balian1999" sources={sources} />. Between two encounters, light travels a distance called the mean free path. It depends on the density of the matter and on its opacity, its power to stop light<SourceRef id="mitalas1992" sources={sources} />.
+
+In a Sun of uniform density, where only electrons scattered the light, this step would be {f.uniformStep} cm<SourceRef id="balian1999" sources={sources} />. With its real density and opacity, a model of the Sun gives a step under {f.localStep} cm over almost half the radius. It goes above {f.localMax} cm only near the surface<SourceRef id="mitalas1992" sources={sources} />.
+
+</Step>
+
+<Step>
+  <StepSlider slot="figure" locale="en" />
+
+## The Shorter the Steps, the Longer the Way Out
+
+After each encounter, light sets off again in a random direction, and some of its steps undo others. To get twice as far, it needs four times as many steps<SourceRef id="balian1999" sources={sources} />.
+
+Textbooks often used a step of {f.textbookStep} cm, which gives {f.textbookYears} years. In {f.msYear}, Mitalas and Sills judged that time too short. From a model of the Sun, they worked out an average step of {f.meanStep} cm<SourceRef id="mitalas1992" sources={sources} />.
+
+With that step, a random walk in three dimensions takes about **{f.walkYears} years** to reach the base of the convective zone<SourceRef id="balian1999" sources={sources} />. Mitalas and Sills give {f.msYears} years, the figure most often repeated<SourceRef id="mitalas1992" sources={sources} />.
+
+Their formula requires the distance from the start along a single axis to reach the radius, and takes every step equal to the mean step. In three dimensions, with steps of random length, the random-walk calculation gives {f.ratio} times less.
+
+The slider moves the step from {f.sliderMin} to {f.sliderMax} cm, as if the Sun had the same step everywhere.
+
+<ShowCalc calc={calc('walk')} sources={sources} locale="en">
+
+Mitalas and Sills choose their average step so that their formula gives the time to the base of the convective zone. With steps of different lengths, they count about 10<sup>{f.msStepsExp}</sup> steps<SourceRef id="mitalas1992" sources={sources} />.
+
+In a random walk, the square of the distance from the start equals the number of steps times the mean square of one step. Steps of random length with mean ℓ have a mean square of 2ℓ²<SourceRef id="balian1999" sources={sources} />. Balian and Blaizot do not cite Mitalas and Sills.
+
+Mitalas and Sills point out that such estimates only give an order of magnitude<SourceRef id="mitalas1992" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="zones" locale="en" />
+
+## Near the End, Hot Gas Takes Over
+
+The zigzag does not go all the way to the surface. The convective zone begins at {f.convectiveBase} times the Sun’s radius. Helioseismologists locate it from the Sun’s vibrations<SourceRef id="bahcall2005" sources={sources} />. It fills the outer {f.convectiveShare} of the radius, about {f.convectiveKm} km.
+
+In this zone, hot gas rises, cools and sinks, and it carries the energy along. This transport is far faster than the zigzag. Mitalas and Sills therefore stop their calculation at the base of this zone<SourceRef id="mitalas1992" sources={sources} />.
+
+<ShowCalc calc={calc('zone')} sources={sources} locale="en">
+
+Helioseismologists measure the base of the convective zone by studying the Sun’s vibrations<SourceRef id="bahcall2005" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="surface" locale="en" />
+
+## The Light That Comes Out Is Not the Light From the Core
+
+All along the way, matter absorbs light and emits new light<SourceRef id="balian1999" sources={sources} />. This escape time is the radiation’s. Most of the energy sits in the hot gas, and stays in the Sun for about {f.residence} on average<SourceRef id="osacar2020" sources={sources} />.
+
+The light we see leaves from the photosphere, the layer where matter becomes transparent. Astronomers put the edge of the Sun there, where the optical depth equals {f.tau}<SourceRef id="prsa2016" sources={sources} />. Above it, light flies straight to the Earth.
+
+<ShowCalc calc={calc('energy')} sources={sources} locale="en">
+
+This residence time divides the energy stored in the Sun by the power it radiates. It is close to the time the Sun would need to settle back to equilibrium after a disturbance<SourceRef id="osacar2020" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Aside>
+
+## Neutrinos Cross the Sun Without Stopping
+
+The core of the Sun also makes neutrinos<SourceRef id="bahcall2005" sources={sources} />. For these particles, matter is transparent<SourceRef id="balian1999" sources={sources} />. They leave the Sun without zigzagging, and reach us in a few minutes.
+
+</Aside>

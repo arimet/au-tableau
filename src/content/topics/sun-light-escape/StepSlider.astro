@@ -1,0 +1,76 @@
+---
+// The mean length of one step of the zigzag (log scale) and the time the radiation takes to get out,
+// recomputed live; Mitalas and Sills’ formula as a second line.
+import Slider from '../../../components/Slider.astro';
+import { formatNumberHtml } from '../../../lib/format';
+import type { Locale } from '../../../lib/i18n';
+import { SLIDER, escapeYears, msEscapeYears, stepCount, yearsPhrase } from './data';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+const start = 10 ** SLIDER.valueExp;
+---
+
+<div class="step-slider" data-locale={locale}>
+  <Slider
+    id="sun-step"
+    label={fr ? 'Longueur moyenne d’un pas du zigzag, en centimètres' : 'Mean length of one step of the zigzag, in centimetres'}
+    min={SLIDER.minExp}
+    max={SLIDER.maxExp}
+    step={SLIDER.step}
+    scale="log"
+    value={SLIDER.valueExp}
+    {locale}
+  />
+  <p class="sentence" aria-live="polite">
+    {fr ? 'Temps pour sortir : ' : 'Time to get out: '}<b class="result walk">{yearsPhrase(escapeYears(start), locale)}</b>
+    <br />
+    {fr ? 'Nombre de pas : ' : 'Number of steps: '}<b class="result steps" set:html={formatNumberHtml(stepCount(start), locale, 2)} />
+    <br />
+    <span class="secondary">{fr ? 'Avec la formule de Mitalas et Sills : ' : 'With Mitalas and Sills’ formula: '}<span class="ms">{yearsPhrase(msEscapeYears(start), locale)}</span></span>
+  </p>
+</div>
+
+<script>
+  import { formatNumberHtml } from '../../../lib/format';
+  import { escapeYears, msEscapeYears, stepCount, yearsPhrase } from './data';
+
+  for (const box of document.querySelectorAll<HTMLElement>('.step-slider')) {
+    const input = box.querySelector<HTMLInputElement>('input[type="range"]')!;
+    const locale = box.dataset.locale === 'en' ? 'en' : 'fr';
+    const out = (cls: string) => box.querySelector(`.${cls}`)!;
+    input.addEventListener('input', () => {
+      const step = 10 ** Number(input.value);
+      out('walk').textContent = yearsPhrase(escapeYears(step), locale);
+      out('steps').innerHTML = formatNumberHtml(stepCount(step), locale, 2);
+      out('ms').textContent = yearsPhrase(msEscapeYears(step), locale);
+    });
+  }
+</script>
+
+<style>
+  .step-slider {
+    padding: 1rem 0;
+  }
+
+  .sentence {
+    color: var(--chalk);
+    font-size: 1.2rem;
+    line-height: 1.9;
+  }
+
+  .result {
+    color: var(--chalk-yellow);
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+
+  .secondary {
+    font-size: 1rem;
+    opacity: 0.85;
+  }
+</style>

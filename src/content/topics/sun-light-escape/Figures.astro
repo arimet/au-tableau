@@ -1,0 +1,199 @@
+---
+// Small figures for the story: the trip to the Earth, one zigzag through matter, the two zones of the
+// Sun, and the surface where light breaks free.
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchArc, sketchCircle, sketchLine, arrowHead, hatch, type Pt } from '../../../lib/chalk';
+import type { Locale } from '../../../lib/i18n';
+import { figures } from './data';
+import { randomWalk, polyline, aimAt } from './walk';
+
+interface Props {
+  name: 'trip' | 'zigzag' | 'zones' | 'surface';
+  locale: Locale;
+}
+
+const { name, locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng({ trip: 41, zigzag: 42, zones: 43, surface: 44 }[name]);
+
+const arrow = (from: Pt, to: Pt, size = 9) => [sketchLine(rand, from, to, 0.8), ...arrowHead(rand, to, Math.atan2(to[1] - from[1], to[0] - from[0]), size)];
+const draw = (t: number, d: number) => `--t:${t}s;--d:${d}s`;
+
+// Trip: the Sun, a straight radius (if it were transparent), and the ray to the Earth.
+const T = { x: 95, y: 110, r: 70, earth: [420, 110] as Pt };
+const tripSun = sketchCircle(rand, T.x, T.y, T.r);
+const tripRadius = sketchLine(rand, [T.x, T.y], [T.x + T.r * Math.cos(-0.5), T.y + T.r * Math.sin(-0.5)], 0.4);
+const tripRay = arrow([T.x + T.r + 6, T.y], [T.earth[0] - 20, T.y], 10);
+const tripEarth = sketchCircle(rand, T.earth[0], T.earth[1], 12);
+
+// Zigzag: grains of matter, and one path that changes direction at each of them; one step marked ℓ.
+const Z = { from: [40, 200] as Pt, to: [420, 50] as Pt };
+const zigzagPts: Pt[] = [Z.from];
+for (let i = 1; i < 12; i++) {
+  const t = i / 12;
+  zigzagPts.push([Z.from[0] + (Z.to[0] - Z.from[0]) * t + (rand() - 0.5) * 90, Math.min(215, Math.max(30, Z.from[1] + (Z.to[1] - Z.from[1]) * t + (rand() - 0.5) * 110))]);
+}
+zigzagPts.push(Z.to);
+const grains = zigzagPts.slice(1, -1);
+const extras = Array.from({ length: 34 }, () => [30 + rand() * 400, 30 + rand() * 190] as Pt);
+const zigzagHeads = zigzagPts.slice(1).map((p, i) => arrowHead(rand, p, Math.atan2(p[1] - zigzagPts[i][1], p[0] - zigzagPts[i][0]), 7));
+const [s0, s1] = [zigzagPts[3], zigzagPts[4]];
+const stepMid: Pt = [(s0[0] + s1[0]) / 2, (s0[1] + s1[1]) / 2];
+
+// Zones: the Sun cut open; the dashed circle is the base of the convective zone, at its true share of the radius.
+const S = { x: 150, y: 150, r: 125 };
+const zBase = S.r * 0.713;
+const zOutline = sketchCircle(rand, S.x, S.y, S.r);
+const zBaseLine = sketchCircle(rand, S.x, S.y, zBase, { wobble: 0.008 });
+const zWalk = aimAt(randomWalk(rng(37), [S.x, S.y], [S.x, S.y], 9, zBase, 0.1, 900), [S.x, S.y], -0.5);
+const zCells = Array.from({ length: 9 }, (_, i) => {
+  const a = -Math.PI / 2 + ((i + 0.5) * 2 * Math.PI) / 9;
+  const mid = (S.r + zBase) / 2;
+  return sketchArc(rand, S.x + mid * Math.cos(a), S.y + mid * Math.sin(a), (S.r - zBase) / 2 - 4, a + 0.6, a + 0.6 + 1.6 * Math.PI, 0.03);
+});
+// Leader lines from the labels on the right to what they name: a convection cell, the zigzag, the outer layer's thickness.
+const onCircle = (r: number, a: number): Pt => [S.x + r * Math.cos(a), S.y + r * Math.sin(a)];
+const zShell: [Pt, Pt] = [onCircle(zBase, 0.45), onCircle(S.r, 0.45)];
+const zLeaders = [
+  sketchLine(rand, [288, 56], onCircle((S.r + zBase) / 2 + 6, -0.62), 0.4),
+  sketchLine(rand, [288, 106], onCircle(zBase * 0.7, -0.25), 0.4),
+  sketchLine(rand, [288, 196], [(zShell[0][0] + zShell[1][0]) / 2 + 4, (zShell[0][1] + zShell[1][1]) / 2], 0.4),
+];
+const zThickness = [sketchLine(rand, zShell[0], zShell[1], 0.2), ...arrowHead(rand, zShell[1], 0.45, 6), ...arrowHead(rand, zShell[0], 0.45 + Math.PI, 6)];
+const zDim = [sketchLine(rand, [S.x, S.y], [S.x + zBase, S.y], 0.3), sketchLine(rand, [S.x + zBase, S.y - 6], [S.x + zBase, S.y + 6], 0.2)];
+
+// Surface: dense matter below the photosphere, where light still zigzags; above it, light flies straight.
+const P = { y: 120 };
+const below = Array.from({ length: 60 }, () => [24 + rand() * 410, P.y + 14 + rand() * 110] as Pt);
+const above = Array.from({ length: 6 }, () => [24 + rand() * 410, 20 + rand() * (P.y - 40)] as Pt);
+const photosphere = sketchLine(rand, [20, P.y], [440, P.y], 1.2);
+const surfaceWalk = randomWalk(rand, [230, 236], [230, 5000], 12, 5000 - P.y, 0.35);
+const escape = surfaceWalk[surfaceWalk.length - 1];
+const surfaceRay = arrow(escape, [escape[0] + 30, 26], 9);
+const straight = [80, 380].map((x) => arrow([x, P.y - 6], [x + 20, 30], 8));
+
+const labels = {
+  trip: fr
+    ? { scene: `Schéma, pas à l’échelle : la lumière qui quitte la surface du Soleil atteint la Terre en ${f.fromSurface}. Si la matière du Soleil était transparente, la lumière irait du centre à la surface en ${f.crossing} secondes.`, a: `${f.crossing} s sans obstacle`, b: f.fromSurface, c: 'Soleil', d: 'Terre' }
+    : { scene: `Diagram, not to scale: light leaving the surface of the Sun reaches the Earth in ${f.fromSurface}. If the Sun’s matter were transparent, light would go from the centre to the surface in ${f.crossing} seconds.`, a: `${f.crossing} s if clear`, b: f.fromSurface, c: 'Sun', d: 'Earth' },
+  zigzag: fr
+    ? { scene: 'Schéma : la lumière avance en ligne droite jusqu’à ce que la matière l’absorbe ou la dévie. Elle repart alors, ou de la lumière nouvelle est émise, dans une direction au hasard. La longueur d’un pas s’appelle le libre parcours moyen, ℓ.', a: 'ℓ', b: 'départ', c: 'arrivée', d: 'chaque rencontre change la direction' }
+    : { scene: 'Diagram: light travels in a straight line until matter absorbs it or turns it aside. It then sets off again, or new light is emitted, in a random direction. The length of one step is called the mean free path, ℓ.', a: 'ℓ', b: 'start', c: 'end', d: 'each encounter changes the direction' },
+  zones: fr
+    ? { scene: `Schéma : le Soleil en coupe. Jusqu’à ${f.convectiveBase} fois son rayon, la lumière avance en zigzag. Au-delà, sur les ${f.convectiveShare} extérieurs du rayon, environ ${f.convectiveKm} km, le gaz chaud monte et redescend et porte l’énergie.`, a: 'zigzag', b: 'convection', c: `${f.convectiveBase} R`, d: `${f.convectiveShare} du rayon` }
+    : { scene: `Diagram: the Sun cut open. Out to ${f.convectiveBase} times its radius, light zigzags. Beyond that, over the outer ${f.convectiveShare} of the radius, about ${f.convectiveKm} km, hot gas rises and sinks and carries the energy.`, a: 'zigzag', b: 'convection', c: `${f.convectiveBase} R`, d: `${f.convectiveShare} of R` },
+  surface: fr
+    ? { scene: `Schéma : sous la photosphère, la matière est dense et la lumière zigzague encore. Au-dessus, elle se fait rare : la lumière file en ligne droite vers l’espace. La photosphère se trouve là où la profondeur optique vaut ${f.tau}.`, a: `photosphère (τ = ${f.tau})`, b: 'vers l’espace', c: 'matière dense' }
+    : { scene: `Diagram: below the photosphere, matter is dense and light still zigzags. Above it, matter thins out: light flies straight out to space. The photosphere sits where the optical depth equals ${f.tau}.`, a: `photosphere (τ = ${f.tau})`, b: 'out to space', c: 'dense matter' },
+}[name];
+const viewBox = { trip: '0 0 460 220', zigzag: '0 0 460 250', zones: '0 0 460 300', surface: '0 0 460 260' }[name];
+---
+
+<Scene {viewBox} label={labels.scene} {locale}>
+  {
+    name === 'trip' && (
+      <>
+        <defs>
+          <clipPath id="sun-trip-sun">
+            <circle cx={T.x} cy={T.y} r={T.r - 1} />
+          </clipPath>
+        </defs>
+        <g clip-path="url(#sun-trip-sun)" stroke="var(--chalk-yellow)" stroke-width="1.5" opacity="0.5" fill="none" stroke-linecap="round">
+          {hatch(rand, T.x, T.y, T.r, 7, 0.9).map((d, i) => <path class="draw" pathLength="1" {d} style={draw(0.6 + i * 0.03, 0.2)} />)}
+        </g>
+        <g fill="none" stroke-linecap="round">
+          <path class="draw" pathLength="1" d={tripSun} stroke="var(--chalk-yellow)" stroke-width="2.4" style={draw(0, 0.8)} />
+          <path class="draw" pathLength="1" d={tripRadius} stroke="var(--chalk)" stroke-width="1.6" stroke-dasharray="4 5" style={draw(1.2, 0.4)} />
+          {tripRay.map((d, i) => <path class="draw" pathLength="1" {d} stroke="var(--chalk-yellow)" stroke-width="2" style={draw(i ? 2.5 : 1.8, i ? 0.1 : 0.7)} />)}
+          <path class="draw" pathLength="1" d={tripEarth} stroke="var(--chalk)" stroke-width="2" fill="var(--blue)" fill-opacity="0.35" style={draw(2.6, 0.4)} />
+        </g>
+        <g class="labels">
+          <Annotation x={T.x} y={T.y + T.r + 28} t={1.5} anchor="middle">{labels.a}</Annotation>
+          <Annotation x={(T.x + T.r + T.earth[0]) / 2} y={T.y - 16} t={2.6} anchor="middle">{labels.b}</Annotation>
+          <Annotation x={T.x} y={24} t={0.4} anchor="middle">{labels.c}</Annotation>
+          <Annotation x={T.earth[0]} y={T.earth[1] + 40} t={2.9} anchor="middle">{labels.d}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'zigzag' && (
+      <>
+        <g fill="var(--chalk)" opacity="0.45">
+          {extras.map(([x, y]) => <circle class="pop" cx={x} cy={y} r="3" style="--t:0s" />)}
+        </g>
+        <g fill="var(--pink)" opacity="0.9">
+          {grains.map(([x, y], i) => <circle class="pop" cx={x} cy={y} r="4.5" style={`--t:${(0.3 + i * 0.05).toFixed(2)}s`} />)}
+        </g>
+        <g fill="none" stroke="var(--chalk-yellow)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path class="draw" pathLength="1" d={polyline(zigzagPts)} style={draw(1, 2.4)} />
+          {zigzagHeads.map((h, i) => h.map((d) => <path class="draw" pathLength="1" {d} style={draw(1.2 + i * 0.2, 0.1)} />))}
+        </g>
+        <path class="draw" pathLength="1" d={sketchLine(rand, s0, s1, 0.2)} fill="none" stroke="var(--chalk)" stroke-width="3.5" stroke-linecap="round" style={draw(3.6, 0.3)} />
+        <g class="labels">
+          <Annotation x={stepMid[0]} y={stepMid[1] + 24} t={3.9} anchor="middle">{labels.a}</Annotation>
+          <Annotation x={Z.from[0] - 10} y={Z.from[1] - 14} t={0.8}>{labels.b}</Annotation>
+          <Annotation x={Z.to[0]} y={Z.to[1] - 22} t={3.4} anchor="end">{labels.c}</Annotation>
+          <Annotation x={440} y={244} t={4.2} anchor="end">{labels.d}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'zones' && (
+      <>
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path class="draw" pathLength="1" d={zOutline} stroke="var(--chalk-yellow)" stroke-width="2.4" style={draw(0, 0.9)} />
+          <path class="draw" pathLength="1" d={zBaseLine} stroke="var(--chalk)" stroke-width="1.3" stroke-dasharray="5 7" opacity="0.75" style={draw(0.8, 0.7)} />
+          <path class="draw" pathLength="1" d={polyline(zWalk)} stroke="var(--chalk)" stroke-width="1.3" style={draw(1.4, 2)} />
+          {zCells.map((c, i) => <path class="draw" pathLength="1" d={c.d} stroke="var(--pink)" stroke-width="1.7" style={draw(3.4 + i * 0.08, 0.4)} />)}
+          {zCells.map((c, i) => arrowHead(rand, c.tip, c.angle, 6).map((d) => <path class="draw" pathLength="1" {d} stroke="var(--pink)" stroke-width="1.7" style={draw(3.8 + i * 0.08, 0.1)} />))}
+          {zDim.map((d, i) => <path class="draw" pathLength="1" {d} stroke="var(--chalk-yellow)" stroke-width="1.6" style={draw(4.6 + i * 0.1, 0.3)} />)}
+          {zThickness.map((d) => <path class="draw" pathLength="1" {d} stroke="var(--chalk-yellow)" stroke-width="1.6" style={draw(5, 0.2)} />)}
+          {zLeaders.map((d, i) => <path class="draw" pathLength="1" {d} stroke="var(--chalk)" stroke-width="1" opacity="0.6" style={draw([4.1, 2.3, 5][i], 0.3)} />)}
+        </g>
+        <g class="labels">
+          <Annotation x={S.x + S.r + 20} y={112} t={2.4}>{labels.a}</Annotation>
+          <Annotation x={S.x + S.r + 20} y={60} t={4.2}>{labels.b}</Annotation>
+          <Annotation x={S.x + zBase / 2} y={S.y + 26} t={4.9} anchor="middle">{labels.c}</Annotation>
+          <Annotation x={S.x + S.r + 20} y={200} t={5.1}>{labels.d}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'surface' && (
+      <>
+        <g fill="var(--chalk)" opacity="0.5">
+          {below.map(([x, y]) => <circle class="pop" cx={x} cy={y} r="3" style="--t:0s" />)}
+          {above.map(([x, y]) => <circle class="pop" cx={x} cy={y} r="3" style="--t:0.2s" />)}
+        </g>
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path class="draw" pathLength="1" d={photosphere} stroke="var(--chalk-yellow)" stroke-width="2.4" style={draw(0.4, 0.8)} />
+          <path class="draw" pathLength="1" d={polyline(surfaceWalk)} stroke="var(--chalk)" stroke-width="1.5" style={draw(1.2, 1.8)} />
+          {surfaceRay.map((d, i) => <path class="draw" pathLength="1" {d} stroke="var(--chalk-yellow)" stroke-width="2" style={draw(i ? 3.5 : 3, i ? 0.1 : 0.5)} />)}
+          {straight.flatMap((a, k) => a.map((d, i) => <path class="draw" pathLength="1" {d} stroke="var(--chalk-yellow)" stroke-width="1.6" opacity="0.7" style={draw(3.6 + k * 0.2 + (i ? 0.4 : 0), i ? 0.1 : 0.4)} />))}
+        </g>
+        <g class="labels">
+          <Annotation x={24} y={P.y - 12} t={1}>{labels.a}</Annotation>
+          <Annotation x={escape[0] + 40} y={40} t={3.8}>{labels.b}</Annotation>
+          <Annotation x={24} y={250} t={1.4}>{labels.c}</Annotation>
+        </g>
+      </>
+    )
+  }
+</Scene>
+
+<style>
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

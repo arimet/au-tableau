@@ -1,0 +1,99 @@
+---
+// Drop diameter, and what follows from it, recomputed live: terminal speed, the same in km/h,
+// the fall without air that would reach it, and the drop's side view drawn to scale.
+import Slider from '../../../components/Slider.astro';
+import { formatNumberText, formatPercent } from '../../../lib/format';
+import type { Locale } from '../../../lib/i18n';
+import { SLIDER, terminalSpeed, axisRatio, dropAxes, freeFallHeight, kmh } from './data';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+const start = SLIDER.value;
+const show = (n: number) => formatNumberText(n, locale, 2);
+// 18 px per mm: the 5 mm drop, the volume of a 5 mm sphere, is about 100 px wide.
+const PX = 18;
+const axes = dropAxes(start);
+---
+
+<div class="drop-slider" data-locale={locale} data-px={PX}>
+  <Slider
+    id="rain-diameter"
+    label={fr ? 'Diamètre de la goutte, en millimètres' : 'Diameter of the drop, in millimetres'}
+    min={SLIDER.min}
+    max={SLIDER.max}
+    step={SLIDER.step}
+    scale="linear"
+    value={start}
+    {locale}
+  />
+  <svg class="drop" viewBox="-60 -40 120 80" role="img" aria-label={fr ? 'La goutte vue de profil, à l’échelle du curseur' : 'The drop seen side on, to the scale of the slider'}>
+    <ellipse cx="0" cy="0" rx={axes.a * PX} ry={axes.b * PX} />
+  </svg>
+  <p class="sentence" aria-live="polite">
+    {fr ? 'Vitesse de chute : ' : 'Fall speed: '}<b class="result speed">{show(terminalSpeed(start))}</b>{' m/s, '}<b class="result kmh">{show(kmh(terminalSpeed(start)))}</b>{' km/h'}
+    <br />
+    {fr ? 'Hauteur sur largeur : ' : 'Height over width: '}<b class="result ratio">{formatPercent(axisRatio(start), locale)}</b>
+    <br />
+    {fr ? 'Sans air, atteinte après ' : 'Without air, reached after a fall of '}<b class="result reach">{show(freeFallHeight(terminalSpeed(start)))}</b>{fr ? ' m de chute' : ' m'}
+  </p>
+</div>
+
+<script>
+  import { formatNumberText, formatPercent } from '../../../lib/format';
+  import { terminalSpeed, axisRatio, dropAxes, freeFallHeight, kmh } from './data';
+
+  for (const box of document.querySelectorAll<HTMLElement>('.drop-slider')) {
+    const input = box.querySelector<HTMLInputElement>('input[type="range"]')!;
+    const locale = box.dataset.locale === 'en' ? 'en' : 'fr';
+    const px = Number(box.dataset.px);
+    const ellipse = box.querySelector('ellipse')!;
+    const out = (cls: string) => box.querySelector(`.${cls}`)!;
+    const show = (n: number) => formatNumberText(n, locale, 2);
+    input.addEventListener('input', () => {
+      const mm = Number(input.value);
+      const v = terminalSpeed(mm);
+      out('speed').textContent = show(v);
+      out('kmh').textContent = show(kmh(v));
+      out('ratio').textContent = formatPercent(axisRatio(mm), locale);
+      out('reach').textContent = show(freeFallHeight(v));
+      const { a, b } = dropAxes(mm);
+      ellipse.setAttribute('rx', String(a * px));
+      ellipse.setAttribute('ry', String(b * px));
+    });
+  }
+</script>
+
+<style>
+  .drop-slider {
+    padding: 1rem 0;
+  }
+
+  .drop {
+    display: block;
+    width: 12rem;
+    max-width: 100%;
+    margin: 0.75rem 0;
+  }
+
+  .drop ellipse {
+    fill: none;
+    stroke: var(--blue);
+    stroke-width: 2.3;
+  }
+
+  .sentence {
+    color: var(--chalk);
+    font-size: 1.2rem;
+    line-height: 1.9;
+  }
+
+  .result {
+    color: var(--chalk-yellow);
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+</style>

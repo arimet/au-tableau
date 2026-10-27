@@ -1,0 +1,105 @@
+---
+topic: raindrop-speed
+locale: en
+slug: how-fast-does-rain-fall
+question: "How Fast Does a Raindrop Fall?"
+hook: "In calm air, a big raindrop falls at about nine metres per second. Without the air that slows it, a fall of a thousand metres would end at over five hundred kilometres per hour."
+discipline: Physics
+date: 2026-11-23
+answer: "In calm air, a five millimetre drop falls at about nine metres per second, or thirty-three kilometres per hour. A one millimetre drop falls at four metres per second. These figures hold at sea level and come from a formula fitted to laboratory measurements. Without air, a fall of a thousand metres would end at one hundred and forty metres per second. A raindrop is never shaped like a teardrop: big ones flatten as they fall."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import DropSlider from './DropSlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('en');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="speed" locale="en" />
+
+## In Still Air, a Big Drop Falls at About Nine Metres per Second
+
+In 1949, Ross Gunn and Gilbert Kinzer timed more than {f.dropsTimed} water drops falling through still air<SourceRef id="gunn1949" sources={sources} />. The largest weighed {f.maxMassG} gram, a sphere {f.maxDiameterMm} millimetres across. At that size, the drops became unstable.
+
+Their measurements are still the reference for rain<SourceRef id="bringi2018" sources={sources} />. A formula fitted to them gives the fall speed for each diameter<SourceRef id="atlas1973" sources={sources} /><SourceRef id="ma2019" sources={sources} />. A {f.smallMm} millimetre drop falls at {f.vSmall} metres per second. A {f.bigMm} millimetre drop falls at {f.vBig} metres per second, or {f.vBigKmh} kilometres per hour.
+
+<ShowCalc calc={calc('speed')} sources={sources} locale="en">
+
+The diameter of the largest drop comes from its mass and the density of water<SourceRef id="wagner2002" sources={sources} />. The formula comes from Atlas and his colleagues, which we read in the paper by Ma and his colleagues<SourceRef id="ma2019" sources={sources} />. It holds in calm air, at sea level. Higher up, Bringi and his colleagues expect speeds a little higher than at sea level<SourceRef id="bringi2018" sources={sources} />.
+
+The diameter is that of a sphere with the same volume.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <DropSlider slot="figure" locale="en" />
+
+## With Size, the Speed Gains Less and Less
+
+The slider changes the diameter of the drop, from {f.sliderMin} to {f.sliderMax} millimetres. From {f.smallMm} to {f.midMm} millimetres, the speed almost doubles. From {f.midMm} to {f.bigMm} millimetres, it gains only {f.gainMidBig} metres per second.
+
+We stop the slider at {f.sliderMax} millimetres. Beyond that, the formula drifts from Gunn and Kinzer’s measurements, which stop at {f.maxDiameterMm} millimetres. Gatlin and his colleagues counted {f.seenDrops} raindrops: only {f.bigShare} were that big<SourceRef id="loftus2021" sources={sources} />.
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="freefall" locale="en" />
+
+## Without Air, a Drop Would Fall Far Faster
+
+As it falls, the drop gains speed, and the air brakes it harder and harder. When this brake equals its weight, its speed stops growing<SourceRef id="loftus2021" sources={sources} />. Physicists call it the terminal velocity.
+
+Without air, nothing would brake it. After a fall of {f.fallM} metres, a height we chose for the example, it would reach {f.vFree} metres per second. That is {f.vFreeKmh} kilometres per hour, {f.freeRatio} times the speed of a {f.bigMm} millimetre drop. Without air, a fall of {f.reachM} metres would be enough to reach {f.vBig} metres per second.
+
+Bringi and his colleagues measured drops as a very turbulent storm passed. Those of {f.turbSmallMm} and {f.turbBigMm} millimetres fell {f.turbLow} to {f.turbHigh} slower than their terminal velocity, on average<SourceRef id="bringi2018" sources={sources} />. For {f.turbLessMm} millimetre drops, the gap was smaller.
+
+<ShowCalc calc={calc('freefall')} sources={sources} locale="en">
+
+Without air, the speed at the end of a fall is the square root of twice gravity times the height. We take gravity at {f.latitude} degrees of latitude, from the Geodetic Reference System 1980<SourceRef id="moritz2000" sources={sources} />. There it is {f.g} metres per second squared.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="shape" locale="en" />
+
+## A Raindrop Is Not Shaped Like a Teardrop
+
+Loftus and Wordsworth point it out: a falling drop never takes the teardrop shape seen in drawings<SourceRef id="loftus2021" sources={sources} />. Small drops are spheres. As they grow, they flatten, then look like the top of a hamburger bun.
+
+Their shape comes from a balance. Surface tension tends to keep the drop round, and the pressures of the air and the water deform it<SourceRef id="loftus2021" sources={sources} />.
+
+Pruppacher and Beard studied drops in a wind tunnel. By their formula, the height of a drop is {f.ratioSmall} of its width for a diameter of {f.smallMm} millimetre, and {f.ratioBig} for {f.bigMm} millimetres<SourceRef id="pruppacher1970" sources={sources} /><SourceRef id="abhijeet2023" sources={sources} />.
+
+<ShowCalc calc={calc('shape')} sources={sources} locale="en">
+
+We read this formula in the paper by Abhijeet and his colleagues, who note that its slope changes from one season to the next<SourceRef id="abhijeet2023" sources={sources} />. For the smallest drops, the formula exceeds the ratio of a sphere: we cap it there. The drawing shows a flattened ellipsoid, the shape Loftus and Wordsworth use in their calculations<SourceRef id="loftus2021" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Aside>
+
+## Past a Few Millimetres, a Drop Ends Up Breaking Apart
+
+A drop breaks apart once surface tension can no longer hold it together<SourceRef id="loftus2021" sources={sources} />. In rain, collisions between drops often limit their size before that point. Very big drops still exist: about one in {f.hugeOneIn} reaches {f.hugeMm} millimetres<SourceRef id="loftus2021" sources={sources} />.
+
+Gunn and Kinzer’s largest drops, at {f.maxDiameterMm} millimetres, were already unstable<SourceRef id="gunn1949" sources={sources} />. In rain, some grow further before they break apart.
+
+<ShowCalc calc={calc('rare')} sources={sources} locale="en">
+
+These figures come from a survey by Gatlin and his colleagues, which we read in the paper by Loftus and Wordsworth<SourceRef id="loftus2021" sources={sources} />. The equivalent radius is that of a sphere with the same volume.
+
+</ShowCalc>
+
+</Aside>

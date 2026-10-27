@@ -1,0 +1,130 @@
+---
+// Opening scene: two drops leave a cloud. The small one is round, the big one flattened, and each
+// arrow grows with its speed. A third arrow, without air, runs off the board.
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchCircle, sketchLine, arrowHead, hatch, smoothPath, type Pt } from '../../../lib/chalk';
+import type { Locale } from '../../../lib/i18n';
+import { figures, terminalSpeed, axisRatio, SIZES } from './data';
+import { sketchEllipse } from './drop';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng(2311);
+
+// Cloud: the upper envelope of a row of bumps, over a flat base.
+const BUMPS = [
+  [92, 92, 34],
+  [150, 74, 42],
+  [216, 70, 44],
+  [280, 88, 34],
+];
+const BASE_Y = 104;
+const envelope: Pt[] = [];
+for (let x = 60; x <= 312; x += 6) {
+  const tops = BUMPS.filter(([cx, , r]) => Math.abs(x - cx) < r).map(([cx, cy, r]) => cy - Math.sqrt(r * r - (x - cx) ** 2));
+  envelope.push([x, Math.min(BASE_Y, ...tops) + (rand() - 0.5) * 0.8]);
+}
+const cloudTop = smoothPath(envelope);
+const cloudBase = sketchLine(rand, [56, BASE_Y], [316, BASE_Y], 1.2);
+
+// Arrows: 10 px per m/s, starting under each drop.
+const PX = 10;
+const drop = (x: number, mm: number, r: number) => {
+  const y = 160;
+  const ratio = axisRatio(mm);
+  const top: Pt = [x, y + r * ratio + 8];
+  const tip: Pt = [x, top[1] + terminalSpeed(mm) * PX];
+  return { x, y, r, ry: r * ratio, outline: sketchEllipse(rand, x, y, r, r * ratio), fill: hatch(rand, x, y, r, 5, 0.9), arrow: [sketchLine(rand, top, tip, 1), ...arrowHead(rand, tip, Math.PI / 2, 10)], tip };
+};
+const small = drop(120, SIZES.SMALL_MM, 8);
+const big = drop(250, SIZES.BIG_MM, 20);
+
+// Without air: dashed arrow that leaves the board at the bottom.
+const ghost: Pt = [390, 150];
+const ghostOutline = sketchCircle(rand, ghost[0], ghost[1], 14, { overshoot: 0.2 });
+const ghostArrow = sketchLine(rand, [ghost[0], ghost[1] + 24], [ghost[0], 380], 1.4);
+const ground = sketchLine(rand, [30, 352], [360, 352], 1.2);
+
+const text = fr
+  ? {
+      label: `Schéma : deux gouttes quittent un nuage. Une goutte de ${f.smallMm} mm, ronde, tombe à ${f.vSmall} m/s. Une goutte de ${f.bigMm} mm, aplatie, tombe à ${f.vBig} m/s. Sans air, une chute de ${f.fallM} m finirait à ${f.vFree} m/s, une flèche qui sort du tableau.`,
+      cloud: 'nuage',
+      small: [`${f.smallMm} mm`, `${f.vSmall} m/s`],
+      big: [`${f.bigMm} mm`, `${f.vBig} m/s`],
+      ghost: ['sans air,', `après ${f.fallM} m :`, `${f.vFree} m/s`],
+      ground: 'sol',
+    }
+  : {
+      label: `Diagram: two drops leave a cloud. A round ${f.smallMm} mm drop falls at ${f.vSmall} m/s. A flattened ${f.bigMm} mm drop falls at ${f.vBig} m/s. Without air, a ${f.fallM} m fall would end at ${f.vFree} m/s, an arrow that runs off the board.`,
+      cloud: 'cloud',
+      small: [`${f.smallMm} mm`, `${f.vSmall} m/s`],
+      big: [`${f.bigMm} mm`, `${f.vBig} m/s`],
+      ghost: ['without air,', `after ${f.fallM} m:`, `${f.vFree} m/s`],
+      ground: 'ground',
+    };
+const draw = (t: number, d: number) => `--t:${t}s;--d:${d}s`;
+---
+
+<Scene viewBox="0 0 600 380" label={text.label} {locale}>
+  <defs>
+    {
+      [small, big].map((d, i) => (
+        <clipPath id={`rain-hero-drop-${i}`}>
+          <ellipse cx={d.x} cy={d.y} rx={d.r - 1} ry={d.ry - 1} />
+        </clipPath>
+      ))
+    }
+  </defs>
+
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g stroke="var(--chalk)" stroke-width="2.3">
+      <path class="draw" pathLength="1" d={cloudTop} style={draw(0, 1.1)} />
+      <path class="draw" pathLength="1" d={cloudBase} style={draw(1.2, 0.5)} />
+    </g>
+
+    {
+      [small, big].map((d, i) => (
+        <>
+          <g clip-path={`url(#rain-hero-drop-${i})`} stroke="var(--blue)" stroke-width="1.4" opacity="0.75">
+            {d.fill.map((p, j) => <path class="draw" pathLength="1" d={p} style={draw(2.2 + i * 1.2 + j * 0.02, 0.1)} />)}
+          </g>
+          <path class="draw" pathLength="1" d={d.outline} stroke="var(--blue)" stroke-width="2.3" style={draw(1.8 + i * 1.2, 0.4)} />
+        </>
+      ))
+    }
+    {
+      [small, big].map((d, i) => (
+        <g stroke="var(--chalk-yellow)" stroke-width="2.3">
+          {d.arrow.map((p, j) => <path class="draw" pathLength="1" d={p} style={draw(2.5 + i * 1.2 + (j ? 0.5 : 0), j ? 0.12 : 0.5)} />)}
+        </g>
+      ))
+    }
+
+    <path class="draw" pathLength="1" d={ghostOutline} stroke="var(--pink)" stroke-width="2" opacity="0.8" style={draw(4.6, 0.4)} />
+    <path class="draw" pathLength="1" d={ghostArrow} stroke="var(--pink)" stroke-width="2.3" style={draw(5, 0.7)} />
+    <path class="draw" pathLength="1" d={ground} stroke="var(--chalk)" stroke-width="2" style={draw(0.6, 0.6)} />
+  </g>
+
+  <g class="labels">
+    <Annotation x={185} y={92} t={1.4} anchor="middle">{text.cloud}</Annotation>
+    {text.small.map((line, i) => <Annotation x={small.x - 18} y={small.tip[1] - 30 + i * 24} t={3 + i * 0.1} anchor="end">{line}</Annotation>)}
+    {text.big.map((line, i) => <Annotation x={big.x + 20} y={big.tip[1] - 30 + i * 24} t={4.2 + i * 0.1}>{line}</Annotation>)}
+    {text.ghost.map((line, i) => <Annotation x={ghost[0] + 18} y={240 + i * 24} t={5.6 + i * 0.1}><tspan fill="var(--pink)">{line}</tspan></Annotation>)}
+    <Annotation x={40} y={344} t={0.8}>{text.ground}</Annotation>
+  </g>
+</Scene>
+
+<style>
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

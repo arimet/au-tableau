@@ -1,0 +1,105 @@
+---
+topic: raindrop-speed
+locale: fr
+slug: vitesse-goutte-de-pluie
+question: "À quelle vitesse tombe une goutte de pluie ?"
+hook: "Dans un air calme, une grosse goutte de pluie tombe à environ neuf mètres par seconde. Sans l’air qui la freine, une chute de mille mètres la lancerait à plus de cinq cents kilomètres à l’heure."
+discipline: Physique
+date: 2026-11-23
+answer: "Dans un air calme, une goutte de cinq millimètres tombe à environ neuf mètres par seconde, soit trente-trois kilomètres à l’heure. Une goutte d’un millimètre tombe à quatre mètres par seconde. Ces chiffres valent au niveau de la mer et viennent d’une formule ajustée sur des mesures de laboratoire. Sans air, une chute de mille mètres finirait à cent quarante mètres par seconde. Une goutte n’a jamais la forme d’une larme : les grosses s’aplatissent en tombant."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import DropSlider from './DropSlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('fr');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="speed" locale="fr" />
+
+## Une grosse goutte tombe à environ neuf mètres par seconde
+
+En 1949, Ross Gunn et Gilbert Kinzer ont chronométré plus de {f.dropsTimed} gouttes d’eau qui tombaient dans un air immobile<SourceRef id="gunn1949" sources={sources} />. La plus grosse pesait {f.maxMassG} gramme, soit une sphère de {f.maxDiameterMm} millimètres. À cette taille, les gouttes devenaient instables.
+
+Leurs mesures servent encore de référence pour la pluie<SourceRef id="bringi2018" sources={sources} />. Une formule ajustée sur ces mesures donne la vitesse de chute selon le diamètre<SourceRef id="atlas1973" sources={sources} /><SourceRef id="ma2019" sources={sources} />. Une goutte de {f.smallMm} millimètre tombe à {f.vSmall} mètres par seconde. Une goutte de {f.bigMm} millimètres tombe à {f.vBig} mètres par seconde, soit {f.vBigKmh} kilomètres à l’heure.
+
+<ShowCalc calc={calc('speed')} sources={sources} locale="fr">
+
+Le diamètre de la plus grosse goutte vient de sa masse et de la masse volumique de l’eau<SourceRef id="wagner2002" sources={sources} />. La formule est celle d’Atlas et de ses collègues, que nous lisons dans l’article de Ma et de ses collègues<SourceRef id="ma2019" sources={sources} />. Elle vaut dans un air calme, au niveau de la mer. En altitude, Bringi et ses collègues attendent des vitesses un peu plus fortes qu’au niveau de la mer<SourceRef id="bringi2018" sources={sources} />.
+
+Le diamètre est celui d’une sphère de même volume.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <DropSlider slot="figure" locale="fr" />
+
+## Avec la taille, la vitesse gagne de moins en moins
+
+Le curseur fait varier le diamètre de la goutte, de {f.sliderMin} à {f.sliderMax} millimètres. De {f.smallMm} à {f.midMm} millimètres, la vitesse double presque. De {f.midMm} à {f.bigMm} millimètres, elle ne gagne plus que {f.gainMidBig} mètre par seconde.
+
+Nous arrêtons le curseur à {f.sliderMax} millimètres. Au-delà, la formule s’éloigne des mesures de Gunn et Kinzer, qui s’arrêtent à {f.maxDiameterMm} millimètres. Gatlin et ses collègues ont décompté {f.seenDrops} de gouttes de pluie : seules {f.bigShare} étaient aussi grosses<SourceRef id="loftus2021" sources={sources} />.
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="freefall" locale="fr" />
+
+## Sans l’air, une goutte tomberait bien plus vite
+
+En tombant, la goutte prend de la vitesse, et l’air la freine de plus en plus fort. Quand ce frein égale son poids, sa vitesse cesse de croître<SourceRef id="loftus2021" sources={sources} />. Les physiciens parlent de vitesse limite.
+
+Sans air, rien ne la freinerait. Après une chute de {f.fallM} mètres, une hauteur que nous avons choisie pour l’exemple, elle filerait à {f.vFree} mètres par seconde. Cela fait {f.vFreeKmh} kilomètres à l’heure, {f.freeRatio} fois la vitesse d’une goutte de {f.bigMm} millimètres. Sans air, {f.reachM} mètres de chute suffiraient pour atteindre {f.vBig} mètres par seconde.
+
+Bringi et ses collègues ont mesuré des gouttes pendant le passage d’un orage très turbulent. Celles de {f.turbSmallMm} et {f.turbBigMm} millimètres tombaient {f.turbLow} à {f.turbHigh} moins vite que leur vitesse limite, en moyenne<SourceRef id="bringi2018" sources={sources} />. Pour les gouttes de {f.turbLessMm} millimètres, l’écart était plus faible.
+
+<ShowCalc calc={calc('freefall')} sources={sources} locale="fr">
+
+Sans air, la vitesse au bout d’une chute vaut la racine de deux fois la pesanteur fois la hauteur. Nous prenons la pesanteur à {f.latitude} degrés de latitude, d’après le système de référence géodésique de 1980<SourceRef id="moritz2000" sources={sources} />. Elle y vaut {f.g} mètres par seconde au carré.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="shape" locale="fr" />
+
+## Une goutte de pluie n’a pas la forme d’une larme
+
+Loftus et Wordsworth le rappellent : une goutte qui tombe ne prend jamais la forme de larme des dessins<SourceRef id="loftus2021" sources={sources} />. Les petites sont des sphères. En grossissant, elles s’aplatissent, puis ressemblent au dessus d’un pain à hamburger.
+
+Leur forme vient d’un équilibre. La tension de surface tend à garder la goutte ronde, et les pressions de l’air et de l’eau l’en écartent<SourceRef id="loftus2021" sources={sources} />.
+
+Pruppacher et Beard ont étudié des gouttes en soufflerie. D’après leur formule, la hauteur d’une goutte vaut {f.ratioSmall} de sa largeur pour un diamètre de {f.smallMm} millimètre, et {f.ratioBig} pour {f.bigMm} millimètres<SourceRef id="pruppacher1970" sources={sources} /><SourceRef id="abhijeet2023" sources={sources} />.
+
+<ShowCalc calc={calc('shape')} sources={sources} locale="fr">
+
+Nous lisons cette formule chez Abhijeet et ses collègues, qui notent que sa pente change d’une saison à l’autre<SourceRef id="abhijeet2023" sources={sources} />. Pour les plus petites gouttes, la formule dépasse le rapport d’une sphère : nous la bornons à ce rapport. Le dessin trace un ellipsoïde aplati, la forme que retiennent Loftus et Wordsworth dans leurs calculs<SourceRef id="loftus2021" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Aside>
+
+## Au-delà de quelques millimètres, une goutte finit par se briser
+
+Une goutte se brise quand la tension de surface ne suffit plus à la tenir<SourceRef id="loftus2021" sources={sources} />. Dans la pluie, les collisions entre gouttes limitent souvent leur taille avant ce stade. Les très grosses gouttes existent pourtant : environ une sur {f.hugeOneIn} atteint {f.hugeMm} millimètres<SourceRef id="loftus2021" sources={sources} />.
+
+Les plus grosses gouttes de Gunn et Kinzer, de {f.maxDiameterMm} millimètres, étaient déjà instables<SourceRef id="gunn1949" sources={sources} />. Dans la pluie, certaines grossissent encore avant de se briser.
+
+<ShowCalc calc={calc('rare')} sources={sources} locale="fr">
+
+Ces chiffres viennent d’un décompte de Gatlin et de ses collègues, que nous lisons chez Loftus et Wordsworth<SourceRef id="loftus2021" sources={sources} />. Le rayon équivalent est celui d’une sphère de même volume.
+
+</ShowCalc>
+
+</Aside>

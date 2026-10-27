@@ -1,0 +1,115 @@
+---
+// Opening scene: the Earth, dust falling in from space, hydrogen leaking out of the top of the
+// atmosphere and ions leaving along the field lines over the pole. Not to scale.
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchCircle, sketchLine, arrowHead, hatch, type Pt } from '../../../lib/chalk';
+import type { Locale } from '../../../lib/i18n';
+import { figures } from './data';
+import { fieldLine, polyline } from './field';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng(2030);
+
+const earth = { x: 300, y: 215, r: 95 };
+const air = earth.r + 22;
+const outline = sketchCircle(rand, earth.x, earth.y, earth.r);
+const airLine = sketchCircle(rand, earth.x, earth.y, air, { wobble: 0.008 });
+const fill = hatch(rand, earth.x, earth.y, earth.r, 7, -0.6);
+
+const at = (r: number, a: number): Pt => [earth.x + r * Math.cos(a), earth.y + r * Math.sin(a)];
+const arrow = (from: Pt, to: Pt, size = 8) => [sketchLine(rand, from, to, 0.6), ...arrowHead(rand, to, Math.atan2(to[1] - from[1], to[0] - from[0]), size)];
+
+// Dust from the left half: grains heading inwards, stopping at the top of the atmosphere.
+const dust = Array.from({ length: 9 }, (_, i) => {
+  const a = Math.PI * (0.62 + (i / 8) * 0.95) + (rand() - 0.5) * 0.12;
+  const from = at(air + 70 + rand() * 40, a);
+  return { grain: from, line: arrow(at(air + 62 + rand() * 10, a), at(air + 6, a), 7) };
+});
+
+// Hydrogen leaking out on the right: arrows pointing away from the top of the atmosphere.
+const hydrogen = Array.from({ length: 7 }, (_, i) => {
+  const a = -0.55 + (i / 6) * 1.25 + (rand() - 0.5) * 0.1;
+  return { atom: at(air + 8, a), line: arrow(at(air + 14, a), at(air + 62 + rand() * 12, a), 7) };
+});
+
+// Field lines of the magnetic field, and ions leaving over the north pole.
+const loops = [1.7, 2.3].flatMap((L) => [1, -1].map((side) => polyline(fieldLine(earth.x, earth.y, earth.r, L, side))));
+const ions = [-0.18, 0, 0.18].map((k) => {
+  const base: Pt = [earth.x + k * 120, earth.y - earth.r * 0.95];
+  return arrow(base, [earth.x + k * 300, 22], 8);
+});
+
+const text = fr
+  ? {
+      label: `Schéma, pas à l’échelle : la Terre et son atmosphère. À gauche, la poussière venue de l’espace tombe dans l’atmosphère : environ ${f.csYear} tonnes par an d’après un modèle publié en ${f.csPub}. À droite, de l’hydrogène s’échappe par le haut de l’atmosphère. Au-dessus du pôle, des ions d’oxygène partent le long des lignes du champ magnétique. Ensemble, ils emportent de ${f.lossLow} à ${f.lossHigh} tonnes par an.`,
+      dust: ['poussière', `${f.csYear} t/an`],
+      hydrogen: ['hydrogène', `${f.hYear} à ${f.hModel}`],
+      ions: 'oxygène',
+      unit: 't/an',
+      earth: 'Terre',
+      scale: 'pas à l’échelle',
+    }
+  : {
+      label: `Diagram, not to scale: the Earth and its atmosphere. On the left, dust from space falls into the atmosphere: about ${f.csYear} tonnes a year according to a model published in ${f.csPub}. On the right, hydrogen escapes from the top of the atmosphere. Above the pole, oxygen ions leave along the lines of the magnetic field. Together, they carry away ${f.lossLow} to ${f.lossHigh} tonnes a year.`,
+      dust: ['dust', `${f.csYear} t/yr`],
+      hydrogen: ['hydrogen', `${f.hYear} to ${f.hModel}`],
+      ions: 'oxygen',
+      unit: 't/yr',
+      earth: 'Earth',
+      scale: 'not to scale',
+    };
+const line = (d: string, t: number, dur: number) => ({ d, style: `--t:${t}s;--d:${dur}s` });
+---
+
+<Scene viewBox="0 0 600 380" label={text.label} {locale}>
+  <defs>
+    <clipPath id="earth-hero-globe"><circle cx={earth.x} cy={earth.y} r={earth.r - 1} /></clipPath>
+  </defs>
+
+  <g clip-path="url(#earth-hero-globe)" stroke="var(--blue)" stroke-width="1.5" opacity="0.6" fill="none" stroke-linecap="round">
+    {fill.map((d, i) => <path class="draw" pathLength="1" {d} style={`--t:${(0.7 + i * 0.03).toFixed(2)}s;--d:.2s`} />)}
+  </g>
+
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path class="draw" pathLength="1" {...line(outline, 0, 0.9)} stroke="var(--chalk)" stroke-width="2.4" />
+    <path class="draw" pathLength="1" {...line(airLine, 0.9, 0.8)} stroke="var(--chalk)" stroke-width="1.2" stroke-dasharray="4 6" opacity="0.7" />
+    {loops.map((d, i) => <path class="draw" pathLength="1" {...line(d, 1.6 + i * 0.15, 0.8)} stroke="var(--blue)" stroke-width="1.2" opacity="0.55" />)}
+    {dust.map((g, i) => g.line.map((d, k) => <path class="draw" pathLength="1" {...line(d, 2.6 + i * 0.12 + (k ? 0.3 : 0), k ? 0.1 : 0.3)} stroke="var(--chalk-yellow)" stroke-width="1.8" />))}
+    {hydrogen.map((h, i) => h.line.map((d, k) => <path class="draw" pathLength="1" {...line(d, 4 + i * 0.12 + (k ? 0.3 : 0), k ? 0.1 : 0.3)} stroke="var(--pink)" stroke-width="1.8" />))}
+    {ions.map((a, i) => a.map((d, k) => <path class="draw" pathLength="1" {...line(d, 5.2 + i * 0.15 + (k ? 0.4 : 0), k ? 0.1 : 0.4)} stroke="var(--blue)" stroke-width="2" />))}
+  </g>
+
+  <g fill="var(--chalk-yellow)">
+    {dust.map((g, i) => <circle class="pop" cx={g.grain[0]} cy={g.grain[1]} r="3.2" style={`--t:${(2.4 + i * 0.12).toFixed(2)}s`} />)}
+  </g>
+  <g fill="var(--pink)">
+    {hydrogen.map((h, i) => <circle class="pop" cx={h.atom[0]} cy={h.atom[1]} r="2.6" style={`--t:${(3.9 + i * 0.12).toFixed(2)}s`} />)}
+  </g>
+
+  <g class="labels">
+    <Annotation x={70} y={96} t={3.6} anchor="middle">{text.dust[0]}</Annotation>
+    <Annotation x={70} y={122} t={3.7} anchor="middle">{text.dust[1]}</Annotation>
+    <Annotation x={522} y={48} t={5} anchor="middle">{text.hydrogen[0]}</Annotation>
+    <Annotation x={522} y={74} t={5.1} anchor="middle">{text.hydrogen[1]}</Annotation>
+    <Annotation x={522} y={100} t={5.2} anchor="middle">{text.unit}</Annotation>
+    <Annotation x={earth.x + 92} y={36} t={5.9}>{text.ions}</Annotation>
+    <Annotation x={earth.x} y={earth.y + 8} t={1} anchor="middle">{text.earth}</Annotation>
+    <Annotation x={590} y={366} t={6.2} anchor="end">{text.scale}</Annotation>
+  </g>
+</Scene>
+
+<style>
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

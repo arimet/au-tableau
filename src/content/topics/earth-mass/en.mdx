@@ -1,0 +1,113 @@
+---
+topic: earth-mass
+locale: en
+slug: is-earth-gaining-or-losing-mass
+question: "Is the Earth Gaining or Losing Mass?"
+hook: "Every day, tens of tonnes of dust from space fall on the Earth. At the same time, hydrogen and oxygen escape from the top of the atmosphere."
+discipline: Astronomy
+date: 2026-11-30
+answer: "It is losing mass, according to recent estimates. Dust from space brings ten thousand to twenty thousand tonnes a year. The hydrogen and oxygen escaping from the top of the atmosphere carry away fifty-seven thousand to a hundred thousand. An older measurement gave forty thousand tonnes of dust, give or take twenty thousand. Only the top of that range exceeds the lowest loss. Over a billion years, the gap weighs less than a fifty-millionth of the Earth’s mass."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import DustSlider from './DustSlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('en');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="dust" locale="en" />
+
+## Every Day, Tens of Tonnes of Dust Fall on the Earth
+
+In {f.lbPub}, Love and Brownlee counted the craters that dust left on a satellite, LDEF. From them, they worked out **{f.lbYear} tonnes a year**, give or take {f.lbError} tonnes. The grains they counted weigh {f.lbMaxMg} milligrams at most<SourceRef id="love1993" sources={sources} />.
+
+Depending on the method, published estimates range from {f.rangeLo} to {f.rangeHi} tonnes a day. In {f.csPub}, Carrillo-Sánchez and colleagues fitted a model to the sodium and iron measured in the upper atmosphere. They added the melted grains collected at the South Pole, and found {f.csDay} tonnes a day, give or take {f.csErrorDay}. That makes **{f.csLow} to {f.csHigh} tonnes a year**, {f.csComets} of it from Jupiter-family comets<SourceRef id="carrillo2016" sources={sources} />.
+
+In central Antarctica, Rojas and colleagues melted large volumes of very clean snow. They estimate that {f.rojasGround} tonnes a year reach the ground. Some of the grains vaporise on the way, and their matter stays with the Earth. With the Carrillo-Sánchez model, fitted to their measurement, they put the input before entry between {f.rojasTopLo} and {f.rojasTopHi} tonnes a year<SourceRef id="rojas2021" sources={sources} />.
+
+<ShowCalc calc={calc('dust')} sources={sources} locale="en">
+
+LDEF measured the dust before it entered the atmosphere<SourceRef id="love1993" sources={sources} />. Rojas and colleagues place that flux an order of magnitude above their ground measurement. They put part of the gap down to losses during entry, and judge their range before entry in agreement with LDEF<SourceRef id="rojas2021" sources={sources} />.
+
+For the Earth’s mass, we keep the input before entry: what vaporises stays with the Earth. The two models share some authors.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="escape" locale="en" />
+
+## At the Top, the Earth Loses Hydrogen and Oxygen
+
+At the very top of the atmosphere, hydrogen atoms reach escape velocity and leave for space. According to the review by Gronoff and colleagues, about {f.hKgS} kilogram leaves each second, or **{f.hYear} tonnes a year**. The rate at which hydrogen rises through the atmosphere sets this flow. When the Sun is quiet, another mechanism takes over, and the total stays the same<SourceRef id="gronoff2020" sources={sources} />.
+
+Other published estimates are higher. Cooke and colleagues quote a value that comes to {f.hCited} tonnes a year. Their model of the {f.cookePi} atmosphere gives **{f.hModel} tonnes a year**, about {f.hModelKgS} kilograms a second<SourceRef id="cooke2026" sources={sources} />.
+
+Above the poles, oxygen ions also leave along the lines of the magnetic field. They carry away about **{f.oxygenYear} tonnes a year**<SourceRef id="gronoff2020" sources={sources} />. A study from {f.sekiYear} assumed that most of these ions fall back. According to Gunell and colleagues, newer measurements show that these ions leave for good<SourceRef id="gunell2018" sources={sources} />.
+
+<ShowCalc calc={calc('escape')} sources={sources} locale="en">
+
+The low loss takes the hydrogen from Gronoff and colleagues, the high loss the hydrogen from the model by Cooke and colleagues. Both add the oxygen<SourceRef id="gunell2018" sources={sources} />.
+
+We leave out {f.hIonsYear} tonnes a year of hydrogen ions: they may draw on the same supply of hydrogen, which diffusion limits. The review also lists another oxygen leak, about {f.oOtherYear} tonnes a year<SourceRef id="gronoff2020" sources={sources} />. Adding them would only increase the loss.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="budget" locale="en" />
+
+## With Recent Estimates, the Earth Loses More Than It Receives
+
+Against the {f.csLow} to {f.csHigh} tonnes of dust in the {f.csPub} model, the Earth loses {f.lossLow} to {f.lossHigh} tonnes a year. Its balance is a loss of **{f.netLow} to {f.netHigh} tonnes a year**. Hydrogen alone, even in the low estimate, already outweighs the dust.
+
+The {f.lbPub} measurement gives {f.lbYear} tonnes, give or take {f.lbError}. With its central value, the Earth loses mass too. Only the top of its range, {f.lbHigh} tonnes, exceeds the low loss<SourceRef id="love1993" sources={sources} />.
+
+<ShowCalc calc={calc('balance')} sources={sources} locale="en">
+
+For the most favourable case, we take the highest dust and the lowest loss. For the least favourable, the lowest dust and the highest loss<SourceRef id="carrillo2016" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <DustSlider slot="figure" locale="en" />
+
+## To Gain Mass, the Earth Would Need Much More Dust
+
+Published estimates of the dust range from {f.rangeLo} to {f.rangeHi} tonnes a day<SourceRef id="carrillo2016" sources={sources} />. The slider covers this whole range, with the low and high losses.
+
+Below about {f.breakLow} tonnes a day, the Earth loses mass with every hydrogen estimate. Above it, the sign depends on the estimate chosen. Even at the top of the range, the Earth gains mass only with the low hydrogen estimate.
+
+</Step>
+
+<Step stack>
+
+## Over a Billion Years, the Gap Weighs Less Than a Fifty-Millionth of the Earth’s Mass
+
+The Earth weighs {f.massMantissa} × 10<sup>{f.massExp}</sup> kilograms<SourceRef id="prsa2016" sources={sources} />. At the current rate, a billion years would take away {f.shareLow} to {f.shareHigh} billionths of that mass. This calculation extends today’s flows: it only gives an order of magnitude. Over such a span, large bodies from space count too, and this balance leaves them out.
+
+<ShowCalc calc={calc('mass')} sources={sources} locale="en">
+
+The International Astronomical Union fixes the product of the gravitational constant and the Earth’s mass. To get the mass in kilograms, it recommends dividing this product by the chosen constant<SourceRef id="prsa2016" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Aside>
+
+## Large Impacts Count Too, on Average
+
+Love and Brownlee compare their dust with larger bodies, from {f.bodyMinCm} centimetre to {f.bodyMaxKm} kilometres across. On average, these bodies bring as much matter as the dust, or less<SourceRef id="love1993" sources={sources} />. Our balance per year leaves them out.
+
+</Aside>

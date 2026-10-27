@@ -1,0 +1,182 @@
+---
+// Small figures for the story: dust through the atmosphere, what escapes at the top, and the budget
+// of the three dust estimates against the losses.
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchCircle, sketchLine, arrowHead, type Pt } from '../../../lib/chalk';
+import type { Locale } from '../../../lib/i18n';
+import { figures, budget } from './data';
+import { fieldLine, polyline } from './field';
+
+interface Props {
+  name: 'dust' | 'escape' | 'budget';
+  locale: Locale;
+}
+
+const { name, locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng({ dust: 51, escape: 52, budget: 53 }[name]);
+const yr = fr ? 't/an' : 't/yr';
+
+const arrow = (from: Pt, to: Pt, size = 8) => [sketchLine(rand, from, to, 0.6), ...arrowHead(rand, to, Math.atan2(to[1] - from[1], to[0] - from[0]), size)];
+const draw = (t: number, d: number) => `--t:${t}s;--d:${d}s`;
+
+// Dust: grains enter at the top of the atmosphere; most vaporise on the way, a few reach the ground.
+const D = { top: 62, ground: 228 };
+const grains = [
+  { x: 270, stop: 120 },
+  { x: 305, stop: 150 },
+  { x: 340, stop: D.ground - 6 },
+  { x: 375, stop: 105 },
+  { x: 405, stop: 138 },
+  { x: 435, stop: D.ground - 6 },
+].map(({ x, stop }) => {
+  const from: Pt = [x + 15, 18];
+  const to: Pt = [x + 15 - ((stop - 18) / (D.ground - 18)) * 45, stop];
+  const burst = stop < D.ground - 6 ? [0, 1, 2, 3].map((k) => sketchLine(rand, to, [to[0] + 9 * Math.cos(k * 1.6 + 0.3), to[1] + 9 * Math.sin(k * 1.6 + 0.3)], 0.3)) : [];
+  return { from, to, path: sketchLine(rand, from, to, 0.8), burst, ground: stop >= D.ground - 6 };
+});
+const groundLine = sketchLine(rand, [16, D.ground], [444, D.ground], 1.2);
+const topLine = sketchLine(rand, [16, D.top], [444, D.top], 0.6);
+
+// Escape: the Earth, closed field lines, open lines over the pole, hydrogen leaving all round.
+const E = { x: 230, y: 185, r: 62 };
+const globe = sketchCircle(rand, E.x, E.y, E.r);
+const loops = [1.6, 2.4].flatMap((L) => [1, -1].map((side) => polyline(fieldLine(E.x, E.y, E.r, L, side as 1 | -1))));
+const open = [1, -1].map((side) => {
+  const pts: Pt[] = Array.from({ length: 13 }, (_, i) => {
+    const t = i / 12;
+    return [E.x + side * (10 + 70 * t * t), E.y - E.r + 2 - 160 * t];
+  });
+  return { d: polyline(pts), head: arrowHead(rand, pts[12], Math.atan2(pts[12][1] - pts[11][1], pts[12][0] - pts[11][0]), 8) };
+});
+const at = (r: number, a: number): Pt => [E.x + r * Math.cos(a), E.y + r * Math.sin(a)];
+const hydrogen = [0.15, 0.75, 1.35, 2.0, 2.65, 3.1].map((a) => ({ atom: at(E.r + 12, a), line: arrow(at(E.r + 18, a), at(E.r + 52, a), 7) }));
+
+// Budget: one row per estimate, on a linear axis in tonnes per year.
+const B = { x0: 190, x1: 420, max: 110_000, top: 40, row: 46 };
+const xOf = (v: number) => B.x0 + (v / B.max) * (B.x1 - B.x0);
+const bars = budget.map((row, i) => {
+  const y = B.top + i * B.row + 18;
+  const solid = row.from === undefined ? [] : Array.from({ length: Math.max(1, Math.floor((xOf(row.to) - xOf(row.from)) / 6)) }, (_, k) => {
+    const x = xOf(row.from!) + 3 + k * 6;
+    return sketchLine(rand, [x - 3, y + 8], [x + 3, y - 8], 0.2);
+  });
+  const outline = row.from === undefined ? undefined : [
+    sketchLine(rand, [xOf(row.from), y - 9], [xOf(row.to), y - 9], 0.6),
+    sketchLine(rand, [xOf(row.to), y - 9], [xOf(row.to), y + 9], 0.4),
+    sketchLine(rand, [xOf(row.to), y + 9], [xOf(row.from), y + 9], 0.6),
+    sketchLine(rand, [xOf(row.from), y + 9], [xOf(row.from), y - 9], 0.4),
+  ];
+  const range = row.range && [
+    sketchLine(rand, [xOf(Math.max(row.range[0], row.to)), y], [xOf(row.range[1]), y], 0.4),
+    sketchLine(rand, [xOf(row.range[0]), y - 7], [xOf(row.range[0]), y + 7], 0.3),
+    sketchLine(rand, [xOf(row.range[1]), y - 7], [xOf(row.range[1]), y + 7], 0.3),
+  ];
+  return { ...row, y, solid, outline, range };
+});
+const axisY = B.top + budget.length * B.row + 6;
+const axis = sketchLine(rand, [B.x0, axisY], [B.x1, axisY], 1);
+const ticks = [0, 50_000, 100_000].map((v) => ({ v, x: xOf(v), d: sketchLine(rand, [xOf(v), axisY - 6], [xOf(v), axisY + 6], 0.3) }));
+const zero = sketchLine(rand, [B.x0, B.top], [B.x0, axisY], 0.6);
+const tick = (v: number) => v.toLocaleString(locale);
+const divider = B.top + 3 * B.row - 2;
+
+const labels = {
+  dust: fr
+    ? { scene: `Schéma : les grains de poussière entrent dans l’atmosphère. Une part se vaporise en route, et sa matière reste sur Terre. Avant l’entrée, entre ${f.rojasTopLo} et ${f.rojasTopHi} tonnes par an d’après un modèle calé sur les grains de Dome C. Au sol, ses auteurs en recueillent ${f.rojasGround}.`, a: ['avant l’entrée :', `${f.rojasTopLo} à ${f.rojasTopHi} ${yr}`], b: `au sol : ${f.rojasGround} ${yr}`, c: 'vaporisée', d: 'atmosphère' }
+    : { scene: `Diagram: dust grains enter the atmosphere. Some vaporise on the way, and their matter stays with the Earth. Before entry, between ${f.rojasTopLo} and ${f.rojasTopHi} tonnes a year according to a model fitted to the Dome C grains. On the ground, its authors collect ${f.rojasGround}.`, a: ['before entry:', `${f.rojasTopLo} to ${f.rojasTopHi} ${yr}`], b: `on the ground: ${f.rojasGround} ${yr}`, c: 'vaporised', d: 'atmosphere' },
+  escape: fr
+    ? { scene: `Schéma, pas à l’échelle : de l’hydrogène s’échappe tout autour de la Terre, de ${f.hYear} à ${f.hModel} tonnes par an selon les estimations. Au-dessus des pôles, des ions d’oxygène partent le long des lignes du champ magnétique, ${f.oxygenYear} tonnes par an.`, a: ['hydrogène :', `${f.hYear} à`, `${f.hModel} ${yr}`], b: ['oxygène :', `${f.oxygenYear} ${yr}`] }
+    : { scene: `Diagram, not to scale: hydrogen escapes all around the Earth, ${f.hYear} to ${f.hModel} tonnes a year depending on the estimate. Above the poles, oxygen ions leave along the lines of the magnetic field, ${f.oxygenYear} tonnes a year.`, a: ['hydrogen:', `${f.hYear} to`, `${f.hModel} ${yr}`], b: ['oxygen:', `${f.oxygenYear} ${yr}`] },
+  budget: fr
+    ? { scene: `Graphique, en tonnes par an. Ce qui arrive : ${f.lbYear} plus ou moins ${f.lbError} selon la mesure de ${f.lbPub} ; ${f.csLow} à ${f.csHigh} selon le modèle de ${f.csPub} ; ${f.rojasTopLo} à ${f.rojasTopHi} selon le modèle de ${f.rojasPub}. Ce qui part : ${f.hYear} à ${f.hModel} d’hydrogène, et de ${f.lossLow} à ${f.lossHigh} avec l’oxygène.`, in: 'arrive', out: 'part' }
+    : { scene: `Chart, in tonnes per year. Coming in: ${f.lbYear} plus or minus ${f.lbError} from the ${f.lbPub} measurement; ${f.csLow} to ${f.csHigh} from the ${f.csPub} model; ${f.rojasTopLo} to ${f.rojasTopHi} from the ${f.rojasPub} model. Going out: ${f.hYear} to ${f.hModel} of hydrogen, and ${f.lossLow} to ${f.lossHigh} with oxygen.`, in: 'in', out: 'out' },
+}[name];
+const viewBox = { dust: '0 0 460 260', escape: '0 0 460 300', budget: `0 0 460 ${axisY + 40}` }[name];
+---
+
+<Scene {viewBox} label={labels.scene} {locale}>
+  {
+    name === 'dust' && (
+      <>
+        <g fill="none" stroke-linecap="round">
+          <path class="draw" pathLength="1" d={topLine} stroke="var(--blue)" stroke-width="1.4" stroke-dasharray="4 6" style={draw(0, 0.7)} />
+          <path class="draw" pathLength="1" d={groundLine} stroke="var(--chalk)" stroke-width="2.4" style={draw(0.3, 0.8)} />
+          {grains.map((g, i) => <path class="draw" pathLength="1" d={g.path} stroke="var(--chalk-yellow)" stroke-width="1.8" style={draw(1 + i * 0.25, 0.6)} />)}
+          {grains.flatMap((g, i) => g.burst.map((d) => <path class="draw" pathLength="1" {d} stroke="var(--pink)" stroke-width="1.5" style={draw(1.6 + i * 0.25, 0.15)} />))}
+        </g>
+        <g fill="var(--chalk-yellow)">
+          {grains.map((g, i) => <circle class="pop" cx={g.from[0]} cy={g.from[1]} r="3.5" style={`--t:${(0.9 + i * 0.25).toFixed(2)}s`} />)}
+          {grains.filter((g) => g.ground).map((g, i) => <circle class="pop" cx={g.to[0]} cy={g.to[1]} r="4" style={`--t:${(2.6 + i * 0.3).toFixed(2)}s`} />)}
+        </g>
+        <g class="labels">
+          <Annotation x={20} y={26} t={3}>{labels.a[0]}</Annotation>
+          <Annotation x={20} y={50} t={3.1}>{labels.a[1]}</Annotation>
+          <Annotation x={20} y={D.ground + 26} t={3.4}>{labels.b}</Annotation>
+          <Annotation x={20} y={140} t={3.2}>{labels.c}</Annotation>
+          <Annotation x={20} y={D.top + 26} t={0.6}>{labels.d}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'escape' && (
+      <>
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path class="draw" pathLength="1" d={globe} stroke="var(--chalk)" stroke-width="2.4" fill="var(--blue)" fill-opacity="0.25" style={draw(0, 0.8)} />
+          {loops.map((d, i) => <path class="draw" pathLength="1" {d} stroke="var(--blue)" stroke-width="1.2" opacity="0.5" style={draw(0.8 + i * 0.15, 0.7)} />)}
+          {hydrogen.map((h, i) => h.line.map((d, k) => <path class="draw" pathLength="1" {d} stroke="var(--pink)" stroke-width="1.8" style={draw(1.8 + i * 0.12 + (k ? 0.3 : 0), k ? 0.1 : 0.3)} />))}
+          {open.map((o, i) => [o.d, ...o.head].map((d, k) => <path class="draw" pathLength="1" {d} stroke="var(--blue)" stroke-width="2.2" style={draw(2.8 + i * 0.2 + (k ? 0.6 : 0), k ? 0.1 : 0.6)} />))}
+        </g>
+        <g fill="var(--pink)">
+          {hydrogen.map((h, i) => <circle class="pop" cx={h.atom[0]} cy={h.atom[1]} r="2.6" style={`--t:${(1.7 + i * 0.12).toFixed(2)}s`} />)}
+        </g>
+        <g class="labels">
+          {labels.a.map((text, i) => <Annotation x={20} y={34 + i * 25} t={2.6 + i * 0.1}>{text}</Annotation>)}
+          {labels.b.map((text, i) => <Annotation x={E.x + 50} y={30 + i * 25} t={3.6 + i * 0.1}>{text}</Annotation>)}
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'budget' && (
+      <>
+        <g fill="none" stroke-linecap="round">
+          <path class="draw" pathLength="1" d={zero} stroke="var(--chalk)" stroke-width="1.6" style={draw(0, 0.4)} />
+          <path class="draw" pathLength="1" d={axis} stroke="var(--chalk)" stroke-width="1.6" style={draw(0.2, 0.6)} />
+          {ticks.map((tk) => <path class="draw" pathLength="1" d={tk.d} stroke="var(--chalk)" stroke-width="1.4" style={draw(0.6, 0.2)} />)}
+          <path class="draw" pathLength="1" d={sketchLine(rand, [20, divider], [B.x1, divider], 0.6)} stroke="var(--chalk)" stroke-width="1" stroke-dasharray="3 6" opacity="0.6" style={draw(0.8, 0.5)} />
+          {
+            bars.map((b, i) => (
+              <>
+                {b.outline?.map((d) => <path class="draw" pathLength="1" {d} stroke={b.colour} stroke-width="1.8" style={draw(1 + i * 0.5, 0.3)} />)}
+                {b.solid.map((d, k) => <path class="draw" pathLength="1" {d} stroke={b.colour} stroke-width="1.3" opacity="0.8" style={draw(1.2 + i * 0.5 + k * 0.004, 0.1)} />)}
+                {b.range?.map((d) => <path class="draw" pathLength="1" {d} stroke={b.colour} stroke-width="2" stroke-dasharray={b.from === undefined ? undefined : '4 4'} style={draw(1.4 + i * 0.5, 0.3)} />)}
+              </>
+            ))
+          }
+        </g>
+        <g class="labels">
+          {bars.map((b, i) => <Annotation x={B.x0 - 12} y={b.y + 7} t={1 + i * 0.5} anchor="end">{b.label[locale]}</Annotation>)}
+          {ticks.map((tk) => <Annotation x={tk.x} y={axisY + 28} t={0.7} anchor="middle">{tick(tk.v)}</Annotation>)}
+          <Annotation x={20} y={26} t={0.4}>{labels.in}</Annotation>
+          <Annotation x={20} y={divider + 22} t={2.4}>{labels.out}</Annotation>
+          <Annotation x={20} y={axisY + 28} t={0.8}>{yr}</Annotation>
+        </g>
+      </>
+    )
+  }
+</Scene>
+
+<style>
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

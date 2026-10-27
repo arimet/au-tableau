@@ -1,0 +1,71 @@
+---
+// The dust input across the published range (log scale), and the Earth's yearly balance against the
+// losses, recomputed live: a range, because the share of the ions that leave for good is uncertain.
+import Slider from '../../../components/Slider.astro';
+import type { Locale } from '../../../lib/i18n';
+import { SLIDER, balancePhrase, dustPerYear } from './data';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+const start = 10 ** SLIDER.valueExp;
+---
+
+<div class="dust-slider" data-locale={locale}>
+  <Slider
+    id="earth-dust"
+    label={fr ? 'Poussière qui arrive chaque jour, en tonnes' : 'Dust arriving each day, in tonnes'}
+    min={SLIDER.minExp}
+    max={SLIDER.maxExp}
+    step={SLIDER.step}
+    scale="log"
+    value={SLIDER.valueExp}
+    {locale}
+  />
+  <p class="sentence" aria-live="polite">
+    {fr ? 'Par an : ' : 'Per year: '}<b class="result year">{dustPerYear(start, locale)}</b>{fr ? ' tonnes de poussière' : ' tonnes of dust'}
+    <br />
+    <span class="balance">{balancePhrase(start, locale)}</span>
+  </p>
+</div>
+
+<script>
+  import { balancePhrase, dustPerYear } from './data';
+
+  for (const box of document.querySelectorAll<HTMLElement>('.dust-slider')) {
+    const input = box.querySelector<HTMLInputElement>('input[type="range"]')!;
+    const locale = box.dataset.locale === 'en' ? 'en' : 'fr';
+    const year = box.querySelector('.year')!;
+    const balance = box.querySelector('.balance')!;
+    input.addEventListener('input', () => {
+      const perDay = 10 ** Number(input.value);
+      year.textContent = dustPerYear(perDay, locale);
+      balance.textContent = balancePhrase(perDay, locale);
+    });
+  }
+</script>
+
+<style>
+  .dust-slider {
+    padding: 1rem 0;
+  }
+
+  .sentence {
+    color: var(--chalk);
+    font-size: 1.2rem;
+    line-height: 1.9;
+  }
+
+  .result {
+    color: var(--chalk-yellow);
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+
+  .balance {
+    color: var(--chalk-yellow);
+  }
+</style>

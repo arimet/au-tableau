@@ -1,0 +1,113 @@
+---
+topic: earth-mass
+locale: fr
+slug: terre-grossit-maigrit
+question: "La Terre grossit-elle ou maigrit-elle ?"
+hook: "Chaque jour, des dizaines de tonnes de poussière venue de l’espace tombent sur la Terre. Dans le même temps, de l’hydrogène et de l’oxygène s’échappent par le haut de l’atmosphère."
+discipline: Astronomie
+date: 2026-11-30
+answer: "Elle maigrit, d’après les estimations récentes. La poussière venue de l’espace apporte de dix mille à vingt mille tonnes par an. L’hydrogène et l’oxygène qui s’échappent par le haut de l’atmosphère en emportent de cinquante-sept mille à cent mille. Une mesure plus ancienne donnait quarante mille tonnes de poussière, à vingt mille près. Seul le haut de cette fourchette dépasse la perte la plus basse. En un milliard d’années, l’écart pèse moins d’un cinquante-millionième de la masse de la Terre."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import DustSlider from './DustSlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('fr');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="dust" locale="fr" />
+
+## Chaque jour, des dizaines de tonnes de poussière tombent sur la Terre
+
+En {f.lbPub}, Love et Brownlee comptent les cratères creusés par la poussière sur un satellite, LDEF. Ils en tirent **{f.lbYear} tonnes par an**, à {f.lbError} tonnes près. Les grains comptés pèsent au plus {f.lbMaxMg} milligramme<SourceRef id="love1993" sources={sources} />.
+
+Selon la méthode, les estimations publiées vont de {f.rangeLo} à {f.rangeHi} tonnes par jour. En {f.csPub}, Carrillo-Sánchez et ses collègues calent un modèle sur le sodium et le fer mesurés dans la haute atmosphère. Ils y ajoutent les grains fondus recueillis au pôle Sud, et obtiennent {f.csDay} tonnes par jour, à {f.csErrorDay} près. Cela fait **{f.csLow} à {f.csHigh} tonnes par an**, dont {f.csComets} viennent de comètes de la famille de Jupiter<SourceRef id="carrillo2016" sources={sources} />.
+
+Au centre de l’Antarctique, Rojas et ses collègues font fondre de grands volumes de neige très propre. Ils estiment que {f.rojasGround} tonnes par an atteignent le sol. Une part des grains se vaporise en route, et leur matière reste sur Terre. Avec le modèle de Carrillo-Sánchez, calé sur leur mesure, ils estiment l’apport avant l’entrée entre {f.rojasTopLo} et {f.rojasTopHi} tonnes par an<SourceRef id="rojas2021" sources={sources} />.
+
+<ShowCalc calc={calc('dust')} sources={sources} locale="fr">
+
+LDEF mesure la poussière avant son entrée dans l’atmosphère<SourceRef id="love1993" sources={sources} />. Rojas et ses collègues placent ce flux un ordre de grandeur au-dessus de leur mesure au sol. Ils attribuent une partie de l’écart aux pertes pendant l’entrée, et jugent leur fourchette avant l’entrée en accord avec LDEF<SourceRef id="rojas2021" sources={sources} />.
+
+Pour la masse de la Terre, nous retenons l’apport avant l’entrée : ce qui se vaporise reste sur Terre. Les deux modèles ont des auteurs en commun.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="escape" locale="fr" />
+
+## Par le haut, la Terre perd de l’hydrogène et de l’oxygène
+
+Tout en haut de l’atmosphère, des atomes d’hydrogène atteignent la vitesse de libération et partent dans l’espace. D’après la revue de Gronoff et ses collègues, environ {f.hKgS} kilogramme part chaque seconde, soit **{f.hYear} tonnes par an**. Ce débit est fixé par la montée de l’hydrogène à travers l’atmosphère. Quand le Soleil est calme, un autre mécanisme prend le relais, et le total reste le même<SourceRef id="gronoff2020" sources={sources} />.
+
+D’autres estimations publiées sont plus hautes. Cooke et ses collègues citent une valeur qui correspond à {f.hCited} tonnes par an. Leur modèle de l’atmosphère de {f.cookePi} donne **{f.hModel} tonnes par an**, environ {f.hModelKgS} kilogrammes par seconde<SourceRef id="cooke2026" sources={sources} />.
+
+Au-dessus des pôles, des ions d’oxygène partent aussi le long des lignes du champ magnétique. Ils emportent environ **{f.oxygenYear} tonnes par an**<SourceRef id="gronoff2020" sources={sources} />. Une étude de {f.sekiYear} supposait que la plupart de ces ions retombent. D’après Gunell et ses collègues, des mesures plus récentes montrent que ces ions partent pour de bon<SourceRef id="gunell2018" sources={sources} />.
+
+<ShowCalc calc={calc('escape')} sources={sources} locale="fr">
+
+La perte basse prend l’hydrogène de Gronoff et ses collègues, la perte haute celui du modèle de Cooke et ses collègues. Les deux ajoutent l’oxygène<SourceRef id="gunell2018" sources={sources} />.
+
+Nous laissons de côté {f.hIonsYear} tonnes par an d’ions d’hydrogène : ils pourraient puiser dans la même réserve d’hydrogène, que la diffusion limite. La revue liste aussi une autre fuite d’oxygène, environ {f.oOtherYear} tonnes par an<SourceRef id="gronoff2020" sources={sources} />. Les ajouter ne ferait qu’augmenter la perte.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="budget" locale="fr" />
+
+## Avec les estimations récentes, la Terre perd plus qu’elle ne reçoit
+
+Face aux {f.csLow} à {f.csHigh} tonnes de poussière du modèle de {f.csPub}, la Terre perd de {f.lossLow} à {f.lossHigh} tonnes par an. Son bilan est une perte de **{f.netLow} à {f.netHigh} tonnes par an**. L’hydrogène seul, même dans l’estimation basse, dépasse déjà la poussière.
+
+La mesure de {f.lbPub} donne {f.lbYear} tonnes, à {f.lbError} près. Avec sa valeur centrale, la Terre perd aussi. Seul le haut de sa fourchette, {f.lbHigh} tonnes, dépasse la perte basse<SourceRef id="love1993" sources={sources} />.
+
+<ShowCalc calc={calc('balance')} sources={sources} locale="fr">
+
+Pour le cas le plus favorable, nous prenons la poussière la plus haute et la perte la plus basse. Pour le moins favorable, la poussière la plus basse et la perte la plus haute<SourceRef id="carrillo2016" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <DustSlider slot="figure" locale="fr" />
+
+## Pour grossir, la Terre devrait recevoir bien plus de poussière
+
+Les estimations publiées de la poussière s’étendent de {f.rangeLo} à {f.rangeHi} tonnes par jour<SourceRef id="carrillo2016" sources={sources} />. Le curseur parcourt toute cette fourchette, avec les pertes basse et haute.
+
+Sous {f.breakLow} tonnes par jour environ, la Terre perd avec toutes les estimations de l’hydrogène. Au-dessus, le signe dépend de l’estimation retenue. Même au sommet de la fourchette, la Terre ne gagne qu’avec l’estimation basse de l’hydrogène.
+
+</Step>
+
+<Step stack>
+
+## En un milliard d’années, l’écart pèse moins d’un cinquante-millionième de la masse de la Terre
+
+La Terre pèse {f.massMantissa} × 10<sup>{f.massExp}</sup> kilogrammes<SourceRef id="prsa2016" sources={sources} />. Au rythme actuel, un milliard d’années lui retirerait de {f.shareLow} à {f.shareHigh} milliardièmes de cette masse. Ce calcul prolonge les débits d’aujourd’hui : il donne seulement un ordre de grandeur. Sur une telle durée, les gros corps venus de l’espace comptent aussi, et ce bilan ne les inclut pas.
+
+<ShowCalc calc={calc('mass')} sources={sources} locale="fr">
+
+L’Union astronomique internationale fixe le produit de la constante de la gravitation par la masse de la Terre. Pour obtenir la masse en kilogrammes, elle recommande de diviser ce produit par la constante choisie<SourceRef id="prsa2016" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Aside>
+
+## Les gros impacts comptent aussi, en moyenne
+
+Love et Brownlee comparent leur poussière aux corps plus gros, de {f.bodyMinCm} centimètre à {f.bodyMaxKm} kilomètres. En moyenne, ces corps apportent autant de matière que la poussière, ou moins<SourceRef id="love1993" sources={sources} />. Notre bilan annuel ne les compte pas.
+
+</Aside>

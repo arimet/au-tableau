@@ -1,0 +1,219 @@
+---
+// Small figures for the story: one jump and the Earth's recoil, jumps that cancel around the globe,
+// and the recoil placed between a proton and an atom.
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchArc, sketchCircle, sketchLine, arrowHead, hatch, type Pt } from '../../../lib/chalk';
+import { logPosition } from '../../../lib/scale';
+import type { Locale } from '../../../lib/i18n';
+import { figures, recoilM, JUMP_M, KEPT, LENGTHS } from './data';
+import { jumper } from './jumper';
+
+interface Props {
+  name: 'recoil' | 'mass' | 'cancel' | 'scale';
+  locale: Locale;
+}
+
+const { name, locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng({ recoil: 51, mass: 54, cancel: 52, scale: 53 }[name]);
+
+const arrow = (from: Pt, to: Pt, size = 10) => {
+  const angle = Math.atan2(to[1] - from[1], to[0] - from[0]);
+  return [sketchLine(rand, from, to, 0.8), ...arrowHead(rand, to, angle, size)];
+};
+const draw = (t: number, d: number) => `--t:${t}s;--d:${d}s`;
+const polar = (c: Pt, r: number, a: number): Pt => [c[0] + r * Math.cos(a), c[1] + r * Math.sin(a)];
+
+// Recoil: the ground seen from the side, one jumper in the air; the jumper goes up, the ground goes down.
+const G = { x: 230, top: 210, R: 700 };
+const ground = sketchArc(rand, G.x, G.top + G.R, G.R, -Math.PI / 2 - 0.3, -Math.PI / 2 + 0.3, 0.002).d;
+const groundLines = Array.from({ length: 64 }, (_, i) => sketchLine(rand, [i * 8 - 30, G.top - 6], [i * 8 + 10, G.top + 54], 0.6));
+const oneJumper = jumper(rand, [G.x, G.top], -Math.PI / 2, 80, 46);
+const footprint = jumper(rand, [G.x - 110, G.top], -Math.PI / 2, 80, 0);
+const upArrow = arrow([G.x + 70, G.top - 4], [G.x + 70, G.top - 74], 10);
+const downArrow = arrow([G.x, G.top + 16], [G.x, G.top + 40], 7);
+
+// Mass: the Earth and humanity at the two ends of a rod; their centre of mass sits at the Earth's centre.
+const M = { earth: [110, 150] as Pt, r: 80, crowd: 378 };
+const massEarth = sketchCircle(rand, ...M.earth, M.r);
+const massHatch = hatch(rand, ...M.earth, M.r, 7, 0.62);
+const rod = sketchLine(rand, [M.earth[0] + M.r, M.earth[1]], [M.crowd - 40, M.earth[1]], 0.6);
+const massCrowd = [-36, -12, 12, 36].map((dx, i) => jumper(rand, [M.crowd + dx, M.earth[1] + 22 - (i % 2) * 4], -Math.PI / 2, 40, 0));
+const cross = [sketchLine(rand, [M.earth[0] - 7, M.earth[1] - 7], [M.earth[0] + 7, M.earth[1] + 7], 0.3), sketchLine(rand, [M.earth[0] - 7, M.earth[1] + 7], [M.earth[0] + 7, M.earth[1] - 7], 0.3)];
+const crossLeader = sketchLine(rand, [M.earth[0] + 8, M.earth[1] + 10], [M.earth[0] + 60, M.earth[1] + 100], 0.6);
+
+// Cancel: the globe, jumpers all around, crowded on one side; two opposite jumpers in blue.
+const C: Pt = [175, 170];
+const CR = 104;
+const ASIA = -0.75; // direction of the demographic centre, drawn, not measured
+const crowd = [-1.45, -1.25, -1.08, -0.93, -0.79, -0.65, -0.5, 1.2, 1.9, 2.6, -2.75];
+const pair = [-2.3, -2.3 + Math.PI];
+const globe = sketchCircle(rand, ...C, CR);
+const globe2 = sketchCircle(rand, ...C, CR - 1.5, { wobble: 0.016, grow: -0.02 });
+const crowdFigures = crowd.map((a) => jumper(rand, polar(C, CR, a), a, 26, 6));
+const pairFigures = pair.map((a) => jumper(rand, polar(C, CR, a), a, 26, 6));
+const pairArrows = pair.map((a) => arrow(polar(C, CR + 36, a), polar(C, CR + 66, a), 8));
+const centre = polar(C, CR * KEPT, ASIA);
+const centreLine = sketchLine(rand, C, centre, 0.6);
+const recoilArrow = arrow(C, polar(C, 46, ASIA + Math.PI), 9);
+
+// Scale: a log ruler of lengths, from 10⁻¹⁶ m to 10⁻¹⁰ m.
+const [LO, HI] = [-16, -9];
+const [X0, X1, AXIS] = [40, 600, 160];
+const xOf = (m: number) => X0 + logPosition(m, 10 ** LO, 10 ** HI) * (X1 - X0);
+const ruler = sketchLine(rand, [X0, AXIS], [X1, AXIS], 1.2);
+const decades = Array.from({ length: HI - LO + 1 }, (_, i) => LO + i);
+const ticks = decades.map((e) => ({ e, x: xOf(10 ** e), d: sketchLine(rand, [xOf(10 ** e), AXIS - 7], [xOf(10 ** e), AXIS + 7], 0.4) }));
+const recoil = recoilM(JUMP_M);
+const marks = [
+  { m: LENGTHS.protonRadius, y: AXIS - 78, color: 'var(--blue)', text: fr ? `rayon du proton : ${f.protonFm} fm` : `proton radius: ${f.protonFm} fm`, anchor: 'start' as const },
+  { m: recoil, y: AXIS - 34, color: 'var(--chalk-yellow)', text: fr ? `recul de la Terre : ${f.recoilFm} fm` : `Earth’s recoil: ${f.recoilFm} fm`, anchor: 'start' as const },
+  { m: LENGTHS.bohrRadius, y: AXIS - 122, color: 'var(--chalk)', text: fr ? `rayon d’un atome d’hydrogène : ${f.atomFm} fm` : `hydrogen atom radius: ${f.atomFm} fm`, anchor: 'end' as const },
+].map((k) => ({ ...k, x: xOf(k.m), stem: sketchLine(rand, [xOf(k.m), AXIS], [xOf(k.m), k.y + (k.y < AXIS ? 6 : -20)], 0.6) }));
+
+const labels = {
+  recoil: fr
+    ? { scene: 'Schéma : un sauteur pousse le sol pour monter ; le sol recule, et le centre de masse de la Terre avec lui, d’un tout petit peu dans l’autre sens. À l’atterrissage, tout revient en place.', a: 'le sauteur monte', b: 'la Terre recule,', c: 'beaucoup moins', d: 'avant le saut' }
+    : { scene: 'Diagram: a jumper pushes on the ground to rise; the ground moves back, and the Earth’s centre of mass with it, by a tiny amount the other way. On landing, everything returns to its place.', a: 'the jumper rises', b: 'the Earth moves back,', c: 'far less', d: 'before the jump' },
+  mass: fr
+    ? { scene: `Schéma : la Terre et l’humanité aux deux bouts d’une tige. L’humanité pèse ${f.humanityMt} de tonnes, la Terre ${f.massRatio} de fois plus. Leur centre de masse se trouve presque au centre de la Terre.`, a: 'humanité :', b: `${f.humanityMt} de t`, c: `Terre : ${f.massRatio}`, d: 'de fois plus', e: 'centre de masse' }
+    : { scene: `Diagram: the Earth and humanity at the two ends of a rod. Humanity weighs ${f.humanityMt} tonnes, the Earth ${f.massRatio} times more. Their centre of mass sits almost at the centre of the Earth.`, a: 'humanity:', b: `${f.humanityMt} t`, c: `Earth: ${f.massRatio}`, d: 'times more', e: 'centre of mass' },
+  cancel: fr
+    ? { scene: `Schéma : des sauteurs tout autour du globe, plus nombreux d’un côté. Deux sauteurs opposés poussent la Terre en sens contraires et s’annulent. Le centre démographique est à ${f.centreKm} km du centre de la Terre ; la Terre recule à l’opposé. Les positions sont dessinées, pas mesurées.`, a: 's’annulent', b: 'centre', c: 'démographique', d: `${f.centreKm} km`, e: 'recul' }
+    : { scene: `Diagram: jumpers all around the globe, more of them on one side. Two opposite jumpers push the Earth in opposite directions and cancel. The demographic centre is ${f.centreKm} km from the centre of the Earth; the Earth moves back the other way. The positions are drawn, not measured.`, a: 'cancel out', b: 'demographic', c: 'centre', d: `${f.centreKm} km`, e: 'recoil' },
+  scale: fr
+    ? { scene: `Règle logarithmique des longueurs, de 10^${LO} à 10^${HI} mètre : le rayon du proton, ${f.protonFm} fm ; le recul de la Terre pour un saut de ${f.jumpCm} cm, ${f.recoilFm} fm ; le rayon d’un atome d’hydrogène, ${f.atomFm} fm.`, unit: 'mètres' }
+    : { scene: `Logarithmic ruler of lengths, from 10^${LO} to 10^${HI} metre: the proton radius, ${f.protonFm} fm; the Earth’s recoil for a ${f.jumpCm} cm jump, ${f.recoilFm} fm; the radius of a hydrogen atom, ${f.atomFm} fm.`, unit: 'metres' },
+}[name];
+const viewBox = { recoil: '0 0 460 300', mass: '0 0 460 300', cancel: '0 0 460 340', scale: '0 0 640 240' }[name];
+const strokes = (paths: string[], t: number, step = 0.08) => paths.map((d, i) => ({ d, style: draw(t + i * step, 0.15) }));
+---
+
+<Scene {viewBox} label={labels.scene} {locale}>
+  {
+    name === 'recoil' && (
+      <>
+        <defs>
+          <clipPath id="jump-recoil-ground">
+            <circle cx={G.x} cy={G.top + G.R} r={G.R - 1} />
+          </clipPath>
+        </defs>
+        <g clip-path="url(#jump-recoil-ground)" stroke="var(--green)" stroke-width="1.5" opacity="0.5" fill="none" stroke-linecap="round">
+          {groundLines.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(0.5 + i * 0.01, 0.2)} />)}
+        </g>
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path class="draw" pathLength="1" d={ground} stroke="var(--chalk)" stroke-width="2.3" style={draw(0, 0.8)} />
+          <g stroke="var(--chalk)" stroke-width="1.6" opacity="0.45">{strokes(footprint, 1).map((p) => <path class="draw" pathLength="1" {...p} />)}</g>
+          <g stroke="var(--chalk)" stroke-width="2.3">{strokes(oneJumper, 1.6).map((p) => <path class="draw" pathLength="1" {...p} />)}</g>
+          <g stroke="var(--chalk-yellow)" stroke-width="2.4">{strokes(upArrow, 2.4, 0.3).map((p) => <path class="draw" pathLength="1" {...p} />)}</g>
+          <g stroke="var(--pink)" stroke-width="2.4">{strokes(downArrow, 3.2, 0.2).map((p) => <path class="draw" pathLength="1" {...p} />)}</g>
+        </g>
+        <g class="labels">
+          <Annotation x={G.x - 110} y={G.top + 44} t={1.2} anchor="middle">{labels.d}</Annotation>
+          <Annotation x={G.x + 72} y={G.top - 40} t={2.8}>{labels.a}</Annotation>
+          <Annotation x={G.x + 16} y={G.top + 44} t={3.5}>{labels.b}</Annotation>
+          <Annotation x={G.x + 16} y={G.top + 70} t={3.7}>{labels.c}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'mass' && (
+      <>
+        <defs>
+          <clipPath id="jump-mass-earth">
+            <circle cx={M.earth[0]} cy={M.earth[1]} r={M.r - 1} />
+          </clipPath>
+        </defs>
+        <g clip-path="url(#jump-mass-earth)" stroke="var(--blue)" stroke-width="1.5" opacity="0.45" fill="none" stroke-linecap="round">
+          {massHatch.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(0.7 + i * 0.02, 0.2)} />)}
+        </g>
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path class="draw" pathLength="1" d={massEarth} stroke="var(--chalk)" stroke-width="2.3" style={draw(0, 0.9)} />
+          <path class="draw" pathLength="1" d={rod} stroke="var(--chalk)" stroke-width="2" style={draw(1.2, 0.5)} />
+          <g stroke="var(--chalk)" stroke-width="1.8">{massCrowd.map((fig, k) => strokes(fig, 1.7 + k * 0.2, 0.03).map((p) => <path class="draw" pathLength="1" {...p} />))}</g>
+          <g stroke="var(--chalk-yellow)" stroke-width="2.6">{strokes(cross, 3.2, 0.15).map((p) => <path class="draw" pathLength="1" {...p} />)}</g>
+          <path class="draw" pathLength="1" d={crossLeader} stroke="var(--chalk-yellow)" stroke-width="1.4" style={draw(3.5, 0.3)} />
+        </g>
+        <g class="labels">
+          <Annotation x={M.crowd} y={M.earth[1] - 56} t={2.6} anchor="middle">{labels.a}</Annotation>
+          <Annotation x={M.crowd} y={M.earth[1] - 30} t={2.75} anchor="middle">{labels.b}</Annotation>
+          <Annotation x={M.earth[0]} y={M.earth[1] - M.r - 40} t={1} anchor="middle">{labels.c}</Annotation>
+          <Annotation x={M.earth[0]} y={M.earth[1] - M.r - 14} t={1.15} anchor="middle">{labels.d}</Annotation>
+          <Annotation x={M.earth[0] + 64} y={M.earth[1] + 122} t={3.8}>{labels.e}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'cancel' && (
+      <>
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path class="draw" pathLength="1" d={globe} stroke="var(--chalk)" stroke-width="2.3" style={draw(0, 1)} />
+          <path class="draw" pathLength="1" d={globe2} stroke="var(--chalk)" stroke-width="1.2" opacity="0.5" style={draw(0.2, 1)} />
+          <g stroke="var(--chalk)" stroke-width="1.6">{crowdFigures.map((fig, k) => strokes(fig, 1 + k * 0.12, 0.03).map((p) => <path class="draw" pathLength="1" {...p} />))}</g>
+          <g stroke="var(--blue)" stroke-width="2">
+            {pairFigures.map((fig, k) => strokes(fig, 2.8 + k * 0.4, 0.03).map((p) => <path class="draw" pathLength="1" {...p} />))}
+            {pairArrows.map((a, k) => strokes(a, 3.6 + k * 0.4, 0.2).map((p) => <path class="draw" pathLength="1" {...p} />))}
+          </g>
+          <path class="draw" pathLength="1" d={centreLine} stroke="var(--chalk-yellow)" stroke-width="1.6" style={draw(4.6, 0.5)} />
+          <g stroke="var(--pink)" stroke-width="2.6">{strokes(recoilArrow, 5.6, 0.25).map((p) => <path class="draw" pathLength="1" {...p} />)}</g>
+        </g>
+        <circle class="pop" cx={centre[0]} cy={centre[1]} r="4.5" fill="var(--chalk-yellow)" style="--t:5.1s" />
+        <circle class="pop" cx={C[0]} cy={C[1]} r="2.5" fill="var(--chalk)" style="--t:4.6s" />
+        <g class="labels">
+          <Annotation x={polar(C, CR + 72, pair[0])[0] - 4} y={polar(C, CR + 72, pair[0])[1] - 6} t={4.1} anchor="middle">{labels.a}</Annotation>
+          <Annotation x={polar(C, CR + 70, pair[1])[0]} y={polar(C, CR + 70, pair[1])[1] + 20} t={4.4} anchor="middle">{labels.a}</Annotation>
+          <Annotation x={C[0] + CR + 40} y={C[1] - 24} t={5.2}>{labels.b}</Annotation>
+          <Annotation x={C[0] + CR + 40} y={C[1] + 2} t={5.35}>{labels.c}</Annotation>
+          <Annotation x={C[0] + CR + 40} y={C[1] + 28} t={5.5}>{labels.d}</Annotation>
+          <Annotation x={polar(C, 46, ASIA + Math.PI)[0] + 12} y={polar(C, 46, ASIA + Math.PI)[1] + 22} t={6}>{labels.e}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'scale' && (
+      <>
+        <g fill="none" stroke="var(--chalk)" stroke-linecap="round">
+          <path class="draw" pathLength="1" d={ruler} stroke-width="2.3" style={draw(0, 1)} />
+          {ticks.map(({ d }, i) => <path class="draw" pathLength="1" {d} stroke-width="1.8" style={draw(0.4 + i * 0.06, 0.12)} />)}
+        </g>
+        {
+          marks.map((k, i) => (
+            <>
+              <path class="draw" pathLength="1" d={k.stem} fill="none" stroke={k.color} stroke-width="2.6" stroke-linecap="round" style={draw(1.2 + i * 0.7, 0.35)} />
+              <circle class="pop" cx={k.x} cy={AXIS} r="5" fill={k.color} style={`--t:${1.2 + i * 0.7}s`} />
+            </>
+          ))
+        }
+        <g class="labels">
+          {ticks.map(({ e, x }, i) => (
+            <Annotation x={x} y={AXIS + 30} t={0.6 + i * 0.06} anchor="middle">
+              {'10'}
+              <tspan dy="-9" font-size="14">{String(e).replace('-', '−')}</tspan>
+            </Annotation>
+          ))}
+          {marks.map((k, i) => (
+            <Annotation x={k.anchor === 'end' ? k.x + 6 : k.x - 6} y={k.y} t={1.5 + i * 0.7} anchor={k.anchor}>{k.text}</Annotation>
+          ))}
+          <Annotation x={X0} y={AXIS + 64} t={0.9}>{labels.unit}</Annotation>
+        </g>
+      </>
+    )
+  }
+</Scene>
+
+<style>
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

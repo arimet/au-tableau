@@ -1,0 +1,91 @@
+---
+// Opening scene: people jump all around the globe, more of them on one side; the Earth moves back the
+// other way, by a few femtometres (the arrow is drawn far larger than life).
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchCircle, sketchLine, arrowHead, hatch, type Pt } from '../../../lib/chalk';
+import type { Locale } from '../../../lib/i18n';
+import { figures } from './data';
+import { jumper } from './jumper';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng(2102);
+
+const C: Pt = [250, 210];
+const R = 118;
+const polar = (r: number, a: number): Pt => [C[0] + r * Math.cos(a), C[1] + r * Math.sin(a)];
+
+const outline = sketchCircle(rand, ...C, R);
+const outline2 = sketchCircle(rand, ...C, R - 1.5, { wobble: 0.016, grow: -0.02 });
+const shade = hatch(rand, ...C, R, 7, 0.62);
+
+// Jumpers: crowded towards the upper right, sparse elsewhere. Drawn, not measured.
+const crowd = [-1.5, -1.3, -1.12, -0.97, -0.84, -0.72, -0.6, -0.48, -0.35, -0.2, -0.02, 0.4, 1.0, 1.45, 2.85, -2.2, -2.7];
+const people = crowd.map((a, i) => ({ strokes: jumper(rand, polar(R, a), a, 30, 8 + (i % 3) * 3), t: 1.3 + i * 0.1 }));
+
+// The Earth's recoil, away from the crowd.
+const away = -0.85 + Math.PI;
+const tip = polar(64, away);
+const recoil = [sketchLine(rand, C, tip, 0.6), ...arrowHead(rand, tip, away, 11)];
+
+const text = fr
+  ? {
+      label: `Schéma : des humains sautent tout autour de la Terre, plus nombreux d’un côté. Le centre de la Terre recule de l’autre côté, de ${f.recoilFm} femtomètres pour un saut de ${f.jumpCm} cm ; la flèche est très exagérée.`,
+      jumps: `${f.people} de sauts`,
+      recoil: [`le centre de la Terre`, `recule de ${f.recoilFm} fm`],
+      note: '(flèche très exagérée)',
+    }
+  : {
+      label: `Diagram: people jump all around the Earth, more of them on one side. The Earth’s centre moves back the other way, by ${f.recoilFm} femtometres for a ${f.jumpCm} cm jump; the arrow is greatly exaggerated.`,
+      jumps: `${f.people} jumps`,
+      recoil: ['the Earth’s centre', `moves back ${f.recoilFm} fm`],
+      note: '(arrow greatly exaggerated)',
+    };
+const line = (d: string, t: number, dur: number) => ({ d, style: `--t:${t}s;--d:${dur}s` });
+---
+
+<Scene viewBox="0 0 600 400" label={text.label} {locale}>
+  <defs>
+    <clipPath id="jump-hero-earth"><circle cx={C[0]} cy={C[1]} r={R - 1} /></clipPath>
+  </defs>
+
+  <g clip-path="url(#jump-hero-earth)" stroke="var(--blue)" stroke-width="1.5" opacity="0.45" fill="none" stroke-linecap="round">
+    {shade.map((d, i) => <path class="draw" pathLength="1" {d} style={`--t:${(0.8 + i * 0.015).toFixed(3)}s;--d:.2s`} />)}
+  </g>
+
+  <g fill="none" stroke="var(--chalk)" stroke-linecap="round" stroke-linejoin="round">
+    <path class="draw" pathLength="1" d={outline} stroke-width="2.3" style="--d:1.1s" />
+    <path class="draw" pathLength="1" d={outline2} stroke-width="1.3" opacity="0.55" style="--t:.25s;--d:1.1s" />
+    {
+      people.map((p) => (
+        <g stroke-width="1.8">
+          {p.strokes.map((d, k) => <path class="draw" pathLength="1" {...line(d, p.t + k * 0.03, 0.12)} />)}
+        </g>
+      ))
+    }
+    {recoil.map((d, i) => <path class="draw" pathLength="1" {...line(d, 3.8 + (i ? 0.45 : 0), i ? 0.12 : 0.45)} stroke="var(--pink)" stroke-width="3" />)}
+  </g>
+  <circle class="pop" cx={C[0]} cy={C[1]} r="3" fill="var(--chalk)" style="--t:3.6s" />
+
+  <g class="labels">
+    <Annotation x={340} y={36} t={3.2}>{text.jumps}</Annotation>
+    <Annotation x={24} y={330} t={4.5}>{text.recoil[0]}</Annotation>
+    <Annotation x={24} y={358} t={4.7}>{text.recoil[1]}</Annotation>
+    <Annotation x={24} y={386} t={4.9}>{text.note}</Annotation>
+  </g>
+</Scene>
+
+<style>
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

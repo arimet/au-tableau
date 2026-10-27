@@ -1,0 +1,70 @@
+---
+// The height of the jump (log scale) and how far the Earth moves back, recomputed live, with the recoil
+// measured against a proton and a hydrogen atom.
+import Slider from '../../../components/Slider.astro';
+import type { Locale } from '../../../lib/i18n';
+import { SLIDER, recoilPhrases } from './data';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+const start = recoilPhrases(10 ** SLIDER.valueExp, locale);
+---
+
+<div class="jump-slider" data-locale={locale}>
+  <Slider
+    id="jump-height"
+    label={fr ? 'Hauteur du saut, en mètres' : 'Height of the jump, in metres'}
+    min={SLIDER.minExp}
+    max={SLIDER.maxExp}
+    step={SLIDER.step}
+    scale="log"
+    value={SLIDER.valueExp}
+    {locale}
+  />
+  <p class="sentence" aria-live="polite">
+    {fr ? 'Pour un saut de ' : 'For a jump of '}<span class="height">{start.height}</span>{fr ? ', le centre de la Terre recule de ' : ', the Earth’s centre moves back by '}<b class="result recoil">{start.recoil}</b>.
+    <br />
+    {fr ? 'C’est ' : 'That is '}<span class="proton">{start.proton}</span>,
+    <br />
+    {fr ? 'et ' : 'and '}<span class="atom">{start.atom}</span>{fr ? ' fois moins que le rayon d’un atome d’hydrogène.' : ' times smaller than the radius of a hydrogen atom.'}
+  </p>
+</div>
+
+<script>
+  import { recoilPhrases } from './data';
+
+  for (const box of document.querySelectorAll<HTMLElement>('.jump-slider')) {
+    const input = box.querySelector<HTMLInputElement>('input[type="range"]')!;
+    const locale = box.dataset.locale === 'en' ? 'en' : 'fr';
+    const out = (cls: string) => box.querySelector(`.${cls}`)!;
+    input.addEventListener('input', () => {
+      const p = recoilPhrases(10 ** Number(input.value), locale);
+      out('height').textContent = p.height;
+      out('recoil').textContent = p.recoil;
+      out('proton').textContent = p.proton;
+      out('atom').textContent = p.atom;
+    });
+  }
+</script>
+
+<style>
+  .jump-slider {
+    padding: 1rem 0;
+  }
+
+  .sentence {
+    color: var(--chalk);
+    font-size: 1.2rem;
+    line-height: 1.9;
+  }
+
+  .result {
+    color: var(--chalk-yellow);
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+</style>

@@ -1,0 +1,118 @@
+---
+topic: earth-jump
+locale: en
+slug: humanity-jumps-earth-moves
+question: "If All 8 Billion Humans Jumped at Once, Would the Earth Move?"
+hook: "Eight billion humans weigh about four hundred million tonnes, and the Earth fifteen trillion times more. When we jump, it moves back by at most a fifteen-trillionth of the height of our jump."
+discipline: Physics
+date: 2026-11-02
+answer: "Yes, by a hair, and only for the length of the jump. For a thirty-centimetre jump, the centre of the Earth would move back by about twelve femtometres. That is fourteen times the radius of a proton, and over four thousand times smaller than that of a hydrogen atom. Jumps on opposite sides of the globe cancel in part. Going by where big cities lie, about sixty per cent remains, because most humans live in Asia. On landing, the Earth returns to its place."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import JumpSlider from './JumpSlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('en');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="recoil" locale="en" />
+
+## When We Jump, the Earth Moves Back a Little
+
+To jump, we push the ground down with our legs. The ground pushes us up, and the Earth gets the same push downwards.
+
+The jumper and the Earth form a single system, whose centre of mass stays put. The jumper rises, and the heavier the Earth, the less it moves back.
+
+The Earth is not a rigid block. The push travels through it as seismic waves, which do not reach the far side of the globe during the jump. The recoil we compute is that of its centre of mass.
+
+On landing, the motion reverses: the jumper comes down and the Earth comes back up. Once everyone is on the ground, the Earth is back in its place.
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="mass" locale="en" />
+
+## The Earth Weighs Trillions of Times More Than Humanity
+
+In 2021, we numbered {f.population2021} humans<SourceRef id="gbd2024" sources={sources} />. The question counts {f.people}, and we keep that number.
+
+One team uses a mean mass of about {f.meanMass} kg per human, children included<SourceRef id="greenspoon2023" sources={sources} />. Humanity therefore weighs about {f.humanityMt} tonnes. The Earth weighs {f.massRatio} times more<SourceRef id="chen2015" sources={sources} />.
+
+Another study counts adults only: {f.adultCount} in 2005, weighing {f.adultMass} kg on average<SourceRef id="walpole2012" sources={sources} />. Its authors leave children out. With their mean for everyone, our results would grow by {f.adultExtra}.
+
+<ShowCalc calc={calc('mass')} sources={sources} locale="en">
+
+Geodesists measure the product GM, the Earth’s mass parameter, from the motion of satellites<SourceRef id="chen2015" sources={sources} />. We get the mass of the Earth by dividing it by the gravitational constant G<SourceRef id="tiesinga2021" sources={sources} />.
+
+Greenspoon and his co-authors find about {f.humansMt} million tonnes of humans<SourceRef id="greenspoon2023" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="cancel" locale="en" />
+
+## Jumps on Opposite Sides of the Globe Cancel Out in Part
+
+On a round Earth, up does not point the same way everywhere. Two jumpers at opposite points of the globe push the Earth in opposite directions, and their pushes cancel.
+
+Only the imbalance in where humans live counts. Two economists worked out the demographic centre of the world: the mean position of its inhabitants, in three dimensions. It lies about {f.centreKm} km from the centre of the Earth, under Central Asia<SourceRef id="grether2010" sources={sources} />.
+
+If humans were spread in equal numbers over the globe, this point would sit at the centre of the Earth, and every jump would cancel. Compared with the radius of the Earth, its distance gives the share of the jumps that remains: about **{f.kept}**.
+
+</Step>
+
+<Step>
+  <JumpSlider slot="figure" locale="en" />
+
+## An Ordinary Jump Moves the Earth’s Centre Back by a Few Femtometres
+
+If all humans jumped from the same spot, a {f.jumpCm} cm jump would move the centre of the Earth back by {f.fullFm} femtometres. A femtometre is a millionth of a billionth of a metre.
+
+Spread out as they are, the jumpers move the centre of the Earth back by about **{f.recoilFm} femtometres**, away from Central Asia. The {f.jumpCm} cm height is our choice, for jumpers of all ages.
+
+The slider varies the jump from {f.sliderMinCm} cm to {f.sliderMaxM} m. The recoil follows the height of the jump: a jump twice as high moves the Earth back twice as far.
+
+<ShowCalc calc={calc('recoil')} sources={sources} locale="en">
+
+Grether and Mathys compute the demographic centre from the {f.bigCities} cities of over a million people between {f.sampleFrom} and {f.sampleTo}, not from the whole population<SourceRef id="grether2010" sources={sources} />. They count inhabitants, not kilograms.
+
+And an adult weighs {f.asiaAdultMass} kg on average in Asia and {f.northAmericaAdultMass} kg in North America<SourceRef id="walpole2012" sources={sources} />. Our result therefore gives an order of magnitude.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="scale" locale="en" />
+
+## Larger Than a Proton, Far Smaller Than an Atom
+
+At the heart of the hydrogen atom sits a proton, with a radius of {f.protonFm} femtometres<SourceRef id="tiesinga2021" sources={sources} />. The Earth’s recoil is about {f.protonTimes} times that radius.
+
+The whole hydrogen atom has a radius of about {f.atomFm} femtometres<SourceRef id="tiesinga2021" sources={sources} />. The Earth’s recoil is {f.atomTimes} times smaller. With a jump of {f.protonJumpCm} cm, the Earth would move back by one proton radius.
+
+<ShowCalc calc={calc('scale')} sources={sources} locale="en">
+
+The radius of a hydrogen atom here is the Bohr radius. The radius of the proton is that of its electric charge.
+
+</ShowCalc>
+
+</Step>
+
+<Aside>
+
+## A Jumping Crowd Shows Up on a Seismometer
+
+A seismometer {f.diazDistanceM} m from the FC Barcelona stadium records fans jumping after a goal. The stadium holds up to {f.diazGoalCrowd} people. Up to {f.diazConcertCrowd} spectators at a Bruce Springsteen concert there also made the ground shake<SourceRef id="diaz2017" sources={sources} />.
+
+Close to the jumpers, the ground shakes far more than the recoil we compute, because the push stays local. These measurements concern one crowd and a nearby seismometer. We found no peer-reviewed publication that puts a figure on the effect of all humanity jumping on the ground.
+
+</Aside>

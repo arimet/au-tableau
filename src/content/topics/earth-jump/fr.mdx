@@ -1,0 +1,118 @@
+---
+topic: earth-jump
+locale: fr
+slug: humanite-saute-terre-bouge
+question: "Si les 8 milliards d’humains sautaient en même temps, la Terre bougerait-elle ?"
+hook: "Huit milliards d’humains pèsent environ quatre cents millions de tonnes, et la Terre quinze mille milliards de fois plus. Quand nous sautons, elle recule au plus d’une distance quinze mille milliards de fois plus courte que notre saut."
+discipline: Physique
+date: 2026-11-02
+answer: "Oui, d’un rien, et le temps du saut seulement. Pour un saut de trente centimètres, le centre de la Terre reculerait d’environ douze femtomètres. C’est quatorze fois le rayon d’un proton, et plus de quatre mille fois moins que celui d’un atome d’hydrogène. Les sauts de part et d’autre du globe se compensent en partie. D’après la répartition des grandes villes, il en reste environ soixante pour cent, car la plupart des humains vivent en Asie. À l’atterrissage, la Terre revient à sa place."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import JumpSlider from './JumpSlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('fr');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="recoil" locale="fr" />
+
+## Quand nous sautons, la Terre recule un peu
+
+Pour sauter, nous poussons le sol vers le bas avec nos jambes. Le sol nous pousse vers le haut, et la Terre reçoit la même poussée vers le bas.
+
+Le sauteur et la Terre forment un seul système, dont le centre de masse ne bouge pas. Le sauteur monte, et la Terre recule d’autant moins qu’elle est plus lourde.
+
+La Terre n’est pas un bloc rigide : la poussée s’y propage sous forme d’ondes sismiques, qui n’atteignent pas l’autre côté du globe pendant le saut. Le recul que nous calculons est celui de son centre de masse.
+
+À l’atterrissage, le mouvement s’inverse : le sauteur redescend et la Terre remonte. Une fois tout le monde au sol, la Terre a retrouvé sa place.
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="mass" locale="fr" />
+
+## La Terre pèse {f.massRatio} de fois plus que l’humanité
+
+En 2021, nous étions {f.population2021} d’humains<SourceRef id="gbd2024" sources={sources} />. La question en compte {f.people}, et nous gardons ce nombre.
+
+Une équipe retient une masse moyenne d’un humain, enfants compris, d’environ {f.meanMass} kg<SourceRef id="greenspoon2023" sources={sources} />. L’humanité pèse donc environ {f.humanityMt} de tonnes. La Terre pèse {f.massRatio} de fois plus<SourceRef id="chen2015" sources={sources} />.
+
+Une autre étude ne compte que les adultes : {f.adultCount} en 2005, de {f.adultMass} kg en moyenne<SourceRef id="walpole2012" sources={sources} />. Ses auteurs laissent les enfants de côté. Avec leur moyenne pour tout le monde, nos résultats augmenteraient de {f.adultExtra}.
+
+<ShowCalc calc={calc('mass')} sources={sources} locale="fr">
+
+Les géodésiens mesurent le produit GM, le paramètre de masse de la Terre, par le mouvement des satellites<SourceRef id="chen2015" sources={sources} />. Nous obtenons la masse de la Terre en le divisant par la constante de la gravitation G<SourceRef id="tiesinga2021" sources={sources} />.
+
+Greenspoon et ses coauteurs trouvent environ {f.humansMt} millions de tonnes d’humains<SourceRef id="greenspoon2023" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="cancel" locale="fr" />
+
+## Les sauts de part et d’autre du globe se compensent en partie
+
+Sur une Terre ronde, le haut n’est pas dans la même direction partout. Deux sauteurs placés aux antipodes poussent la Terre dans des sens opposés, et leurs poussées s’annulent.
+
+Seul compte le déséquilibre dans la répartition des humains. Deux économistes ont calculé le centre démographique du monde : la position moyenne des habitants, en trois dimensions. Il se trouve à environ {f.centreKm} km du centre de la Terre, sous l’Asie centrale<SourceRef id="grether2010" sources={sources} />.
+
+Avec des humains répartis de façon égale, ce point serait au centre de la Terre, et tous les sauts s’annuleraient. Rapportée au rayon de la Terre, sa distance donne la part des sauts qui reste : environ **{f.kept}**.
+
+</Step>
+
+<Step>
+  <JumpSlider slot="figure" locale="fr" />
+
+## Un saut de {f.jumpCm} cm fait reculer le centre de la Terre de {f.recoilFm} femtomètres
+
+Si tous les humains sautaient du même endroit, un saut de {f.jumpCm} cm ferait reculer le centre de la Terre de {f.fullFm} femtomètres. Un femtomètre vaut un millionième de milliardième de mètre.
+
+Répartis comme ils le sont, les sauteurs font reculer le centre de la Terre d’environ **{f.recoilFm} femtomètres**, à l’opposé de l’Asie centrale. La hauteur de {f.jumpCm} cm est notre choix, pour des sauteurs de tous âges.
+
+Le curseur fait varier le saut de {f.sliderMinCm} cm à {f.sliderMaxM} m. Le recul suit la hauteur du saut : un saut deux fois plus haut fait reculer la Terre deux fois plus.
+
+<ShowCalc calc={calc('recoil')} sources={sources} locale="fr">
+
+Grether et Mathys calculent le centre démographique avec les {f.bigCities} villes de plus d’un million d’habitants entre {f.sampleFrom} et {f.sampleTo}, pas avec toute la population<SourceRef id="grether2010" sources={sources} />. Ils comptent des habitants, pas des kilogrammes.
+
+Or un adulte pèse en moyenne {f.asiaAdultMass} kg en Asie et {f.northAmericaAdultMass} kg en Amérique du Nord<SourceRef id="walpole2012" sources={sources} />. Notre résultat donne donc un ordre de grandeur.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="scale" locale="fr" />
+
+## Plus grand qu’un proton, bien plus petit qu’un atome
+
+Au cœur de l’atome d’hydrogène se trouve un proton, de {f.protonFm} femtomètre de rayon<SourceRef id="tiesinga2021" sources={sources} />. Le recul de la Terre vaut environ {f.protonTimes} fois ce rayon.
+
+L’atome d’hydrogène entier mesure environ {f.atomFm} femtomètres de rayon<SourceRef id="tiesinga2021" sources={sources} />. Le recul de la Terre est {f.atomTimes} fois plus petit. Avec un saut de {f.protonJumpCm} cm, la Terre ne reculerait que d’un rayon de proton.
+
+<ShowCalc calc={calc('scale')} sources={sources} locale="fr">
+
+Le rayon d’un atome d’hydrogène est ici le rayon de Bohr. Le rayon du proton est celui de sa charge électrique.
+
+</ShowCalc>
+
+</Step>
+
+<Aside>
+
+## Une foule qui saute se voit sur un sismomètre
+
+Un sismomètre installé à {f.diazDistanceM} m du stade du FC Barcelone enregistre les supporters qui sautent après un but. Le stade accueille jusqu’à {f.diazGoalCrowd} personnes. Jusqu’à {f.diazConcertCrowd} spectateurs d’un concert de Bruce Springsteen y ont aussi fait vibrer le sol<SourceRef id="diaz2017" sources={sources} />.
+
+Près des sauteurs, le sol tremble bien plus que le recul que nous calculons, car la poussée reste locale. Ces mesures portent sur une foule et un sismomètre proche. Nous n’avons trouvé aucune publication relue qui chiffre l’effet d’un saut de toute l’humanité sur le sol.
+
+</Aside>

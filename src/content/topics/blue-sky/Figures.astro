@@ -1,0 +1,186 @@
+---
+// Small figures for the story: scattering per colour, the sky's spectrum, and the blue-plus-white mix
+// that looks the same to the eye.
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchLine, arrowHead, hatch, smoothPath, type Pt } from '../../../lib/chalk';
+import type { Locale } from '../../../lib/i18n';
+import { figures, scatterVsRed, sunVsRed, skyVsRed, WAVELENGTHS as W, MATCH, VIOLET_CHALK } from './data';
+
+interface Props {
+  name: 'scatter' | 'spectrum' | 'match';
+  locale: Locale;
+}
+
+const { name, locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng({ scatter: 31, spectrum: 32, match: 33 }[name]);
+const draw = (t: number, d: number) => `--t:${t}s;--d:${d}s`;
+const box = (x0: number, y0: number, x1: number, y1: number) =>
+  [sketchLine(rand, [x0, y1], [x0, y0], 0.8), sketchLine(rand, [x0, y0], [x1, y0], 0.8), sketchLine(rand, [x1, y0], [x1, y1], 0.8)];
+
+// Scatter: one bar per colour, height ∝ (700 / λ)⁴.
+const BASE = 240, PX = 19;
+const bars = [
+  { nm: W.VIOLET, color: VIOLET_CHALK, x: 70, ratio: f.violetVsRed },
+  { nm: W.BLUE, color: 'var(--blue)', x: 200, ratio: f.blueVsRed },
+  { nm: W.RED, color: 'var(--pink)', x: 330, ratio: '1' },
+].map((b) => {
+  const top = BASE - scatterVsRed(b.nm) * PX;
+  return { ...b, top, outline: box(b.x, top, b.x + 70, BASE), fill: hatch(rand, b.x + 35, (top + BASE) / 2, Math.max(35, (BASE - top) / 2), 6, 0.8) };
+});
+const barBase = sketchLine(rand, [40, BASE], [430, BASE], 1);
+
+// Spectrum: three curves from 400 to 700 nm, each relative to its value at 700 nm.
+const [X0, X1, Y0, YK] = [60, 420, 262, 20];
+const xOf = (nm: number) => X0 + ((nm - W.VIOLET) / (W.RED - W.VIOLET)) * (X1 - X0);
+const yOf = (v: number) => Y0 - v * YK;
+const curve = (fn: (nm: number) => number) => {
+  const pts: Pt[] = [];
+  for (let nm = W.VIOLET; nm <= W.RED; nm += 20) pts.push([xOf(nm), yOf(fn(nm))]);
+  return smoothPath(pts);
+};
+const curves = [
+  { d: curve(skyVsRed), color: 'var(--blue)', text: fr ? 'lumière du ciel' : 'sky light' },
+  { d: curve(scatterVsRed), color: 'var(--chalk)', text: fr ? 'diffusion' : 'scattering' },
+  { d: curve(sunVsRed), color: 'var(--chalk-yellow)', text: fr ? 'Soleil' : 'Sun' },
+].map((c, i) => ({ ...c, key: sketchLine(rand, [250, 66 + i * 26], [276, 66 + i * 26], 0.4), y: 72 + i * 26 }));
+const xAxis = sketchLine(rand, [X0 - 10, Y0], [X1 + 10, Y0], 1);
+const yAxis = sketchLine(rand, [X0 - 10, Y0], [X0 - 10, 30], 1);
+const xTicks = [W.VIOLET, W.BLUE, W.RED].map((nm) => ({ nm, d: sketchLine(rand, [xOf(nm), Y0 - 6], [xOf(nm), Y0 + 6], 0.3) }));
+
+// Match: white light at the height of 1, a 10 nm blue band 1 / 0.049 times higher.
+const [MB, WHITE] = [222, 8];
+const mx = (nm: number) => 50 + (nm - W.VIOLET) * 1.2;
+const band = { x0: mx(W.MATCH - MATCH.bandNm / 2), x1: mx(W.MATCH + MATCH.bandNm / 2), top: MB - WHITE * MATCH.bluePerWhite };
+const bandOutline = box(band.x0, band.top, band.x1, MB);
+const bandFill = hatch(rand, (band.x0 + band.x1) / 2, (band.top + MB) / 2, (MB - band.top) / 2, 5, 0.9);
+const whiteTop = sketchLine(rand, [mx(W.VIOLET), MB - WHITE], [mx(W.RED), MB - WHITE], 0.6);
+const matchAxis = sketchLine(rand, [mx(W.VIOLET) - 6, MB], [mx(W.RED) + 6, MB], 1);
+const ends = [W.VIOLET, W.RED].map((nm) => ({ nm, d: sketchLine(rand, [mx(nm), MB - 6], [mx(nm), MB + 6], 0.3) }));
+const cones = (['S', 'M', 'L'] as const).map((c) => ({ c, x: mx(W.CONES[c]), d: sketchLine(rand, [mx(W.CONES[c]), MB + 4], [mx(W.CONES[c]), MB + 16], 0.3) }));
+const pointer = (() => {
+  const from: Pt = [262, 140], to: Pt = [band.x1 + 30, MB - WHITE - 4];
+  const angle = Math.atan2(to[1] - from[1], to[0] - from[0]);
+  return [sketchLine(rand, from, to, 2), ...arrowHead(rand, to, angle, 9)];
+})();
+
+const labels = {
+  scatter: fr
+    ? { scene: `Diagramme en barres : par rapport au rouge à ${f.redNm} nm, l’air diffuse ${f.violetVsRed} fois plus le violet à ${f.violetNm} nm et ${f.blueVsRed} fois plus le bleu à ${f.blueNm} nm.`, a: ['diffusion,', 'par rapport au rouge'] }
+    : { scene: `Bar chart: compared with red at ${f.redNm} nm, the air scatters violet at ${f.violetNm} nm ${f.violetVsRed} times more, and blue at ${f.blueNm} nm ${f.blueVsRed} times more.`, a: ['scattering,', 'compared with red'] },
+  spectrum: fr
+    ? { scene: `Courbes de ${f.violetNm} à ${f.redNm} nm, chacune rapportée au rouge. La lumière du Soleil varie peu. La diffusion grimpe vers le violet. Dans ce modèle, leur produit, la lumière du ciel, grimpe aussi : ${f.skyVioletVsBlue} fois plus de violet que de bleu.`, a: 'par rapport au rouge' }
+    : { scene: `Curves from ${f.violetNm} to ${f.redNm} nm, each relative to red. Sunlight varies little. Scattering climbs toward violet. In this model, their product, the sky light, climbs too: ${f.skyVioletVsBlue} times more violet than blue.`, a: 'compared with red' },
+  match: fr
+    ? { scene: `Spectre d’un mélange : une lumière blanche égale de ${f.violetNm} à ${f.redNm} nm, et une bande bleue étroite à ${f.matchNm} nm. Pour l’œil, ce mélange a la couleur du ciel. Repères des pics des cônes S, M et L : ${f.coneS}, ${f.coneM} et ${f.coneL} nm.`, a: `bleu de ${f.matchNm} nm`, b: 'blanc', c: ['ce mélange,', 'pour l’œil :', 'couleur du ciel'], d: 'pics des cônes' }
+    : { scene: `Spectrum of a mix: an even white light from ${f.violetNm} to ${f.redNm} nm, and a narrow blue band at ${f.matchNm} nm. To the eye, this mix has the colour of the sky. Marks show the peaks of the S, M and L cones: ${f.coneS}, ${f.coneM} and ${f.coneL} nm.`, a: `${f.matchNm} nm blue`, b: 'white', c: ['this mix,', 'to the eye:', 'the sky’s colour'], d: 'cone peaks' },
+}[name];
+const viewBox = { scatter: '0 0 460 290', spectrum: '0 0 460 300', match: '0 0 460 300' }[name];
+---
+
+<Scene {viewBox} label={labels.scene} {locale}>
+  {
+    name === 'scatter' && (
+      <>
+        <defs>
+          {bars.map((b, i) => (
+            <clipPath id={`sky-bar-${i}`}>
+              <rect x={b.x + 1} y={b.top + 1} width="68" height={BASE - b.top - 1} />
+            </clipPath>
+          ))}
+        </defs>
+        <path class="draw" pathLength="1" d={barBase} fill="none" stroke="var(--chalk)" stroke-width="2.3" stroke-linecap="round" style={draw(0, 0.6)} />
+        {bars.map((b, i) => (
+          <>
+            <g clip-path={`url(#sky-bar-${i})`} stroke={b.color} stroke-width="1.6" opacity="0.7" fill="none" stroke-linecap="round">
+              {b.fill.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(1.2 + i * 0.6 + j * 0.02, 0.15)} />)}
+            </g>
+            <g fill="none" stroke={b.color} stroke-width="2.3" stroke-linecap="round">
+              {b.outline.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(0.6 + i * 0.6 + j * 0.12, 0.2)} />)}
+            </g>
+          </>
+        ))}
+        <g class="labels">
+          {bars.map((b, i) => (
+            <>
+              <Annotation x={b.x + 35} y={BASE + 28} t={0.6 + i * 0.6} anchor="middle">{`${b.nm} nm`}</Annotation>
+              <Annotation x={b.x + 35} y={b.top - 10} t={1.4 + i * 0.6} anchor="middle">{`×${b.ratio}`}</Annotation>
+            </>
+          ))}
+          {labels.a.map((line, i) => <Annotation x={190} y={40 + i * 24} t={0.2 + i * 0.1}>{line}</Annotation>)}
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'spectrum' && (
+      <>
+        <g fill="none" stroke="var(--chalk)" stroke-width="2" stroke-linecap="round">
+          <path class="draw" pathLength="1" d={xAxis} style={draw(0, 0.6)} />
+          <path class="draw" pathLength="1" d={yAxis} style={draw(0.3, 0.5)} />
+          {xTicks.map(({ d }, i) => <path class="draw" pathLength="1" {d} stroke-width="1.6" style={draw(0.6 + i * 0.08, 0.1)} />)}
+        </g>
+        {curves.map((c, i) => (
+          <path class="draw" pathLength="1" d={c.d} fill="none" stroke={c.color} stroke-width="2.6" stroke-linecap="round" style={draw(1 + i * 0.9, 0.8)} />
+        ))}
+        {curves.map((c, i) => (
+          <path class="draw" pathLength="1" d={c.key} fill="none" stroke={c.color} stroke-width="2.6" stroke-linecap="round" style={draw(1.5 + i * 0.9, 0.2)} />
+        ))}
+        <g class="labels">
+          {xTicks.map(({ nm }, i) => <Annotation x={xOf(nm)} y={Y0 + 28} t={0.7 + i * 0.08} anchor="middle">{`${nm} nm`}</Annotation>)}
+          {curves.map((c, i) => <Annotation x={284} y={c.y} t={1.6 + i * 0.9}><tspan fill={c.color}>{c.text}</tspan></Annotation>)}
+          <Annotation x={X0 + 120} y={34} t={0.4}>{labels.a}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'match' && (
+      <>
+        <defs>
+          <clipPath id="sky-match-band">
+            <rect x={band.x0 + 1} y={band.top + 1} width={band.x1 - band.x0 - 2} height={MB - band.top - 1} />
+          </clipPath>
+        </defs>
+        <g fill="none" stroke-linecap="round">
+          <path class="draw" pathLength="1" d={matchAxis} stroke="var(--chalk)" stroke-width="2" style={draw(0, 0.6)} />
+          <path class="draw" pathLength="1" d={whiteTop} stroke="var(--chalk)" stroke-width="2.6" style={draw(0.6, 0.7)} />
+          <g clip-path="url(#sky-match-band)" stroke="var(--blue)" stroke-width="1.5" opacity="0.8">
+            {bandFill.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(1.8 + i * 0.02, 0.12)} />)}
+          </g>
+          <g stroke="var(--blue)" stroke-width="2.3">
+            {bandOutline.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(1.3 + i * 0.12, 0.2)} />)}
+          </g>
+          <g stroke="var(--chalk-yellow)" stroke-width="2">
+            {pointer.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(3 + (i ? 0.4 : 0), i ? 0.12 : 0.4)} />)}
+          </g>
+          <g stroke="var(--chalk)" stroke-width="1.6" opacity="0.8">
+            {cones.map(({ d }, i) => <path class="draw" pathLength="1" {d} style={draw(2.4 + i * 0.1, 0.1)} />)}
+            {ends.map(({ d }, i) => <path class="draw" pathLength="1" {d} style={draw(0.3 + i * 0.1, 0.1)} />)}
+          </g>
+        </g>
+        <g class="labels">
+          <Annotation x={band.x1 + 8} y={band.top + 12} t={2}>{labels.a}</Annotation>
+          <Annotation x={mx(W.RED)} y={MB - WHITE - 10} t={1.2} anchor="end">{labels.b}</Annotation>
+          {labels.c.map((line, i) => <Annotation x={270} y={122 + i * 24} t={3.5 + i * 0.1}>{line}</Annotation>)}
+          {cones.map(({ c, x }, i) => <Annotation x={x} y={MB + 36} t={2.5 + i * 0.1} anchor="middle">{c}</Annotation>)}
+          <Annotation x={mx(W.RED)} y={MB + 36} t={2.9} anchor="end">{labels.d}</Annotation>
+          {ends.map(({ nm }, i) => <Annotation x={mx(nm)} y={MB + 66} t={0.4 + i * 0.1} anchor="middle">{`${nm} nm`}</Annotation>)}
+        </g>
+      </>
+    )
+  }
+</Scene>
+
+<style>
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

@@ -1,0 +1,79 @@
+---
+// Wavelength and what the sky makes of it, recomputed live: scattering, sunlight, and their product, each against red.
+import Slider from '../../../components/Slider.astro';
+import { formatNumberText } from '../../../lib/format';
+import type { Locale } from '../../../lib/i18n';
+import { SLIDER, WAVELENGTHS, scatterVsRed, sunVsRed, skyVsRed } from './data';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+const start = WAVELENGTHS.VIOLET;
+const show = (n: number) => formatNumberText(n, locale, 2);
+---
+
+<div class="wavelength-slider" data-locale={locale}>
+  <Slider
+    id="sky-wavelength"
+    label={fr ? `Longueur d’onde, en nanomètres (rouge à ${WAVELENGTHS.RED}, violet à ${WAVELENGTHS.VIOLET})` : `Wavelength, in nanometres (red at ${WAVELENGTHS.RED}, violet at ${WAVELENGTHS.VIOLET})`}
+    min={SLIDER.min}
+    max={SLIDER.max}
+    step={SLIDER.step}
+    scale="linear"
+    value={start}
+    {locale}
+  />
+  <p class="sentence" aria-live="polite">
+    {fr ? 'Diffusée par l’air : ' : 'Scattered by the air: '}
+    <b class="result scatter">{show(scatterVsRed(start))}</b>
+    {fr ? ` fois plus que le rouge.` : ` times more than red.`}
+    <br />
+    {fr ? 'Lumière du Soleil : ' : 'Sunlight: '}
+    <b class="result sun">{show(sunVsRed(start))}</b>
+    {fr ? ` fois celle du rouge.` : ` times that of red.`}
+    <br />
+    {fr ? 'Lumière du ciel : ' : 'Sky light: '}
+    <b class="result sky">{show(skyVsRed(start))}</b>
+    {fr ? ` fois celle du rouge.` : ` times that of red.`}
+  </p>
+</div>
+
+<script>
+  import { formatNumberText } from '../../../lib/format';
+  import { scatterVsRed, sunVsRed, skyVsRed } from './data';
+
+  for (const box of document.querySelectorAll<HTMLElement>('.wavelength-slider')) {
+    const input = box.querySelector<HTMLInputElement>('input[type="range"]')!;
+    const locale = box.dataset.locale === 'en' ? 'en' : 'fr';
+    const outputs = [
+      [box.querySelector('.scatter')!, scatterVsRed],
+      [box.querySelector('.sun')!, sunVsRed],
+      [box.querySelector('.sky')!, skyVsRed],
+    ] as const;
+    input.addEventListener('input', () => {
+      const nm = Number(input.value);
+      for (const [el, fn] of outputs) el.textContent = formatNumberText(fn(nm), locale, 2);
+    });
+  }
+</script>
+
+<style>
+  .wavelength-slider {
+    padding: 1rem 0;
+  }
+
+  .sentence {
+    color: var(--chalk);
+    font-size: 1.2rem;
+    line-height: 1.8;
+  }
+
+  .result {
+    color: var(--chalk-yellow);
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+</style>

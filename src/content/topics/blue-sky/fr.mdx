@@ -1,0 +1,93 @@
+---
+topic: blue-sky
+locale: fr
+slug: ciel-bleu-pas-violet
+question: "Pourquoi le ciel est bleu et pas violet ?"
+hook: "L’air diffuse davantage le violet que le bleu, et la lumière du ciel contient au moins autant de violet que de bleu. Le bleu vient de la façon dont nos yeux combinent ces couleurs."
+discipline: Physique
+date: 2026-11-16
+answer: "L’air diffuse le violet plus que le bleu, et le Soleil émet un peu moins de violet. Au zénith d’un ciel clair, la lumière du ciel contient au moins autant de violet que de bleu. Nos yeux comparent les réponses de trois sortes de cônes. Pour eux, ce mélange équivaut à un bleu pur dilué de blanc : un bleu pâle."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import WavelengthSlider from './WavelengthSlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('fr');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="scatter" locale="fr" />
+
+## L’air diffuse le violet {f.violetVsRed} fois plus que le rouge
+
+La lumière du Soleil contient toutes les couleurs. En traversant l’air, elle rencontre surtout des molécules d’azote et d’oxygène, qui en renvoient une part dans toutes les directions. C’est cette lumière renvoyée qui éclaire le ciel.
+
+Ces molécules ne traitent pas toutes les couleurs de la même façon. La part renvoyée varie comme l’inverse de la longueur d’onde puissance quatre<SourceRef id="smith2005" sources={sources} />. Elles diffusent le violet, à {f.violetNm} nanomètres, {f.violetVsRed} fois plus que le rouge à {f.redNm} nanomètres. Elles le diffusent {f.violetVsBlue} fois plus que le bleu à {f.blueNm} nanomètres.
+
+<ShowCalc calc={calc('scatter')} sources={sources} locale="fr">
+
+Les trois longueurs d’onde sont des repères. {f.violetNm} et {f.redNm} nanomètres bornent la lumière visible dans l’expérience de Smith, et {f.blueNm} nanomètres est l’un de ses filtres bleus. Cette diffusion par les molécules porte le nom de Rayleigh.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="spectrum" locale="fr" />
+
+## Après diffusion, le ciel garde au moins autant de violet que de bleu
+
+Le Soleil n’émet pas toutes les couleurs à parts égales. Il rayonne à peu près comme un corps noir chauffé à {f.sunTemp} kelvins<SourceRef id="smith2005" sources={sources} />. Ce corps noir culmine, par nanomètre, vers {f.sunPeakNm} nanomètres et donne {f.sunDeficit} de lumière de moins à {f.violetNm} qu’à {f.blueNm} nanomètres. Le Soleil mesuré a un déficit encore plus marqué près de {f.violetNm} nanomètres<SourceRef id="smith2005" sources={sources} />.
+
+Dans ce calcul, la lumière du ciel contient {f.skyVioletVsBlue} fois plus de violet que de bleu. Le ciel mesuré que publie Smith en contient moins, mais autant à {f.violetNm} qu’à {f.blueNm} nanomètres<SourceRef id="smith2005" sources={sources} />. Smith le résume ainsi : avec la seule physique de la diffusion, nous pourrions aussi bien dire que le ciel est violet<SourceRef id="smith2005" sources={sources} />.
+
+<ShowCalc calc={calc('sun')} sources={sources} locale="fr">
+
+Nous représentons le Soleil par la loi de Planck, avec la température que Smith tire des mesures<SourceRef id="smith2005" sources={sources} />. Les constantes h, c et k ont des valeurs exactes dans le SI<SourceRef id="tiesinga2021" sources={sources} />. Nous ne gardons qu’une seule diffusion, sans ozone ni poussières. Le ciel mesuré par temps clair reçoit moins de lumière aux courtes longueurs d’onde que ce modèle<SourceRef id="smith2005" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <WavelengthSlider slot="figure" locale="fr" />
+
+## Dans ce modèle, plus la couleur est proche du violet, plus le ciel en renvoie
+
+Le curseur parcourt la lumière visible, de {f.sliderMax} à {f.sliderMin} nanomètres. Pour chaque longueur d’onde, nous comparons au rouge la diffusion, la lumière du Soleil, puis leur produit, la lumière du ciel.
+
+Dans ce modèle, la lumière du Soleil change peu d’une couleur à l’autre. La diffusion grimpe vite vers le violet et entraîne la lumière du ciel avec elle. Dans tout le visible, le maximum du modèle reste du côté du violet.
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="match" locale="fr" />
+
+## Nos yeux voient ce mélange comme un bleu pâle
+
+Pour Smith, la couleur est une sensation produite par l’œil et le cerveau<SourceRef id="smith2005" sources={sources} />. La rétine compte trois sortes de cônes, sensibles surtout vers {f.coneS}, {f.coneM} et {f.coneL} nanomètres<SourceRef id="smith2005" sources={sources} />.
+
+Le cerveau compare les réponses des trois cônes, sans repérer la longueur d’onde la plus forte. Deux lumières qui donnent les mêmes réponses ont la même couleur, même si leurs spectres diffèrent.
+
+Smith calcule ces réponses pour la lumière du ciel. Elles sont les mêmes que pour un bleu pur de {f.matchNm} nanomètres mêlé de lumière blanche<SourceRef id="smith2005" sources={sources} />. Mesuré de {f.violetNm} à {f.redNm} nanomètres, avec une bande bleue large de {f.bandNm} nanomètres, le blanc porte {f.whiteShare} de la puissance du mélange. Avec le spectre du ciel mesuré, Smith trouve {f.measuredMatchNm} nanomètres : un bleu pâle, lui aussi.
+
+<ShowCalc calc={calc('eye')} sources={sources} locale="fr">
+
+Les sensibilités des cônes M et L viennent de mesures chez des observateurs dont les gènes de la vision des couleurs sont connus<SourceRef id="stockman2000" sources={sources} />. Celles des cônes S viennent de seuils de détection et d’égalisations de couleurs<SourceRef id="stockman1999" sources={sources} />. Smith utilise ces courbes et en tire une expérience de classe. Une lampe bleue et une lampe blanche, réglées dans ce rapport, donnent une tache qui rappelle la couleur du ciel.
+
+</ShowCalc>
+
+</Step>
+
+<Aside>
+
+## Au crépuscule, l’ozone aide à garder le haut du ciel bleu
+
+Ce calcul vaut pour le haut du ciel, par temps clair, quand le Soleil est haut. Au coucher du Soleil et au crépuscule, un autre mécanisme compte : l’ozone de l’atmosphère absorbe une partie de la lumière. Smith cite cette absorption comme une cause majeure du bleu du ciel à ces heures<SourceRef id="smith2005" sources={sources} />.
+
+</Aside>

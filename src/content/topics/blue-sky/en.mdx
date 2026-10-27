@@ -1,0 +1,93 @@
+---
+topic: blue-sky
+locale: en
+slug: why-sky-blue-not-violet
+question: "Why Is the Sky Blue and Not Violet?"
+hook: "The air scatters violet more than blue, and the light of the sky holds at least as much violet as blue. The blue comes from the way our eyes combine these colours."
+discipline: Physics
+date: 2026-11-16
+answer: "The air scatters violet more than blue, and the Sun gives out a little less violet. At the zenith of a clear sky, the sky’s light holds at least as much violet as blue. Our eyes compare the responses of three kinds of cones. To them, this mix matches a pure blue diluted with white: a pale blue."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import WavelengthSlider from './WavelengthSlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('en');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="scatter" locale="en" />
+
+## The Air Scatters Violet Far More Than Red
+
+Sunlight holds every colour. As it crosses the air, it meets nitrogen and oxygen molecules for the most part. These send part of it off in every direction. This scattered light is what lights up the sky.
+
+These molecules do not treat every colour alike. The share they scatter varies as one over the wavelength to the fourth power<SourceRef id="smith2005" sources={sources} />. They scatter violet, at {f.violetNm} nanometres, {f.violetVsRed} times more than red at {f.redNm} nanometres. They scatter it {f.violetVsBlue} times more than blue at {f.blueNm} nanometres.
+
+<ShowCalc calc={calc('scatter')} sources={sources} locale="en">
+
+The three wavelengths are landmarks. {f.violetNm} and {f.redNm} nanometres bound visible light in Smith’s experiment, and {f.blueNm} nanometres is one of his blue filters. This scattering by molecules is named after Rayleigh.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="spectrum" locale="en" />
+
+## After Scattering, the Sky Keeps at Least as Much Violet as Blue
+
+The Sun does not give out every colour in equal parts. It shines close to a blackbody heated to {f.sunTemp} kelvins<SourceRef id="smith2005" sources={sources} />. That blackbody peaks, per nanometre, near {f.sunPeakNm} nanometres and gives {f.sunDeficit} less light at {f.violetNm} than at {f.blueNm} nanometres. The measured Sun has an even larger shortfall near {f.violetNm} nanometres<SourceRef id="smith2005" sources={sources} />.
+
+In this calculation, the sky’s light holds {f.skyVioletVsBlue} times more violet than blue. The measured sky that Smith publishes holds less, yet as much at {f.violetNm} as at {f.blueNm} nanometres<SourceRef id="smith2005" sources={sources} />. Smith sums it up: from the physics of scattering alone, nothing would stop us from calling the sky violet<SourceRef id="smith2005" sources={sources} />.
+
+<ShowCalc calc={calc('sun')} sources={sources} locale="en">
+
+We model the Sun with Planck’s law, at the temperature Smith fits to the measurements<SourceRef id="smith2005" sources={sources} />. The constants h, c and k have exact values in the SI<SourceRef id="tiesinga2021" sources={sources} />. We keep a single scattering, with no ozone or dust. On a clear day, the measured sky gets less light at short wavelengths than this model<SourceRef id="smith2005" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <WavelengthSlider slot="figure" locale="en" />
+
+## In This Model, the Closer to Violet, the More the Sky Sends Back
+
+The slider runs across visible light, from {f.sliderMax} down to {f.sliderMin} nanometres. For each wavelength, we compare with red: the scattering, the sunlight, then their product, the sky’s light.
+
+In this model, sunlight changes little from one colour to the next. Scattering climbs fast toward violet and pulls the sky’s light up with it. Across the whole visible range, the model’s maximum stays on the violet side.
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="match" locale="en" />
+
+## Our Eyes See This Mix as a Pale Blue
+
+For Smith, colour is a sensation produced by the eye and the brain<SourceRef id="smith2005" sources={sources} />. The retina has three kinds of cones, most sensitive near {f.coneS}, {f.coneM} and {f.coneL} nanometres<SourceRef id="smith2005" sources={sources} />.
+
+The brain compares the responses of the three cones, without picking out the strongest wavelength. Two lights that give the same responses have the same colour, even when their spectra differ.
+
+Smith computes these responses for the light of the sky. They are the same as for a pure blue of {f.matchNm} nanometres mixed with white light<SourceRef id="smith2005" sources={sources} />. Measured from {f.violetNm} to {f.redNm} nanometres, with a blue band {f.bandNm} nanometres wide, white carries {f.whiteShare} of the mix’s power. With the measured spectrum of the sky, Smith finds {f.measuredMatchNm} nanometres: a pale blue too.
+
+<ShowCalc calc={calc('eye')} sources={sources} locale="en">
+
+The M and L cone sensitivities come from measurements in observers whose colour vision genes are known<SourceRef id="stockman2000" sources={sources} />. The S cone sensitivity comes from detection thresholds and colour matches<SourceRef id="stockman1999" sources={sources} />. Smith uses these curves and turns them into a classroom experiment. A blue lamp and a white lamp, set to this ratio, make a spot that recalls the colour of the sky.
+
+</ShowCalc>
+
+</Step>
+
+<Aside>
+
+## At Twilight, Ozone Helps Keep the Zenith Blue
+
+This calculation holds for the top of the sky, on a clear day, with the Sun high. At sunset and twilight, another mechanism counts: ozone in the atmosphere absorbs part of the light. Smith names this absorption as a major cause of the blue of the sky at those hours<SourceRef id="smith2005" sources={sources} />.
+
+</Aside>

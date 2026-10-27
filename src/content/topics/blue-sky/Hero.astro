@@ -1,0 +1,116 @@
+---
+// Opening scene: sunlight hits a molecule of air, which scatters violet most, blue less, red least.
+// All of it reaches the eye, which sees a pale blue.
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchCircle, sketchLine, sketchArc, arrowHead, hatch, type Pt } from '../../../lib/chalk';
+import type { Locale } from '../../../lib/i18n';
+import { figures, scatterVsRed, WAVELENGTHS, VIOLET_CHALK } from './data';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng(1871);
+
+const sun = { x: 78, y: 78, r: 36 };
+const sunOutline = sketchCircle(rand, sun.x, sun.y, sun.r);
+const sunHatch = hatch(rand, sun.x, sun.y, sun.r, 6, 0.7);
+const molecule: Pt = [300, 176];
+const ray = sketchLine(rand, [sun.x + 30, sun.y + 22], [molecule[0] - 12, molecule[1] - 6], 2);
+const rayHead = arrowHead(rand, [molecule[0] - 12, molecule[1] - 6], Math.atan2(molecule[1] - sun.y - 28, molecule[0] - sun.x - 42), 11);
+
+// Small molecules around, then the scattered light: arrow length follows (700 / λ)⁴.
+const others = [[210, 140], [380, 120], [200, 290], [450, 170], [150, 215], [360, 310]].map(([x, y]) => sketchCircle(rand, x, y, 4, { overshoot: 0.2 }));
+const PX = 11; // px per unit of scattering
+const scattered = [
+  { nm: WAVELENGTHS.VIOLET, color: VIOLET_CHALK, angle: 0.62, text: `violet ×${f.violetVsRed}` },
+  { nm: WAVELENGTHS.BLUE, color: 'var(--blue)', angle: 1.05, text: `${fr ? 'bleu' : 'blue'} ×${f.blueVsRed}` },
+  { nm: WAVELENGTHS.RED, color: 'var(--pink)', angle: 1.5, text: `${fr ? 'rouge' : 'red'} ×1` },
+].map((s, i) => {
+  const len = 14 + scatterVsRed(s.nm) * PX;
+  const from: Pt = [molecule[0] + 10 * Math.cos(s.angle), molecule[1] + 10 * Math.sin(s.angle)];
+  const tip: Pt = [molecule[0] + len * Math.cos(s.angle), molecule[1] + len * Math.sin(s.angle)];
+  return { ...s, i, tip, d: [sketchLine(rand, from, tip, 1), ...arrowHead(rand, tip, s.angle, 9)] };
+});
+
+// The eye, bottom right.
+const eye = { x: 520, y: 330 };
+const lidTop = sketchArc(rand, eye.x, eye.y + 30, 50, -Math.PI * 0.78, -Math.PI * 0.22, 0.01).d;
+const lidBottom = sketchArc(rand, eye.x, eye.y - 30, 50, Math.PI * 0.22, Math.PI * 0.78, 0.01).d;
+const iris = sketchCircle(rand, eye.x, eye.y, 13);
+const irisHatch = hatch(rand, eye.x, eye.y, 13, 4, 0.9);
+
+const text = fr
+  ? {
+      label: `Schéma : la lumière du Soleil frappe une molécule d’air. Elle diffuse le violet ${f.violetVsRed} fois plus que le rouge, et le bleu ${f.blueVsRed} fois plus. L’œil reçoit ce mélange et voit un bleu pâle.`,
+      sun: 'Soleil',
+      molecule: 'molécule d’air',
+      eye: ['l’œil voit', 'un bleu pâle'],
+    }
+  : {
+      label: `Diagram: sunlight hits a molecule of air. It scatters violet ${f.violetVsRed} times more than red, and blue ${f.blueVsRed} times more. The eye receives this mix and sees a pale blue.`,
+      sun: 'Sun',
+      molecule: 'air molecule',
+      eye: ['the eye sees', 'a pale blue'],
+    };
+const draw = (t: number, d: number) => `--t:${t}s;--d:${d}s`;
+---
+
+<Scene viewBox="0 0 600 380" label={text.label} {locale}>
+  <defs>
+    <clipPath id="sky-hero-sun"><circle cx={sun.x} cy={sun.y} r={sun.r - 1} /></clipPath>
+    <clipPath id="sky-hero-iris"><circle cx={eye.x} cy={eye.y} r="12" /></clipPath>
+  </defs>
+
+  <g clip-path="url(#sky-hero-sun)" stroke="var(--chalk-yellow)" stroke-width="1.6" opacity="0.7" fill="none" stroke-linecap="round">
+    {sunHatch.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(0.6 + i * 0.03, 0.15)} />)}
+  </g>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path class="draw" pathLength="1" d={sunOutline} stroke="var(--chalk-yellow)" stroke-width="2.3" style={draw(0, 0.8)} />
+    <g stroke="var(--chalk-yellow)" stroke-width="2.3">
+      <path class="draw" pathLength="1" d={ray} style={draw(1.1, 0.6)} />
+      {rayHead.map((d) => <path class="draw" pathLength="1" {d} style={draw(1.7, 0.12)} />)}
+    </g>
+    <g stroke="var(--chalk)" stroke-width="1.6" opacity="0.7">
+      {others.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(1.8 + i * 0.08, 0.2)} />)}
+    </g>
+    {
+      scattered.map((s) => (
+        <g stroke={s.color} stroke-width="2.6">
+          {s.d.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(2.6 + s.i * 0.5 + (j ? 0.4 : 0), j ? 0.12 : 0.4)} />)}
+        </g>
+      ))
+    }
+    <g stroke="var(--chalk)" stroke-width="2">
+      <path class="draw" pathLength="1" d={lidTop} style={draw(4.4, 0.4)} />
+      <path class="draw" pathLength="1" d={lidBottom} style={draw(4.7, 0.4)} />
+      <path class="draw" pathLength="1" d={iris} style={draw(5, 0.3)} />
+    </g>
+    <g clip-path="url(#sky-hero-iris)" stroke="var(--blue)" stroke-width="1.5" opacity="0.8">
+      {irisHatch.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(5.3 + i * 0.03, 0.1)} />)}
+    </g>
+  </g>
+  <circle class="pop" cx={molecule[0]} cy={molecule[1]} r="7" fill="var(--chalk)" style="--t:1.8s" />
+
+  <g class="labels">
+    <Annotation x={sun.x} y={sun.y + sun.r + 28} t={0.8} anchor="middle">{text.sun}</Annotation>
+    <Annotation x={molecule[0] + 14} y={molecule[1] - 14} t={2}>{text.molecule}</Annotation>
+    {scattered.map((s) => <Annotation x={s.tip[0] + (s.i ? -14 : 12)} y={s.tip[1] + (s.i ? 18 : -4)} t={3.1 + s.i * 0.5} anchor={s.i ? 'end' : 'start'}>{s.text}</Annotation>)}
+    <Annotation x={eye.x} y={eye.y - 58} t={5.6} anchor="middle">{text.eye[0]}</Annotation>
+    <Annotation x={eye.x} y={eye.y - 34} t={5.8} anchor="middle">{text.eye[1]}</Annotation>
+  </g>
+</Scene>
+
+<style>
+  /* A slate halo keeps the writing legible where it crosses a line or the hatching. */
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

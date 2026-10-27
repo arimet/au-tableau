@@ -1,0 +1,219 @@
+---
+// Small figures for the story: the ocean and land shares of net photosynthesis, the ocean's oxygen
+// given and taken back, the stock of the air against one year of photosynthesis, and buried carbon.
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchLine, arrowHead, hatch, smoothPath, type Pt } from '../../../lib/chalk';
+import type { Locale } from '../../../lib/i18n';
+import { figures, NPP, OCEAN_SHARE, OUTGASSING_SHARE, ORGANIC_SHARE, ONE_YEAR_SHARE } from './data';
+
+interface Props {
+  name: 'split' | 'balance' | 'stock' | 'burial';
+  locale: Locale;
+}
+
+const { name, locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng({ split: 51, balance: 52, stock: 53, burial: 54 }[name]);
+
+const draw = (t: number, d: number) => `--t:${t}s;--d:${d}s`;
+const arrow = (from: Pt, to: Pt, size = 10) => {
+  const angle = Math.atan2(to[1] - from[1], to[0] - from[0]);
+  return [sketchLine(rand, from, to, 0.8), ...arrowHead(rand, to, angle, size)];
+};
+// A hand-drawn rectangle: four strokes that overshoot a little at the corners.
+const box = (x: number, y: number, w: number, h: number) => [
+  sketchLine(rand, [x - 2, y], [x + w + 2, y], 0.8),
+  sketchLine(rand, [x + w, y - 2], [x + w, y + h + 2], 0.5),
+  sketchLine(rand, [x + w + 2, y + h], [x - 2, y + h], 0.8),
+  sketchLine(rand, [x, y + h + 2], [x, y - 2], 0.5),
+];
+// Hatching that covers a rectangle (clip it in SVG).
+const fill = (x: number, y: number, w: number, h: number, angle = 0.9) => hatch(rand, x + w / 2, y + h / 2, Math.hypot(w, h) / 2, 6.5, angle);
+const wave = (x0: number, x1: number, y: number) => {
+  const pts: Pt[] = [];
+  for (let x = x0; x <= x1; x += 12) pts.push([x, y + Math.sin(x / 13) * 4]);
+  return smoothPath(pts);
+};
+
+// Split: ocean and land net primary production, on one scale.
+const splitScale = 400 / NPP;
+const wOcean = OCEAN_SHARE * NPP * splitScale;
+const split = [
+  { x: 30, w: wOcean, color: 'var(--blue)', angle: 0.9 },
+  { x: 30 + wOcean, w: (1 - OCEAN_SHARE) * NPP * splitScale, color: 'var(--green)', angle: -0.9 },
+].map((p) => ({ ...p, outline: box(p.x, 70, p.w, 40), fill: fill(p.x, 70, p.w, 40, p.angle) }));
+
+// Balance: oxygen the ocean releases, about as much taken back, and the extra the warming ocean gives
+// off (it comes from the ocean's own stock, not from leftover photosynthesis), as columns on one scale.
+const B = { base: 270, h: 180, w: 70 };
+const extra = OUTGASSING_SHARE * B.h;
+const columns = [
+  { x: 50, h: B.h, color: 'var(--chalk-yellow)', angle: 0.9 },
+  { x: 210, h: B.h, color: 'var(--pink)', angle: -0.9 },
+  { x: 350, h: extra, color: 'var(--blue)', angle: 0.9 },
+].map((c) => ({ ...c, outline: box(c.x, B.base - c.h, B.w, c.h), fill: fill(c.x, B.base - c.h, B.w, c.h, c.angle) }));
+const sea = wave(24, 436, B.base + 14);
+
+// Stock: squares whose areas are the oxygen of the air, all surface organic matter, and one year of photosynthesis.
+const S = { x: 20, y: 30, side: 200 };
+const organicSide = S.side * Math.sqrt(ORGANIC_SHARE);
+const yearSide = S.side * Math.sqrt(ONE_YEAR_SHARE);
+const squares = [
+  { side: S.side, color: 'var(--blue)' },
+  { side: organicSide, color: 'var(--green)' },
+  { side: yearSide, color: 'var(--chalk-yellow)' },
+].map((q) => ({ ...q, x: S.x + S.side - q.side, y: S.y + S.side - q.side })).map((q) => ({ ...q, outline: box(q.x, q.y, q.side, q.side), fill: fill(q.x, q.y, q.side, q.side) }));
+const corner: Pt = [S.x + S.side, S.y + S.side];
+const organicPointer = arrow([228, 166], [corner[0] - organicSide / 2, corner[1] - organicSide - 3], 8);
+const yearPointer = arrow([228, 252], [corner[0] + 3, corner[1] + 2], 8);
+
+// Burial: sediment layers with dark organic specks; the oxygen made alongside stays in the air.
+const layers = [190, 214, 238].map((y) => sketchLine(rand, [30, y], [430, y], 1.2));
+const specks = Array.from({ length: 18 }, (_, i) => {
+  const x = 50 + i * 21 + rand() * 8, y = 198 + (i % 3) * 24 + rand() * 6;
+  return sketchLine(rand, [x, y], [x + 8, y + 1], 0.3);
+});
+const burialSea = wave(30, 430, 120);
+const o2Up = arrow([230, 170], [230, 60]);
+
+const labels = {
+  split: fr
+    ? { scene: `Schéma : une barre de ${f.npp} milliards de tonnes de carbone par an, la production primaire nette de la planète selon Field et al. ${f.fieldYear}. L’océan en assure ${f.ocean}, soit ${f.oceanShare} ; les terres ${f.land}, soit ${f.landShare}.`, a: `océan : ${f.ocean} PgC (${f.oceanShare})`, b: `terres : ${f.land} PgC (${f.landShare})`, c: `total : ${f.npp} PgC par an` }
+    : { scene: `Diagram: a bar of ${f.npp} billion tonnes of carbon per year, the net primary production of the planet according to Field et al. ${f.fieldYear}. The ocean makes ${f.ocean} of it, or ${f.oceanShare}; the land ${f.land}, or ${f.landShare}.`, a: `ocean: ${f.ocean} PgC (${f.oceanShare})`, b: `land: ${f.land} PgC (${f.landShare})`, c: `total: ${f.npp} PgC per year` },
+  balance: fr
+    ? { scene: `Schéma : trois colonnes à la même échelle. L’oxygène que libère la photosynthèse nette de l’océan, environ ${f.oceanO2} de tonnes par an. Ce que la respiration et la décomposition en reprennent, presque autant. L’oxygène que l’océan rend en plus à l’air en se réchauffant, ${f.outgassingShare} de la première colonne.`, a: ['libéré', `≈ ${f.oceanO2}`, 'de tonnes par an'], b: ['repris', 'presque autant'], c: ['rendu en plus', f.outgassingShare] }
+    : { scene: `Diagram: three columns on one scale. The oxygen released by the ocean's net photosynthesis, about ${f.oceanO2} tonnes per year. What respiration and decay take back, almost as much. The extra oxygen the warming ocean gives the air, ${f.outgassingShare} of the first column.`, a: ['released', `≈ ${f.oceanO2}`, 'tonnes per year'], b: ['taken back', 'almost as much'], c: ['given on top', f.outgassingShare] },
+  stock: fr
+    ? { scene: `Schéma : trois carrés dont la surface suit la quantité d’oxygène. Le grand carré est l’oxygène de l’air. Un petit carré, ${f.organicShare} de sa surface, est l’oxygène que consommerait la décomposition de toute la matière organique de la surface. Un point, ${f.oneYearShare}, est l’oxygène d’une année de photosynthèse nette.`, a: 'oxygène de l’air', b: ['toute la matière', `organique : ${f.organicShare}`], c: ['un an de', `photosynthèse : ${f.oneYearShare}`] }
+    : { scene: `Diagram: three squares whose area follows the amount of oxygen. The large square is the oxygen in the air. A small square, ${f.organicShare} of its area, is the oxygen the decay of all organic matter at the surface would use. A dot, ${f.oneYearShare}, is the oxygen of one year of net photosynthesis.`, a: 'oxygen in the air', b: ['all organic', `matter: ${f.organicShare}`], c: ['one year of', `photosynthesis: ${f.oneYearShare}`] },
+  burial: fr
+    ? { scene: `Schéma : sous la mer, des couches de sédiments enferment des débris de matière organique. Ce carbone enfoui échappe à la décomposition, et l’oxygène libéré en le fabriquant reste dans l’air. Le carbone enfoui ainsi a permis à l’oxygène de s’accumuler sur des temps géologiques.`, a: 'oxygène qui reste dans l’air', b: 'carbone organique enfoui' }
+    : { scene: `Diagram: under the sea, layers of sediment lock away bits of organic matter. This buried carbon escapes decay, and the oxygen released when it was made stays in the air. Carbon buried this way let oxygen build up over geological time.`, a: 'oxygen that stays in the air', b: 'buried organic carbon' },
+}[name];
+const viewBox = { split: '0 0 460 178', balance: '0 0 460 310', stock: '0 0 460 300', burial: '0 0 460 290' }[name];
+---
+
+<Scene {viewBox} label={labels.scene} {locale}>
+  {
+    name === 'split' && (
+      <>
+        <defs>
+          {split.map((p, i) => (
+            <clipPath id={`oxygen-split-${i}`}>
+              <rect x={p.x} y="70" width={p.w} height="40" />
+            </clipPath>
+          ))}
+        </defs>
+        {split.map((p, i) => (
+          <>
+            <g clip-path={`url(#oxygen-split-${i})`} fill="none" stroke={p.color} stroke-width="1.5" opacity="0.7" stroke-linecap="round">
+              {p.fill.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(0.6 + i * 0.6 + j * 0.01, 0.2)} />)}
+            </g>
+            <g fill="none" stroke="var(--chalk)" stroke-width="2" stroke-linecap="round">
+              {p.outline.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(i * 0.5 + j * 0.1, 0.25)} />)}
+            </g>
+          </>
+        ))}
+        <g class="labels">
+          <Annotation x={30} y={56} t={1.6}>{labels.a}</Annotation>
+          <Annotation x={430} y={140} t={2.2} anchor="end">{labels.b}</Annotation>
+          <Annotation x={30} y={166} t={2.8}>{labels.c}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'balance' && (
+      <>
+        <defs>
+          {columns.map((c, i) => (
+            <clipPath id={`oxygen-balance-${i}`}>
+              <rect x={c.x} y={B.base - c.h} width={B.w} height={c.h} />
+            </clipPath>
+          ))}
+        </defs>
+        <path class="draw" pathLength="1" d={sea} fill="none" stroke="var(--blue)" stroke-width="2.4" stroke-linecap="round" style={draw(0, 0.6)} />
+        {columns.map((c, i) => (
+          <>
+            <g clip-path={`url(#oxygen-balance-${i})`} fill="none" stroke={c.color} stroke-width="1.5" opacity="0.7" stroke-linecap="round">
+              {c.fill.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(0.9 + i * 0.8 + j * 0.01, 0.2)} />)}
+            </g>
+            <g fill="none" stroke="var(--chalk)" stroke-width="2" stroke-linecap="round">
+              {c.outline.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(0.5 + i * 0.8 + j * 0.1, 0.25)} />)}
+            </g>
+          </>
+        ))}
+        <g class="labels">
+          {columns.map((c, i) => {
+            const text = [labels.a, labels.b, labels.c][i] as string[];
+            const y = i === 2 ? B.base - c.h - 50 : 26;
+            return text.map((row, k) => (
+              <Annotation x={c.x + B.w / 2} y={y + k * 22} t={2.8 + i * 0.4 + k * 0.1} anchor="middle">{row}</Annotation>
+            ));
+          })}
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'stock' && (
+      <>
+        <defs>
+          {squares.map((q, i) => (
+            <clipPath id={`oxygen-stock-${i}`}>
+              <rect x={q.x} y={q.y} width={q.side} height={q.side} />
+            </clipPath>
+          ))}
+        </defs>
+        {squares.map((q, i) => (
+          <>
+            <g clip-path={`url(#oxygen-stock-${i})`} fill="none" stroke={q.color} stroke-width="1.5" opacity={i === 0 ? 0.45 : 0.9} stroke-linecap="round">
+              {q.fill.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(0.6 + i * 1 + j * 0.01, 0.2)} />)}
+            </g>
+            <g fill="none" stroke={i === 0 ? 'var(--chalk)' : q.color} stroke-width={i === 2 ? 3 : 2} stroke-linecap="round">
+              {q.outline.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(i * 1 + j * 0.1, 0.25)} />)}
+            </g>
+          </>
+        ))}
+        <g fill="none" stroke="var(--chalk)" stroke-width="1.6" stroke-linecap="round">
+          {organicPointer.map((d) => <path class="draw" pathLength="1" {d} style={draw(2.4, 0.4)} />)}
+          {yearPointer.map((d) => <path class="draw" pathLength="1" {d} style={draw(2.8, 0.4)} />)}
+        </g>
+        <g class="labels">
+          <Annotation x={S.x + 10} y={S.y + 28} t={3.2}>{labels.a}</Annotation>
+          {[labels.b, labels.c].flatMap((rows, i) => (rows as string[]).map((row, k) => <Annotation x={232} y={[150, 246][i] + k * 22} t={3.5 + i * 0.4 + k * 0.1}>{row}</Annotation>))}
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'burial' && (
+      <>
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path class="draw" pathLength="1" d={burialSea} stroke="var(--blue)" stroke-width="2.4" style={draw(0, 0.6)} />
+          {layers.map((d, i) => <path class="draw" pathLength="1" {d} stroke="var(--chalk)" stroke-width="2" style={draw(0.6 + i * 0.3, 0.5)} />)}
+          {specks.map((d, i) => <path class="draw" pathLength="1" {d} stroke="var(--green)" stroke-width="3.2" style={draw(1.6 + i * 0.04, 0.1)} />)}
+          {o2Up.map((d) => <path class="draw" pathLength="1" {d} stroke="var(--chalk-yellow)" stroke-width="3" style={draw(2.6, 0.5)} />)}
+        </g>
+        <g class="labels">
+          <Annotation x={230} y={40} t={3.2} anchor="middle">{labels.a}</Annotation>
+          <Annotation x={230} y={280} t={3.6} anchor="middle">{labels.b}</Annotation>
+        </g>
+      </>
+    )
+  }
+</Scene>
+
+<style>
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

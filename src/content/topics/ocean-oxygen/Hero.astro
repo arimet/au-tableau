@@ -1,0 +1,109 @@
+---
+// Opening scene: the sea and the land each send oxygen up into the air by photosynthesis, and take
+// almost as much back down by respiration and decay. The air above holds thousands of years of it.
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchCircle, sketchLine, arrowHead, hatch, smoothPath, type Pt } from '../../../lib/chalk';
+import type { Locale } from '../../../lib/i18n';
+import { figures } from './data';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng(1998);
+
+const ground = 290;
+const top = 110;
+const arrow = (from: Pt, to: Pt) => {
+  const angle = Math.atan2(to[1] - from[1], to[0] - from[0]);
+  return [sketchLine(rand, from, to, 1.2), ...arrowHead(rand, to, angle, 12)];
+};
+
+// Sea: three wavy lines on the left half.
+const waves = [0, 18, 36].map((dy) => {
+  const pts: Pt[] = [];
+  for (let x = 24; x <= 276; x += 12) pts.push([x, ground + dy + Math.sin(x / 13 + dy) * 4 + (rand() - 0.5) * 1.5]);
+  return smoothPath(pts);
+});
+// Land: ground line and one tree on the right half.
+const landLine = sketchLine(rand, [324, ground], [576, ground], 1);
+const tree = { x: 450, cy: 232, r: 30 };
+const crown = sketchCircle(rand, tree.x, tree.cy, tree.r);
+const crownFill = hatch(rand, tree.x, tree.cy, tree.r, 6.5, 0.62);
+const trunk = [sketchLine(rand, [tree.x - 4, ground], [tree.x - 3, tree.cy + 24], 0.5), sketchLine(rand, [tree.x + 4, ground], [tree.x + 3, tree.cy + 24], 0.5)];
+// Air: a line high up.
+const air = sketchLine(rand, [24, top - 30], [576, top - 30], 1.4);
+
+// Up (photosynthesis) and down (respiration and decay) arrows, nearly equal, for each side.
+const sides = [
+  { up: 150, down: 210, share: f.oceanShare, name: fr ? 'océan' : 'ocean' },
+  { up: 390, down: 510, share: f.landShare, name: fr ? 'terres' : 'land' },
+].map((s) => ({ ...s, upArrow: arrow([s.up, ground - 14], [s.up, top]), downArrow: arrow([s.down, top], [s.down, ground - 14]) }));
+
+const text = fr
+  ? {
+      label: `Schéma : l’océan et les terres envoient de l’oxygène dans l’air par la photosynthèse, et en reprennent presque autant par la respiration et la décomposition. Selon Field et al., l’océan assure ${f.oceanShare} de la photosynthèse nette, les terres ${f.landShare}. L’air contient environ ${f.yearsInAir} ans de cette production.`,
+      air: `air : ≈ ${f.yearsInAir} ans de photosynthèse`,
+      up: 'photosynthèse',
+      down: 'respiration',
+    }
+  : {
+      label: `Diagram: the ocean and the land send oxygen into the air by photosynthesis, and take almost as much back by respiration and decay. According to Field et al., the ocean makes ${f.oceanShare} of net photosynthesis, the land ${f.landShare}. The air holds about ${f.yearsInAir} years of this production.`,
+      air: `air: ≈ ${f.yearsInAir} years of photosynthesis`,
+      up: 'photosynthesis',
+      down: 'respiration',
+    };
+const line = (d: string, t: number, dur: number) => ({ d, style: `--t:${t}s;--d:${dur}s` });
+---
+
+<Scene viewBox="0 0 600 400" label={text.label} {locale}>
+  <defs>
+    <clipPath id="oxygen-hero-crown"><circle cx={tree.x} cy={tree.cy} r={tree.r - 1} /></clipPath>
+  </defs>
+
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    {waves.map((d, i) => <path class="draw" pathLength="1" {...line(d, i * 0.25, 0.8)} stroke="var(--blue)" stroke-width="2.4" />)}
+    <path class="draw" pathLength="1" {...line(landLine, 0.4, 0.7)} stroke="var(--chalk)" stroke-width="2.2" />
+    {trunk.map((d) => <path class="draw" pathLength="1" {...line(d, 0.9, 0.3)} stroke="var(--chalk)" stroke-width="2.2" />)}
+    <path class="draw" pathLength="1" {...line(crown, 1.1, 0.6)} stroke="var(--chalk)" stroke-width="2.3" />
+    <g clip-path="url(#oxygen-hero-crown)" stroke="var(--green)" stroke-width="1.5" opacity="0.7">
+      {crownFill.map((d, j) => <path class="draw" pathLength="1" {...line(d, 1.6 + j * 0.02, 0.2)} />)}
+    </g>
+    <path class="draw" pathLength="1" {...line(air, 2, 0.8)} stroke="var(--chalk)" stroke-width="2" />
+    {
+      sides.map((s, i) => (
+        <>
+          {s.upArrow.map((d) => <path class="draw" pathLength="1" {...line(d, 2.8 + i * 0.9, 0.5)} stroke="var(--chalk-yellow)" stroke-width="3" />)}
+          {s.downArrow.map((d) => <path class="draw" pathLength="1" {...line(d, 3.2 + i * 0.9, 0.5)} stroke="var(--pink)" stroke-width="3" />)}
+        </>
+      ))
+    }
+  </g>
+
+  <g class="labels">
+    <Annotation x={300} y={top - 44} t={2.4} anchor="middle">{text.air}</Annotation>
+    {
+      sides.map((s, i) => (
+        <>
+          {/* The arrows read the same on both sides: name them once, on the sea. */}
+          {i === 0 && <Annotation x={s.up - 8} y={(ground + top) / 2} t={4.6} anchor="end">{text.up}</Annotation>}
+          {i === 0 && <Annotation x={s.down + 8} y={(ground + top) / 2 + 24} t={4.8}>{text.down}</Annotation>}
+          <Annotation x={(s.up + s.down) / 2} y={ground + 84} t={5.6 + i * 0.3} anchor="middle">{`${s.name}${fr ? ' : ' : ': '}${s.share}`}</Annotation>
+        </>
+      ))
+    }
+  </g>
+</Scene>
+
+<style>
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

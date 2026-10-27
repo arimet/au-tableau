@@ -1,0 +1,120 @@
+---
+topic: ocean-oxygen
+locale: en
+slug: oceans-half-our-oxygen
+question: "Do the Oceans Make Half the Oxygen We Breathe?"
+hook: "According to a 1998 estimate, plankton and algae carry out a little under half of the planet’s net photosynthesis. Yet the air holds the equivalent of over four thousand years of the whole planet’s net photosynthesis."
+discipline: Biology
+date: 2026-11-09
+answer: "In part. According to a 1998 estimate, the ocean carries out a little under half of the planet’s net photosynthesis. Respiration and decay take back almost all the oxygen it releases, at sea as on land. The air holds the equivalent of over four thousand years of this production. This stock formed over geological time, thanks to organic matter buried in rocks."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import DecaySlider from './DecaySlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('en');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="split" locale="en" />
+
+## The Ocean Carries Out a Little Under Half of the Planet’s Net Photosynthesis
+
+In {f.fieldYear}, Christopher Field and colleagues estimated the net primary production of the planet from satellite measurements<SourceRef id="field1998" sources={sources} />. This production counts the carbon that plants and plankton fix, minus what they breathe out themselves. They found {f.npp} billion tonnes of carbon per year, written PgC. The ocean makes {f.ocean} of it, or **{f.oceanShare}**, and the land {f.land}.
+
+On average, a square metre of ocean produces {f.oceanPerM2} grams of carbon per year, against {f.landPerM2} on ice-free land. The ocean makes up for it with its area. The authors count about {f.macroalgae} PgC of large algae in the ocean. Their ocean figure is close to twice the estimates made before satellites.
+
+For each atom of carbon fixed, photosynthesis releases one molecule of oxygen<SourceRef id="catling2020" sources={sources} />. The ocean thus releases about {f.oceanO2} tonnes of oxygen per year, and the whole planet {f.totalO2}. For net photosynthesis, the half is close to right.
+
+<ShowCalc calc={calc('split')} sources={sources} locale="en">
+
+We count one molecule of oxygen per atom of carbon, as in the equation of photosynthesis. Depending on the matter plants make, the real ratio departs from one: Manning and Keeling use 1.1 for the land biosphere<SourceRef id="manning2006" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="balance" locale="en" />
+
+## Respiration and Decay Take Back Almost All of That Oxygen
+
+Plankton breathe, so do sea animals, and bacteria break down dead organisms. These reactions use oxygen and undo what photosynthesis made<SourceRef id="catling2020" sources={sources} />. David Catling and Kevin Zahnle put a figure on respiration and decay for the whole planet. Their figure is close to the oxygen that net photosynthesis releases each year.
+
+According to the calculation of Michael Bender and colleagues, {f.toAir} of the oxygen from plankton first goes into the air<SourceRef id="bender1994" sources={sources} />. Respiration in the ocean then takes almost as much back.
+
+Andrew Manning and Ralph Keeling estimate that the warming ocean gives the air about {f.outgassing} tonnes of oxygen per year<SourceRef id="manning2006" sources={sources} />. Warmer water holds less gas and mixes less with deep water. This surplus is **{f.outgassingShare}** of the oxygen from its photosynthesis.
+
+On land, animals, fungi and bacteria likewise use the oxygen that plants release. Of all the oxygen in the ocean and the air, {f.inAir} sits in the air<SourceRef id="manning2006" sources={sources} />. Each year, the ocean gives the air almost as much oxygen as it takes back from it.
+
+<ShowCalc calc={calc('balance')} sources={sources} locale="en">
+
+The half also depends on what we count. Land plants take back part of their oxygen at once, through photorespiration. Bender and colleagues count gross production. The ocean then supplies about {f.grossOceanShare} of the oxygen entering the air<SourceRef id="bender1994" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="stock" locale="en" />
+
+## The Air Holds Thousands of Years of Net Photosynthesis
+
+According to Bender and colleagues, the air holds about {f.stock} tonnes of oxygen<SourceRef id="bender1994" sources={sources} />. One year of net photosynthesis releases {f.totalO2}, or **{f.oneYearShare}** of this stock. The air thus holds about {f.yearsInAir} years of this production.
+
+Counting gross production, Bender and colleagues find that the oxygen in the air turns over in about {f.turnover} years<SourceRef id="bender1994" sources={sources} />. Almost all the oxygen molecules we breathe were thus released by plants or plankton within the last few thousand years. Their amount depends on the stock built up over time.
+
+Catling and Zahnle also put a figure on the organic matter at the surface of the Earth, living or dead<SourceRef id="catling2020" sources={sources} />. If all of this matter decayed, it would use **{f.organicShare}** of the oxygen in the air.
+
+<ShowCalc calc={calc('stock')} sources={sources} locale="en">
+
+The turnover of the oxygen in the air counts gross production, photorespiration included. With net production alone, it would take about {f.yearsInAir} years.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <DecaySlider slot="figure" locale="en" />
+
+## Decaying All Organic Matter Would Use About One Percent of the Air’s Oxygen
+
+The slider stops all photosynthesis on Earth for the chosen number of years. It follows our simple model: decay keeps its current pace<SourceRef id="catling2020" sources={sources} /> until the organic matter runs out. In reality, decay would slow down, so the slider gives a maximum. At today’s pace, decaying all of it would take {f.organicYears} years.
+
+After {f.sliderStart} years, the air would keep at least {f.sliderStartLeft} of its oxygen. Once all organic matter had decayed, it would have lost about {f.organicShare}, at one molecule of oxygen per atom of carbon. This model leaves out our fossil fuels and the volcanic gases that also use oxygen<SourceRef id="catling2020" sources={sources} />.
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="burial" locale="en" />
+
+## Oxygen Builds Up When Sediments Bury Organic Carbon
+
+According to Catling and Zahnle, life on its own cannot shift the balance between oxygen and organic matter<SourceRef id="catling2020" sources={sources} />. Each molecule of oxygen released comes with an atom of organic carbon. When this matter decays, it takes its oxygen back. Oxygen builds up only if organic carbon gets buried in sediments, out of reach of decay.
+
+Oxygen from the ancestors of cyanobacteria flooded the air {f.goeStart} to {f.goeEnd} billion years ago<SourceRef id="catling2020" sources={sources} />. The rocks of that time keep a trace of it in their sulfur isotopes.
+
+According to Catling and Zahnle, oxygen then stayed scarce for most of the next two billion years. For about {f.charcoalMyr} million years, fossil charcoal has shown it above {f.charcoalBar} bar<SourceRef id="catling2020" sources={sources} />. The oxygen we breathe comes from this stock, built over geological time. One year of net photosynthesis, at sea or on land, renews only {f.oneYearShare} of it.
+
+</Step>
+
+<Aside>
+
+## As a Share, Oxygen Is Falling Much Faster in the Ocean
+
+Our fossil fuels also use oxygen. In {f.fossilYear}, they emitted {f.fossil} GtC<SourceRef id="gcb2025" sources={sources} />. Manning and Keeling give the ratio between oxygen used and CO2 emitted<SourceRef id="manning2006" sources={sources} />. From it, we work out that they use {f.fossilShare} of the oxygen in the air each year.
+
+The ocean is losing a much larger share of its own oxygen. According to Denise Breitburg and colleagues, the open ocean lost about {f.oceanLoss} of it in {f.oceanLossYears} years<SourceRef id="breitburg2018" sources={sources} />. In their view, this decline can cause major changes in the productivity and biodiversity of the ocean.
+
+<ShowCalc calc={calc('decline')} sources={sources} locale="en">
+
+Manning and Keeling compute the ratio between oxygen used and CO2 emitted for the 1990s. It varies with the mix of gas, oil and coal burned: our figure is an order of magnitude.
+
+</ShowCalc>
+
+</Aside>

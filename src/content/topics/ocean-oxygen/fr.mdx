@@ -1,0 +1,120 @@
+---
+topic: ocean-oxygen
+locale: fr
+slug: oceans-moitie-oxygene
+question: "Les océans produisent-ils la moitié de notre oxygène ?"
+hook: "Selon une estimation de 1998, le plancton et les algues assurent un peu moins de la moitié de la photosynthèse nette de la planète. L’air contient pourtant l’équivalent de plus de quatre mille ans de la photosynthèse nette de toute la planète."
+discipline: Biologie
+date: 2026-11-09
+answer: "En partie. Selon une estimation de 1998, l’océan assure un peu moins de la moitié de la photosynthèse nette de la planète. La respiration et la décomposition reprennent presque tout l’oxygène qu’elle libère, en mer comme sur terre. L’air contient l’équivalent de plus de quatre mille ans de cette production. Ce stock s’est formé sur des temps géologiques, grâce à de la matière organique enfouie dans les roches."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import DecaySlider from './DecaySlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('fr');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="split" locale="fr" />
+
+## L’océan assure {f.oceanShare} de la photosynthèse nette de la planète
+
+En {f.fieldYear}, Christopher Field et ses collègues estiment la production primaire nette de la planète à partir de mesures par satellite<SourceRef id="field1998" sources={sources} />. Cette production compte le carbone que fixent les plantes et le plancton, moins celui qu’ils respirent eux-mêmes. Ils trouvent {f.npp} milliards de tonnes de carbone par an, notées PgC. L’océan en assure {f.ocean}, soit **{f.oceanShare}**, et les terres {f.land}.
+
+Un mètre carré d’océan produit en moyenne {f.oceanPerM2} grammes de carbone par an, contre {f.landPerM2} sur les terres sans glace. L’océan compense par sa surface. Les auteurs comptent dans l’océan environ {f.macroalgae} PgC de grandes algues. Leur chiffre pour l’océan vaut presque deux fois les estimations faites avant les satellites.
+
+Pour chaque atome de carbone fixé, la photosynthèse libère une molécule d’oxygène<SourceRef id="catling2020" sources={sources} />. L’océan libère ainsi environ {f.oceanO2} de tonnes d’oxygène par an, et toute la planète {f.totalO2}. Pour la photosynthèse nette, la moitié est donc presque exacte.
+
+<ShowCalc calc={calc('split')} sources={sources} locale="fr">
+
+Nous comptons une molécule d’oxygène par atome de carbone, comme dans l’équation de la photosynthèse. Selon la matière que fabriquent les plantes, le rapport réel s’écarte de un : Manning et Keeling prennent 1,1 pour la biosphère terrestre<SourceRef id="manning2006" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="balance" locale="fr" />
+
+## La respiration et la décomposition reprennent presque tout cet oxygène
+
+Le plancton respire, les animaux marins aussi, et des bactéries décomposent les organismes morts. Ces réactions consomment de l’oxygène et défont ce que la photosynthèse a fabriqué<SourceRef id="catling2020" sources={sources} />. David Catling et Kevin Zahnle chiffrent la respiration et la décomposition de toute la planète. Leur chiffre est proche de l’oxygène que libère chaque année la photosynthèse nette.
+
+Selon le calcul de Michael Bender et ses collègues, {f.toAir} de l’oxygène du plancton passe d’abord dans l’air<SourceRef id="bender1994" sources={sources} />. La respiration dans l’océan en reprend ensuite presque autant.
+
+Andrew Manning et Ralph Keeling estiment que l’océan qui se réchauffe rend à l’air environ {f.outgassing} de tonnes d’oxygène par an<SourceRef id="manning2006" sources={sources} />. L’eau plus chaude dissout moins de gaz et se mélange moins avec les eaux profondes. Ce surplus vaut **{f.outgassingShare}** de l’oxygène de sa photosynthèse.
+
+Sur terre, les animaux, les champignons et les bactéries consomment de même l’oxygène libéré par les plantes. Dans l’océan et l’air réunis, {f.inAir} de l’oxygène se trouve dans l’air<SourceRef id="manning2006" sources={sources} />. Chaque année, l’océan donne à l’air presque autant d’oxygène qu’il lui en reprend.
+
+<ShowCalc calc={calc('balance')} sources={sources} locale="fr">
+
+La moitié dépend aussi de ce que nous comptons. Les plantes terrestres reprennent aussitôt une partie de leur oxygène, par photorespiration. Bender et ses collègues comptent la production brute. L’océan fournit alors environ {f.grossOceanShare} de l’oxygène qui entre dans l’air<SourceRef id="bender1994" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="stock" locale="fr" />
+
+## L’air contient environ {f.yearsInAir} ans de photosynthèse nette
+
+Selon Bender et ses collègues, l’air contient environ {f.stock} de tonnes d’oxygène<SourceRef id="bender1994" sources={sources} />. Une année de photosynthèse nette en libère {f.totalO2}, soit **{f.oneYearShare}** de ce stock. L’air contient donc environ {f.yearsInAir} ans de cette production.
+
+En comptant la production brute, Bender et ses collègues trouvent que l’oxygène de l’air se renouvelle en environ {f.turnover} ans<SourceRef id="bender1994" sources={sources} />. Presque toutes les molécules d’oxygène que nous respirons ont donc été libérées par des plantes ou du plancton depuis quelques milliers d’années. Leur quantité, elle, tient au stock accumulé.
+
+Catling et Zahnle chiffrent aussi la matière organique à la surface de la Terre, vivante ou morte<SourceRef id="catling2020" sources={sources} />. Si toute cette matière se décomposait, elle consommerait **{f.organicShare}** de l’oxygène de l’air.
+
+<ShowCalc calc={calc('stock')} sources={sources} locale="fr">
+
+Le renouvellement de l’oxygène de l’air compte la production brute, photorespiration comprise. Avec la seule production nette, il faudrait environ {f.yearsInAir} ans.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <DecaySlider slot="figure" locale="fr" />
+
+## Décomposer toute la matière organique consommerait {f.organicShare} de l’oxygène de l’air
+
+Le curseur arrête toute photosynthèse sur Terre pendant le nombre d’années choisi. Il suit notre modèle simple : la décomposition garde son rythme actuel<SourceRef id="catling2020" sources={sources} /> jusqu’à épuisement de la matière organique. En réalité, elle ralentirait, et le curseur donne donc un maximum. Au rythme actuel, il faudrait {f.organicYears} ans pour tout décomposer.
+
+Après {f.sliderStart} ans, l’air garderait au moins {f.sliderStartLeft} de son oxygène. Une fois toute la matière organique décomposée, il en aurait perdu environ {f.organicShare}, à une molécule d’oxygène par atome de carbone. Ce modèle ne compte ni nos combustibles fossiles, ni les gaz des volcans qui consomment aussi de l’oxygène<SourceRef id="catling2020" sources={sources} />.
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="burial" locale="fr" />
+
+## L’oxygène s’accumule quand du carbone s’enfouit dans les roches
+
+Selon Catling et Zahnle, la vie seule ne peut pas changer l’équilibre entre oxygène et matière organique<SourceRef id="catling2020" sources={sources} />. Chaque molécule d’oxygène libérée accompagne un atome de carbone organique. Quand cette matière se décompose, elle reprend son oxygène. L’oxygène s’accumule seulement si du carbone organique s’enfouit dans les sédiments, à l’abri de la décomposition.
+
+L’oxygène des ancêtres des cyanobactéries envahit l’air il y a {f.goeStart} à {f.goeEnd} milliards d’années<SourceRef id="catling2020" sources={sources} />. Les roches de cette époque en gardent la trace dans leurs isotopes du soufre.
+
+Selon Catling et Zahnle, l’oxygène est ensuite resté rare pendant la majeure partie des deux milliards d’années suivantes. Depuis environ {f.charcoalMyr} millions d’années, des charbons fossiles montrent qu’il dépasse {f.charcoalBar} bar<SourceRef id="catling2020" sources={sources} />. L’oxygène que nous respirons vient de ce stock bâti sur des temps géologiques. Une année de photosynthèse nette, en mer ou sur terre, n’en renouvelle que {f.oneYearShare}.
+
+</Step>
+
+<Aside>
+
+## En proportion, l’oxygène recule bien plus vite dans l’océan
+
+Nos combustibles fossiles consomment aussi de l’oxygène. En {f.fossilYear}, ils ont émis {f.fossil} GtC<SourceRef id="gcb2025" sources={sources} />. Manning et Keeling donnent le rapport entre oxygène consommé et CO2 émis<SourceRef id="manning2006" sources={sources} />. Nous en déduisons qu’ils consomment {f.fossilShare} de l’oxygène de l’air par an.
+
+L’océan perd une part bien plus grande de son propre oxygène. Selon Denise Breitburg et ses collègues, l’océan ouvert en a perdu environ {f.oceanLoss} en {f.oceanLossYears} ans<SourceRef id="breitburg2018" sources={sources} />. Selon eux, ce recul peut causer de grands changements dans la productivité et la biodiversité de l’océan.
+
+<ShowCalc calc={calc('decline')} sources={sources} locale="fr">
+
+Manning et Keeling calculent le rapport entre oxygène consommé et CO2 émis pour les années 1990. Il varie avec la part de gaz, de pétrole et de charbon brûlés : notre chiffre reste un ordre de grandeur.
+
+</ShowCalc>
+
+</Aside>

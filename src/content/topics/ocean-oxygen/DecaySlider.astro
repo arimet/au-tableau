@@ -1,0 +1,70 @@
+---
+// Years without any photosynthesis: the share of the air's oxygen that decay would use, and what is left.
+// Our simple model: decay keeps today's pace until all surface organic matter is gone, then stops.
+// Real decay would slow down, so the oxygen used is a maximum at every date.
+import Slider from '../../../components/Slider.astro';
+import { formatPercent } from '../../../lib/format';
+import type { Locale } from '../../../lib/i18n';
+import { SLIDER, pct, withoutPhotosynthesis } from './data';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+const start = withoutPhotosynthesis(SLIDER.value);
+const text = fr
+  ? { label: 'Années sans aucune photosynthèse sur Terre', used: 'Au plus, oxygène de l’air consommé : ', left: 'Au moins, oxygène qui reste dans l’air : ', done: 'À ce rythme, toute la matière organique aurait disparu.' }
+  : { label: 'Years without any photosynthesis on Earth', used: 'At most, oxygen in the air used up: ', left: 'At least, oxygen left in the air: ', done: 'At this pace, all organic matter would be gone.' };
+---
+
+<div class="decay-slider" data-locale={locale}>
+  <Slider id="no-photosynthesis" label={text.label} min={SLIDER.min} max={SLIDER.max} step={SLIDER.step} scale="linear" value={SLIDER.value} {locale} />
+  <p class="sentence" aria-live="polite">
+    {text.used}<b class="result used">{formatPercent(start.used, locale)}</b>
+    <br />
+    {text.left}<b class="result left">{pct(start.left * 100, locale, 4)}</b>
+    <br />
+    <span class="done hand" hidden={!start.exhausted}>{text.done}</span>
+  </p>
+</div>
+
+<script>
+  import { formatPercent } from '../../../lib/format';
+  import { pct, withoutPhotosynthesis } from './data';
+
+  for (const box of document.querySelectorAll<HTMLElement>('.decay-slider')) {
+    const input = box.querySelector<HTMLInputElement>('input[type="range"]')!;
+    const locale = box.dataset.locale === 'en' ? 'en' : 'fr';
+    const show = () => {
+      const { used, left, exhausted } = withoutPhotosynthesis(Number(input.value));
+      box.querySelector('.used')!.textContent = formatPercent(used, locale);
+      box.querySelector('.left')!.textContent = pct(left * 100, locale, 4);
+      box.querySelector<HTMLElement>('.done')!.hidden = !exhausted;
+    };
+    input.addEventListener('input', show);
+  }
+</script>
+
+<style>
+  .decay-slider {
+    padding: 1rem 0;
+  }
+
+  .sentence {
+    color: var(--chalk);
+    font-size: 1.2rem;
+    line-height: 1.9;
+  }
+
+  .result {
+    color: var(--chalk-yellow);
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+
+  .done {
+    color: var(--green);
+  }
+</style>

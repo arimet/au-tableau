@@ -1,0 +1,225 @@
+---
+// Small figures for the story: the 205 GtC against the wrong and the right totals, soil carbon already
+// in the ground, sunlight on snow and on dark conifers, and the 2023 split of the forest carbon potential.
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchCircle, sketchLine, arrowHead, hatch, type Pt } from '../../../lib/chalk';
+import type { Locale } from '../../../lib/i18n';
+import { figures } from './data';
+
+interface Props {
+  name: 'bars' | 'soil' | 'albedo' | 'split';
+  locale: Locale;
+}
+
+const { name, locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng({ bars: 41, soil: 42, albedo: 43, split: 44 }[name]);
+
+const draw = (t: number, d: number) => `--t:${t}s;--d:${d}s`;
+const arrow = (from: Pt, to: Pt, size = 9) => {
+  const angle = Math.atan2(to[1] - from[1], to[0] - from[0]);
+  return [sketchLine(rand, from, to, 0.8), ...arrowHead(rand, to, angle, size)];
+};
+// A hand-drawn rectangle: four strokes that overshoot a little at the corners.
+const box = (x: number, y: number, w: number, h: number) => [
+  sketchLine(rand, [x - 2, y], [x + w + 2, y], 0.8),
+  sketchLine(rand, [x + w, y - 2], [x + w, y + h + 2], 0.5),
+  sketchLine(rand, [x + w + 2, y + h], [x - 2, y + h], 0.8),
+  sketchLine(rand, [x, y + h + 2], [x, y - 2], 0.5),
+];
+// Hatching that covers a rectangle (clip it in SVG).
+const fill = (x: number, y: number, w: number, h: number, angle = 0.9) => hatch(rand, x + w / 2, y + h / 2, Math.hypot(w, h) / 2, 6.5, angle);
+
+// Bars: Bastin's stock, the rise of carbon in the air, and all emissions since 1850, on one scale.
+const barScale = 390 / f.emitted;
+const bars = [
+  { v: f.bastin, y: 46, color: 'var(--green)' },
+  { v: f.inAir, y: 126, color: 'var(--blue)' },
+  { v: f.emitted, y: 206, color: 'var(--pink)' },
+].map((b) => ({ ...b, w: b.v * barScale, outline: box(30, b.y, b.v * barScale, 30), fill: fill(30, b.y, b.v * barScale, 30) }));
+
+// Soil: before, grass on a soil layer; after, a tree on the same soil layer.
+const S = { ground: 160, soil: 70, left: 30, right: 250, width: 180 };
+const soilBoxes = [S.left, S.right].map((x) => ({ x, outline: box(x, S.ground, S.width, S.soil), fill: fill(x, S.ground, S.width, S.soil, -0.9) }));
+const grass = Array.from({ length: 16 }, (_, i) => {
+  const x = S.left + 8 + i * 10.5;
+  return sketchLine(rand, [x, S.ground], [x + (rand() - 0.5) * 8, S.ground - 12 - rand() * 10], 0.4);
+});
+const T = { x: S.right + S.width / 2, cy: 78, r: 40 };
+const soilTree = {
+  crown: sketchCircle(rand, T.x, T.cy, T.r),
+  fill: hatch(rand, T.x, T.cy, T.r, 6.5, 0.62),
+  trunk: [sketchLine(rand, [T.x - 5, S.ground], [T.x - 4, T.cy + 30], 0.5), sketchLine(rand, [T.x + 5, S.ground], [T.x + 4, T.cy + 30], 0.5)],
+};
+
+// Albedo: sunlight falls on snow (most of it goes back up) and on dark conifers (they keep it).
+const A = { ground: 200 };
+const snowGround = sketchLine(rand, [24, A.ground], [210, A.ground], 0.8);
+const forestGround = sketchLine(rand, [250, A.ground], [436, A.ground], 0.8);
+const snowRays = [70, 150].map((x) => [...arrow([x - 40, 40], [x, A.ground - 6]), ...arrow([x + 4, A.ground - 6], [x + 44, 52])]);
+const conifers = [280, 330, 380, 420].map((x, i) => {
+  const h = 70 + (i % 2) * 14;
+  const top: Pt = [x, A.ground - h];
+  return [sketchLine(rand, top, [x - 20, A.ground - 8], 0.5), sketchLine(rand, top, [x + 20, A.ground - 8], 0.5), sketchLine(rand, [x - 20, A.ground - 8], [x + 20, A.ground - 8], 0.4), sketchLine(rand, [x, A.ground - 8], [x, A.ground], 0.3)];
+});
+const forestRays = [305, 395].map((x) => arrow([x - 40, 40], [x, A.ground - 92]));
+
+// Split: the 2023 potential, existing forests left to mature and land where forests were cleared.
+const splitScale = 400 / f.moTotal;
+const wForests = f.moForests * splitScale;
+const wCleared = f.moCleared * splitScale;
+const split = [
+  { x: 30, w: wForests, color: 'var(--green)', angle: 0.9 },
+  { x: 30 + wForests, w: wCleared, color: 'var(--blue)', angle: -0.9 },
+].map((p) => ({ ...p, outline: box(p.x, 70, p.w, 40), fill: fill(p.x, 70, p.w, 40, p.angle) }));
+
+const labels = {
+  bars: fr
+    ? { scene: `Schéma : trois barres à la même échelle. Le carbone que stockeraient les nouveaux arbres selon Bastin et al., ${f.bastin} milliards de tonnes. La hausse du carbone dans l’air depuis 1850, ${f.inAir}. Le carbone émis par les humains depuis 1850, ${f.emitted}.`, a: `nouveaux arbres (Bastin) : ${f.bastin} GtC`, b: `hausse dans l’air depuis 1850 : ${f.inAir} GtC`, c: `émis depuis 1850 : ${f.emitted} GtC` }
+    : { scene: `Diagram: three bars on one scale. The carbon new trees would store according to Bastin et al., ${f.bastin} billion tonnes. The rise of carbon in the air since 1850, ${f.inAir}. The carbon emitted by humans since 1850, ${f.emitted}.`, a: `new trees (Bastin): ${f.bastin} GtC`, b: `rise in the air since 1850: ${f.inAir} GtC`, c: `emitted since 1850: ${f.emitted} GtC` },
+  soil: fr
+    ? { scene: `Schéma : à gauche, une prairie sur son sol ; à droite, un arbre sur le même sol. Le sol contenait déjà du carbone avant l’arbre. Seul le carbone ajouté compte, mais Bastin et al. ont compté celui du sol comme nouveau.`, a: 'avant : prairie', b: 'après : arbre', c: 'carbone déjà dans le sol', d: 'carbone ajouté', e: 'Bastin et al. : compté comme nouveau' }
+    : { scene: `Diagram: on the left, grassland on its soil; on the right, a tree on the same soil. The soil already held carbon before the tree. Only the added carbon counts, but Bastin et al. counted the soil carbon as new.`, a: 'before: grassland', b: 'after: tree', c: 'carbon already in the soil', d: 'added carbon', e: 'Bastin et al.: counted as new' },
+  albedo: fr
+    ? { scene: `Schéma : la neige renvoie vers l’espace une grande part de la lumière du Soleil ; une forêt de conifères sombres la garde et chauffe. ${f.coldShare} du nouveau couvert de Bastin et al. est dans ces régions froides.`, a: ['neige :', 'la lumière repart'], b: ['conifères :', 'la lumière reste'], c: `${f.coldShare} des nouveaux arbres` }
+    : { scene: `Diagram: snow sends a large share of the sunlight back to space; a forest of dark conifers keeps it and warms up. ${f.coldShare} of the new tree cover in Bastin et al. lies in these cold regions.`, a: ['snow:', 'the light goes back'], b: ['conifers:', 'the light stays'], c: `${f.coldShare} of the new trees` },
+  split: fr
+    ? { scene: `Schéma : en 2023, le même laboratoire estime à ${f.moTotal} milliards de tonnes le carbone qui manque aux forêts, hors villes et cultures. ${f.moForests} sont dans des forêts existantes, à laisser mûrir. ${f.moCleared} sont sur des terres déboisées ou morcelées.`, a: `forêts existantes : ${f.moForests} GtC`, b: `déboisées : ${f.moCleared}`, c: `total : ${f.moTotal} GtC` }
+    : { scene: `Diagram: in 2023, the same lab puts the carbon missing from forests, outside cities and farmland, at ${f.moTotal} billion tonnes. ${f.moForests} lie in existing forests, left to mature. ${f.moCleared} lie on cleared or fragmented land.`, a: `existing forests: ${f.moForests} GtC`, b: `cleared: ${f.moCleared}`, c: `total: ${f.moTotal} GtC` },
+}[name];
+const viewBox = { bars: '0 0 460 260', soil: '0 0 460 290', albedo: '0 0 460 300', split: '0 0 460 170' }[name];
+---
+
+<Scene {viewBox} label={labels.scene} {locale}>
+  {
+    name === 'bars' && (
+      <>
+        <defs>
+          {bars.map((b, i) => (
+            <clipPath id={`trees-bar-${i}`}>
+              <rect x="30" y={b.y} width={b.w} height="30" />
+            </clipPath>
+          ))}
+        </defs>
+        {bars.map((b, i) => (
+          <>
+            <g clip-path={`url(#trees-bar-${i})`} fill="none" stroke={b.color} stroke-width="1.5" opacity="0.7" stroke-linecap="round">
+              {b.fill.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(0.5 + i * 0.9 + j * 0.01, 0.2)} />)}
+            </g>
+            <g fill="none" stroke="var(--chalk)" stroke-width="2" stroke-linecap="round">
+              {b.outline.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(i * 0.9 + j * 0.1, 0.25)} />)}
+            </g>
+          </>
+        ))}
+        <g class="labels">
+          <Annotation x={30} y={36} t={0.4}>{labels.a}</Annotation>
+          <Annotation x={30} y={116} t={1.3}>{labels.b}</Annotation>
+          <Annotation x={30} y={196} t={2.2}>{labels.c}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'soil' && (
+      <>
+        <defs>
+          {soilBoxes.map((s, i) => (
+            <clipPath id={`trees-soil-${i}`}>
+              <rect x={s.x} y={S.ground} width={S.width} height={S.soil} />
+            </clipPath>
+          ))}
+          <clipPath id="trees-soil-crown"><circle cx={T.x} cy={T.cy} r={T.r - 1} /></clipPath>
+        </defs>
+        {soilBoxes.map((s, i) => (
+          <>
+            <g clip-path={`url(#trees-soil-${i})`} fill="none" stroke="var(--chalk-yellow)" stroke-width="1.4" opacity="0.55" stroke-linecap="round">
+              {s.fill.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(0.5 + i * 0.4 + j * 0.01, 0.2)} />)}
+            </g>
+            <g fill="none" stroke="var(--chalk)" stroke-width="2" stroke-linecap="round">
+              {s.outline.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(j * 0.1, 0.25)} />)}
+            </g>
+          </>
+        ))}
+        <g fill="none" stroke="var(--green)" stroke-width="1.8" stroke-linecap="round">
+          {grass.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(1.2 + i * 0.03, 0.1)} />)}
+        </g>
+        <g fill="none" stroke-linecap="round">
+          {soilTree.trunk.map((d) => <path class="draw" pathLength="1" {d} stroke="var(--chalk)" stroke-width="2.2" style={draw(1.8, 0.3)} />)}
+          <path class="draw" pathLength="1" d={soilTree.crown} stroke="var(--chalk)" stroke-width="2.3" style={draw(2.1, 0.6)} />
+          <g clip-path="url(#trees-soil-crown)" stroke="var(--green)" stroke-width="1.5" opacity="0.7">
+            {soilTree.fill.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(2.6 + i * 0.02, 0.2)} />)}
+          </g>
+        </g>
+        <g class="labels">
+          <Annotation x={S.left} y={30} t={1}>{labels.a}</Annotation>
+          <Annotation x={S.right + S.width} y={30} t={1.9} anchor="end">{labels.b}</Annotation>
+          <Annotation x={(S.left + S.right + S.width) / 2} y={S.ground + 42} t={3} anchor="middle">{labels.c}</Annotation>
+          <Annotation x={T.x - T.r - 10} y={T.cy + 6} t={3.4} anchor="end">{labels.d}</Annotation>
+          <Annotation x={S.right + S.width} y={S.ground + S.soil + 34} t={3.9} anchor="end">{labels.e}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'albedo' && (
+      <>
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path class="draw" pathLength="1" d={snowGround} stroke="var(--chalk)" stroke-width="4" style={draw(0, 0.5)} />
+          <path class="draw" pathLength="1" d={forestGround} stroke="var(--chalk)" stroke-width="2" style={draw(0.3, 0.5)} />
+          {conifers.flatMap((tree, i) => tree.map((d) => <path class="draw" pathLength="1" {d} stroke="var(--green)" stroke-width="2.2" style={draw(0.6 + i * 0.2, 0.3)} />))}
+          {snowRays.flatMap((ray, i) => ray.map((d, j) => <path class="draw" pathLength="1" {d} stroke="var(--chalk-yellow)" stroke-width="2" style={draw(1.8 + i * 0.3 + (j < 3 ? 0 : 0.6), 0.4)} />))}
+          {forestRays.flatMap((ray, i) => ray.map((d) => <path class="draw" pathLength="1" {d} stroke="var(--chalk-yellow)" stroke-width="2" style={draw(2.4 + i * 0.3, 0.4)} />))}
+        </g>
+        <g class="labels">
+          <Annotation x={117} y={A.ground + 30} t={3.4} anchor="middle">{labels.a[0]}</Annotation>
+          <Annotation x={117} y={A.ground + 54} t={3.5} anchor="middle">{labels.a[1]}</Annotation>
+          <Annotation x={343} y={A.ground + 30} t={3.7} anchor="middle">{labels.b[0]}</Annotation>
+          <Annotation x={343} y={A.ground + 54} t={3.8} anchor="middle">{labels.b[1]}</Annotation>
+          <Annotation x={322} y={A.ground + 86} t={4.1} anchor="middle">{labels.c}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'split' && (
+      <>
+        <defs>
+          {split.map((p, i) => (
+            <clipPath id={`trees-split-${i}`}>
+              <rect x={p.x} y="70" width={p.w} height="40" />
+            </clipPath>
+          ))}
+        </defs>
+        {split.map((p, i) => (
+          <>
+            <g clip-path={`url(#trees-split-${i})`} fill="none" stroke={p.color} stroke-width="1.5" opacity="0.7" stroke-linecap="round">
+              {p.fill.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(0.6 + i * 0.6 + j * 0.01, 0.2)} />)}
+            </g>
+            <g fill="none" stroke="var(--chalk)" stroke-width="2" stroke-linecap="round">
+              {p.outline.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(i * 0.5 + j * 0.1, 0.25)} />)}
+            </g>
+          </>
+        ))}
+        <g class="labels">
+          <Annotation x={30} y={56} t={1.6}>{labels.a}</Annotation>
+          <Annotation x={430} y={140} t={2.2} anchor="end">{labels.b}</Annotation>
+          <Annotation x={30} y={160} t={2.8}>{labels.c}</Annotation>
+        </g>
+      </>
+    )
+  }
+</Scene>
+
+<style>
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

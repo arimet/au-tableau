@@ -1,0 +1,100 @@
+---
+// Opening scene: three trees, one per published estimate, their crowns sized by the carbon they would store,
+// each labelled with the years of 2024 emissions that carbon matches.
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchCircle, sketchLine, hatch } from '../../../lib/chalk';
+import type { Locale } from '../../../lib/i18n';
+import { figures } from './data';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng(2019);
+
+const ground = 300;
+const trunk = 46;
+// Crown area in proportion to the carbon: radius grows with its square root.
+const radius = (gtc: number) => 6.6 * Math.sqrt(gtc);
+const trees = [
+  { x: 92, gtc: f.veldman, who: 'Veldman', years: f.veldmanYears, approx: false },
+  { x: 245, gtc: f.lewis, who: 'Lewis', years: f.lewisYears, approx: true },
+  { x: 452, gtc: f.bastin, who: 'Bastin', years: f.bastinYears, approx: false },
+].map((t, i) => {
+  const r = radius(t.gtc);
+  const cy = ground - trunk - r * 0.85;
+  return {
+    ...t,
+    r,
+    cy,
+    clip: `trees-hero-crown-${i}`,
+    crown: sketchCircle(rand, t.x, cy, r),
+    fill: hatch(rand, t.x, cy, r, 6.5, 0.62),
+    trunk: [sketchLine(rand, [t.x - 5, ground], [t.x - 4, cy + r * 0.7], 0.6), sketchLine(rand, [t.x + 5, ground], [t.x + 4, cy + r * 0.7], 0.6)],
+  };
+});
+const groundLine = sketchLine(rand, [16, ground], [584, ground], 1.2);
+
+const text = fr
+  ? {
+      label: `Schéma : trois arbres, un par estimation publiée du carbone que de nouveaux arbres pourraient stocker. Veldman et al. : ${f.veldman} milliards de tonnes, soit ${f.veldmanYears} ans de nos émissions de ${f.emissionsYear}. Lewis et al. : environ ${f.lewis}, soit ${f.lewisYears} ans. Bastin et al. : ${f.bastin}, soit ${f.bastinYears} ans.`,
+      gtc: (n: number) => `${n} GtC`,
+      years: (y: string) => `≈ ${y} ans`,
+      scale: 'feuillage proportionnel au carbone',
+      unit: `en années d’émissions de ${f.emissionsYear}`,
+    }
+  : {
+      label: `Diagram: three trees, one per published estimate of the carbon new trees could store. Veldman et al.: ${f.veldman} billion tonnes, or ${f.veldmanYears} years of our ${f.emissionsYear} emissions. Lewis et al.: about ${f.lewis}, or ${f.lewisYears} years. Bastin et al.: ${f.bastin}, or ${f.bastinYears} years.`,
+      gtc: (n: number) => `${n} GtC`,
+      years: (y: string) => `≈ ${y} years`,
+      scale: 'crown area in proportion to carbon',
+      unit: `in years of ${f.emissionsYear} emissions`,
+    };
+const line = (d: string, t: number, dur: number) => ({ d, style: `--t:${t}s;--d:${dur}s` });
+---
+
+<Scene viewBox="0 0 600 400" label={text.label} {locale}>
+  <defs>
+    {trees.map((t) => <clipPath id={t.clip}><circle cx={t.x} cy={t.cy} r={t.r - 1} /></clipPath>)}
+  </defs>
+
+  <path class="draw" pathLength="1" {...line(groundLine, 0, 0.8)} fill="none" stroke="var(--chalk)" stroke-width="2.2" stroke-linecap="round" />
+  {
+    trees.map((t, i) => (
+      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+        {t.trunk.map((d) => <path class="draw" pathLength="1" {...line(d, 0.8 + i * 1.1, 0.4)} stroke="var(--chalk)" stroke-width="2.2" />)}
+        <path class="draw" pathLength="1" {...line(t.crown, 1.1 + i * 1.1, 0.7)} stroke="var(--chalk)" stroke-width="2.3" />
+        <g clip-path={`url(#${t.clip})`} stroke="var(--green)" stroke-width="1.5" opacity="0.7">
+          {t.fill.map((d, j) => <path class="draw" pathLength="1" {...line(d, 1.6 + i * 1.1 + j * 0.02, 0.2)} />)}
+        </g>
+      </g>
+    ))
+  }
+
+  <g class="labels">
+    {
+      trees.map((t, i) => (
+        <>
+          <Annotation x={t.x} y={ground + 26} t={4.2 + i * 0.3} anchor="middle">{`${t.who} ${f.bastinYear}`}</Annotation>
+          <Annotation x={t.x} y={ground + 50} t={4.3 + i * 0.3} anchor="middle">{`${t.approx ? '≈ ' : ''}${text.gtc(t.gtc)}`}</Annotation>
+          <Annotation x={t.x} y={ground + 74} t={4.4 + i * 0.3} anchor="middle">{text.years(t.years)}</Annotation>
+        </>
+      ))
+    }
+    <Annotation x={16} y={28} t={5.4}>{text.scale}</Annotation>
+    <Annotation x={16} y={54} t={5.6}>{text.unit}</Annotation>
+  </g>
+</Scene>
+
+<style>
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

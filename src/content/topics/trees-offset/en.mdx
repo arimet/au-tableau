@@ -1,0 +1,112 @@
+---
+topic: trees-offset
+locale: en
+slug: can-trees-offset-emissions
+question: "Can Planting Trees Offset Our Emissions?"
+hook: "In 2019, a team announced that new trees could store over two hundred billion tonnes of carbon. The same journal then published critiques from several teams; two of them cut that figure by a factor of two and of five."
+discipline: Climate
+date: 2026-11-02
+answer: "Only in part. In 2019, a team estimated that new trees would store close to eighteen years of our current emissions. Its critics bring that stock down to four to nine years. The authors counted carbon already in the soil as new, and placed trees where they warm the climate or would destroy savannas. Forests can help, without replacing cuts in emissions."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import StockSlider from './StockSlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('en');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="bars" locale="en" />
+
+## In {f.bastinYear}, Researchers Count Over Two Hundred Billion Tonnes of Carbon
+
+In {f.bastinYear}, Jean-François Bastin and colleagues mapped the land where trees could grow<SourceRef id="bastin2019" sources={sources} />. Leaving out forests, farmland and cities, they found room for {f.bastinArea} billion hectares of extra tree cover. These trees would store {f.bastin} billion tonnes of carbon, written GtC. In their {f.bastinYear} paper, the authors saw it as our most effective solution to climate change.
+
+They compared this stock with a human carbon “burden” of about {f.burden} GtC, and said it would erase a large share of it<SourceRef id="bastin2019" sources={sources} />. Pierre Friedlingstein and colleagues point out that these {f.burden} GtC measure the rise of carbon in the air<SourceRef id="friedlingstein2019" sources={sources} />. Since 1850, the air has gained {f.inAir} GtC, while humans have emitted {f.emitted}<SourceRef id="gcb2025" sources={sources} />. The ocean and the land took up most of the gap.
+
+Measured against everything we have emitted since 1850, the {f.bastin} GtC amount to **{f.emittedShare}**. When trees remove CO2, the ocean and the land take up less of it<SourceRef id="lewis2019" sources={sources} />. According to Friedlingstein and colleagues, about {f.airborne} of our emissions stay in the air each year. The air would therefore lose only about that share of the carbon stored<SourceRef id="friedlingstein2019" sources={sources} />.
+
+<ShowCalc calc={calc('claim')} sources={sources} locale="en">
+
+The {f.burden} GtC come from the 2019 paper, as quoted by its critics. Total emissions since 1850 include fossil fuels, cement and land use.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="soil" locale="en" />
+
+## The Authors Count Carbon Already in the Soil as New
+
+To reach {f.bastin} GtC, the authors multiplied the area to plant by the carbon in a mature forest<SourceRef id="lewis2019" sources={sources} /><SourceRef id="friedlingstein2019" sources={sources} />. The authors treat the land as holding nothing before the trees. Yet grassland has plants on it, and its soil holds carbon. Only the difference between the forest and what grows there today removes CO2 from the air.
+
+Simon Lewis and colleagues find {f.lewisSoil} GtC of soil carbon counted as new, out of the {f.bastin}<SourceRef id="lewis2019" sources={sources} />. That is almost all the carbon soils have lost since farming began, about {f.soilLost} GtC. According to the reviews they cite, soil carbon does not rise on average when grassland turns into forest.
+
+Joseph Veldman and colleagues redid the calculation biome by biome, with soil gains taken from the literature<SourceRef id="veldman2019" sources={sources} />. The estimate then falls to {f.veldmanSoil} GtC.
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="albedo" locale="en" />
+
+## In the Far North, a Dark Forest Warms the Earth
+
+According to Lewis and colleagues, {f.coldShare} of the new tree cover lies in the tundra and the boreal forest<SourceRef id="lewis2019" sources={sources} />. Up there, snow sends a large share of the sunlight back to space. Dark conifers absorb it and warm up. At these latitudes, this warming outweighs the cooling from the carbon stored<SourceRef id="veldman2019" sources={sources} />.
+
+Veldman and colleagues also note that {f.grassShare} of the corrected estimate would come from grasslands, savannas and shrublands<SourceRef id="veldman2019" sources={sources} />. Fire and large grazing animals have kept trees scarce there for millions of years. Planting trees there would cut their biodiversity, their forage and the water available.
+
+Once the soil is corrected, cold regions and mountains weigh only {f.veldmanCold} GtC in their calculation. Most of the drop therefore comes from the grasslands, savannas and shrublands they remove. Without these regions and habitats, their estimate falls to **{f.veldman} GtC**, about {f.veldmanFactor} times less than the original paper.
+
+Lewis and colleagues compare four methods published earlier, which give {f.lewisRange} GtC. They settle on about **{f.lewis} GtC**<SourceRef id="lewis2019" sources={sources} />.
+
+<ShowCalc calc={calc('corrections')} sources={sources} locale="en">
+
+Veldman and colleagues start from the areas and carbon densities of the 2019 paper. They keep these densities, even though they dispute some of them. Lewis and colleagues correct three points: the soil, the plants already in place and the future effect of CO2 on growth.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <StockSlider slot="figure" locale="en" />
+
+## These Trees Match Four to Eighteen Years of Our Emissions
+
+In {f.emissionsYear}, humans emitted {f.emissions} GtC: {f.fossil} from fossil fuels and {f.landUse} from land use<SourceRef id="gcb2025" sources={sources} />. The slider divides the carbon stored by the trees by this total for one year. The buttons move it to the published estimates. The one by Mo and colleagues covers land where humans have cleared or broken up forests, a different area from Bastin’s.
+
+The {f.bastin} GtC of Bastin and colleagues match {f.bastinYears} years of emissions. The {f.lewis} GtC or so of Lewis and colleagues match {f.lewisYears}, and the {f.veldman} GtC of Veldman and colleagues, {f.veldmanYears}.
+
+<ShowCalc calc={calc('years')} sources={sources} locale="en">
+
+This calculation compares a stock, reached once the trees have finished growing, with a flow per year. While the trees grow, our emissions go on. The calculation also leaves out the carbon the ocean and the land would stop taking up.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="split" locale="en" />
+
+## In {f.moYear}, the Same Lab Puts Most of the Potential in Existing Forests
+
+In {f.moYear}, a team including Bastin and Thomas Crowther, last author of the 2019 paper, redid the estimate<SourceRef id="mo2023" sources={sources} />. It combined ground and satellite measurements. Outside cities and farmland, the world’s forests lack {f.moTotal} GtC. Existing forests could regain {f.moForests} of it, if protection lets them mature.
+
+Where humans have cleared or broken up forests, {f.moCleared} GtC remain to be regained, or {f.moYears} years of our emissions. The authors rule out converting grasslands, peatlands and wetlands. They write that forests cannot replace cuts in emissions.
+
+</Step>
+
+<Aside>
+
+## In {f.moYear}, the Authors Write That Forests Cannot Replace Cuts in Emissions
+
+In their {f.bastinYear} reply, Bastin and colleagues stood by their estimates<SourceRef id="bastin2019reply" sources={sources} />. They explained that they set no deadline for reaching this stock<SourceRef id="bastin2019reply2" sources={sources} />. In {f.erratumYear}, the journal published an erratum to the paper and to this reply, which we could not read<SourceRef id="erratum2020" sources={sources} />.
+
+Their most recent published position dates from {f.moYear}. With Mo and colleagues, they count {f.moTotal} GtC, existing forests included. They write that forests cannot replace cuts in emissions<SourceRef id="mo2023" sources={sources} />. For Friedlingstein and colleagues, without deep cuts in fossil emissions, these trees only delay the warming<SourceRef id="friedlingstein2019" sources={sources} />.
+
+</Aside>

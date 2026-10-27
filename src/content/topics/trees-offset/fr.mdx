@@ -1,0 +1,112 @@
+---
+topic: trees-offset
+locale: fr
+slug: arbres-compenser-emissions
+question: "Planter des arbres peut-il compenser nos émissions ?"
+hook: "En 2019, une équipe annonce que de nouveaux arbres pourraient stocker plus de deux cents milliards de tonnes de carbone. La même revue publie ensuite les critiques de plusieurs équipes ; deux d’entre elles divisent ce chiffre par deux et par cinq."
+discipline: Climat
+date: 2026-11-02
+answer: "En partie seulement. En 2019, une équipe estimait que de nouveaux arbres stockeraient près de dix-huit ans de nos émissions actuelles. Ses critiques ramènent ce stock à quatre à neuf ans. Les auteurs comptaient comme nouveau le carbone déjà dans le sol, et plaçaient des arbres où ils réchauffent le climat ou détruiraient des savanes. Les forêts peuvent aider, sans remplacer la baisse des émissions."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import StockSlider from './StockSlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('fr');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="bars" locale="fr" />
+
+## En {f.bastinYear}, des chercheurs comptent {f.bastin} milliards de tonnes de carbone
+
+En {f.bastinYear}, Jean-François Bastin et ses collègues cartographient les terres où des arbres pourraient pousser<SourceRef id="bastin2019" sources={sources} />. Hors forêts, cultures et villes, ils trouvent la place pour {f.bastinArea} milliard d’hectares de couvert arboré en plus. Ces arbres stockeraient {f.bastin} milliards de tonnes de carbone, notées GtC. Dans leur article de {f.bastinYear}, les auteurs y voient notre solution la plus efficace contre le changement climatique.
+
+Ils comparent ce stock à un « fardeau » de carbone humain d’environ {f.burden} GtC, dont il effacerait une grande part<SourceRef id="bastin2019" sources={sources} />. Pierre Friedlingstein et ses collègues relèvent que ces {f.burden} GtC mesurent la hausse du carbone dans l’air<SourceRef id="friedlingstein2019" sources={sources} />. Depuis 1850, l’air a gagné {f.inAir} GtC, alors que les humains en ont émis {f.emitted}<SourceRef id="gcb2025" sources={sources} />. L’océan et les terres ont absorbé la plus grande part de l’écart.
+
+Rapportés à tout ce que nous avons émis depuis 1850, les {f.bastin} GtC en représentent **{f.emittedShare}**. Quand des arbres retirent du CO2, l’océan et les terres en absorbent moins<SourceRef id="lewis2019" sources={sources} />. Selon Friedlingstein et ses collègues, environ {f.airborne} de nos émissions restent chaque année dans l’air. L’air ne perdrait donc qu’environ cette part du carbone stocké<SourceRef id="friedlingstein2019" sources={sources} />.
+
+<ShowCalc calc={calc('claim')} sources={sources} locale="fr">
+
+Les {f.burden} GtC viennent de l’article de 2019, cité par ses critiques. Le total des émissions depuis 1850 compte les combustibles fossiles, le ciment et l’usage des terres.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="soil" locale="fr" />
+
+## Les auteurs comptent comme nouveau le carbone déjà présent dans le sol
+
+Pour obtenir {f.bastin} GtC, les auteurs multiplient la surface à boiser par le carbone d’une forêt adulte<SourceRef id="lewis2019" sources={sources} /><SourceRef id="friedlingstein2019" sources={sources} />. Les auteurs font comme si ces terres ne contenaient rien avant les arbres. Une prairie porte pourtant des plantes, et son sol contient du carbone. Seule la différence entre la forêt et le milieu actuel retire du CO2 de l’air.
+
+Simon Lewis et ses collègues trouvent {f.lewisSoil} GtC de carbone du sol compté comme nouveau, sur les {f.bastin}<SourceRef id="lewis2019" sources={sources} />. Cela vaut presque tout le carbone perdu par les sols depuis les débuts de l’agriculture, environ {f.soilLost} GtC. Selon les synthèses qu’ils citent, le carbone du sol ne monte pas en moyenne quand une prairie devient une forêt.
+
+Joseph Veldman et ses collègues refont le calcul biome par biome, avec des gains de sol tirés de la littérature<SourceRef id="veldman2019" sources={sources} />. L’estimation tombe alors à {f.veldmanSoil} GtC.
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="albedo" locale="fr" />
+
+## Dans le Grand Nord, une forêt sombre réchauffe la Terre
+
+Selon Lewis et ses collègues, {f.coldShare} du nouveau couvert se trouve dans la toundra et la forêt boréale<SourceRef id="lewis2019" sources={sources} />. Là-bas, la neige renvoie vers l’espace une grande part de la lumière du Soleil. Des conifères sombres l’absorbent et chauffent. À ces latitudes, ce réchauffement dépasse le refroidissement dû au carbone stocké<SourceRef id="veldman2019" sources={sources} />.
+
+Veldman et ses collègues relèvent aussi que {f.grassShare} de l’estimation corrigée viendrait de prairies, de savanes et de formations arbustives<SourceRef id="veldman2019" sources={sources} />. Le feu et les grands herbivores y limitent les arbres depuis des millions d’années. Y planter des arbres réduirait leur biodiversité, le fourrage et l’eau disponible.
+
+Une fois le sol corrigé, les régions froides et les montagnes ne pèsent que {f.veldmanCold} GtC dans leur calcul. La plus grande part de la baisse vient donc des prairies, des savanes et des formations arbustives qu’ils retirent. Sans ces régions et ces milieux, leur estimation tombe à **{f.veldman} GtC**, environ {f.veldmanFactor} fois moins que l’article de départ.
+
+Lewis et ses collègues comparent quatre méthodes déjà publiées, qui donnent {f.lewisRange} GtC. Ils retiennent environ **{f.lewis} GtC**<SourceRef id="lewis2019" sources={sources} />.
+
+<ShowCalc calc={calc('corrections')} sources={sources} locale="fr">
+
+Veldman et ses collègues partent des surfaces et des densités de carbone de l’article de 2019. Ils gardent ces densités, qu’ils contestent pourtant en partie. Lewis et ses collègues corrigent trois points : le sol, la végétation déjà en place et l’effet futur du CO2 sur la croissance.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <StockSlider slot="figure" locale="fr" />
+
+## Ces arbres valent de {f.veldmanYears} à {f.bastinYears} ans de nos émissions
+
+En {f.emissionsYear}, les humains ont émis {f.emissions} GtC : {f.fossil} par les combustibles fossiles et {f.landUse} par l’usage des terres<SourceRef id="gcb2025" sources={sources} />. Le curseur divise le carbone stocké par les arbres par ce total annuel. Les boutons le placent sur les estimations publiées. Celle de Mo et ses collègues porte sur une autre surface : les terres où les humains ont coupé ou morcelé les forêts.
+
+Les {f.bastin} GtC de Bastin et ses collègues valent {f.bastinYears} ans d’émissions. Les {f.lewis} GtC environ de Lewis et ses collègues en valent {f.lewisYears}, et les {f.veldman} GtC de Veldman et ses collègues, {f.veldmanYears}.
+
+<ShowCalc calc={calc('years')} sources={sources} locale="fr">
+
+Ce calcul compare un stock, atteint quand les arbres ont fini de pousser, à un flux de chaque année. Pendant que les arbres grandissent, nos émissions continuent. Le calcul ne compte pas non plus la part du carbone que l’océan et les terres cesseraient d’absorber.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="split" locale="fr" />
+
+## En {f.moYear}, le même laboratoire place la plus grande part du potentiel dans les forêts existantes
+
+En {f.moYear}, une équipe qui compte Bastin et Thomas Crowther, dernier auteur de l’article de 2019, refait l’estimation<SourceRef id="mo2023" sources={sources} />. Elle combine des mesures au sol et par satellite. Hors villes et cultures, il manque {f.moTotal} GtC aux forêts du monde. Les forêts existantes pourraient en regagner {f.moForests}, si leur protection les laisse mûrir.
+
+Là où les humains ont coupé ou morcelé les forêts, il reste {f.moCleared} GtC à reprendre, soit {f.moYears} ans de nos émissions. Les auteurs excluent de convertir prairies, tourbières et zones humides. Ils écrivent que les forêts ne peuvent pas remplacer la baisse des émissions.
+
+</Step>
+
+<Aside>
+
+## En {f.moYear}, les auteurs écrivent que les forêts ne remplacent pas la baisse des émissions
+
+Dans leur réponse de {f.bastinYear}, Bastin et ses collègues maintenaient leurs estimations<SourceRef id="bastin2019reply" sources={sources} />. Ils précisaient qu’ils ne fixaient aucun délai pour atteindre ce stock<SourceRef id="bastin2019reply2" sources={sources} />. En {f.erratumYear}, la revue a publié un erratum de l’article et de cette réponse, que nous n’avons pas pu lire<SourceRef id="erratum2020" sources={sources} />.
+
+Leur position publiée la plus récente date de {f.moYear}. Avec Mo et ses collègues, ils comptent {f.moTotal} GtC, forêts existantes comprises. Ils écrivent que les forêts ne peuvent pas remplacer la baisse des émissions<SourceRef id="mo2023" sources={sources} />. Pour Friedlingstein et ses collègues, sans forte baisse des émissions fossiles, ces arbres ne font que retarder le réchauffement<SourceRef id="friedlingstein2019" sources={sources} />.
+
+</Aside>

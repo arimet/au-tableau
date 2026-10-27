@@ -1,0 +1,105 @@
+---
+// Carbon stored by new trees, in years of 2024 emissions and as a share of all emissions since 1850, recomputed live.
+// Four buttons jump to the published estimates.
+import Slider from '../../../components/Slider.astro';
+import { formatNumberText, formatPercent } from '../../../lib/format';
+import type { Locale } from '../../../lib/i18n';
+import { ESTIMATES, SLIDER, offsetFor } from './data';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+const start = offsetFor(SLIDER.value);
+const who = { bastin: 'Bastin', lewis: 'Lewis', mo: 'Mo', veldman: 'Veldman' };
+// Mo et al. count a different area from Bastin et al.: say so on the button.
+const note = { mo: fr ? ', forêts coupées ou morcelées' : ', cleared or fragmented forests' } as Record<string, string>;
+---
+
+<div class="stock-slider" data-locale={locale}>
+  <Slider
+    id="tree-stock"
+    label={fr ? 'Carbone stocké par les nouveaux arbres, en milliards de tonnes' : 'Carbon stored by the new trees, in billion tonnes'}
+    min={SLIDER.min}
+    max={SLIDER.max}
+    step={SLIDER.step}
+    scale="linear"
+    value={SLIDER.value}
+    {locale}
+  />
+  <p class="presets hand">
+    {fr ? 'Estimations publiées : ' : 'Published estimates: '}
+    {ESTIMATES.map((e) => <button type="button" data-gtc={e.gtc}>{`${who[e.id]} ${e.year}${note[e.id] ?? ''}`}</button>)}
+  </p>
+  <p class="sentence" aria-live="polite">
+    {fr ? 'Années de nos émissions de 2024 : ' : 'Years of our 2024 emissions: '}<b class="result years">{formatNumberText(start.years, locale, 2)}</b>
+    <br />
+    {fr ? 'Part de tout ce que nous avons émis depuis 1850 : ' : 'Share of all we have emitted since 1850: '}<b class="result share">{formatPercent(start.share, locale)}</b>
+  </p>
+</div>
+
+<script>
+  import { formatNumberText, formatPercent } from '../../../lib/format';
+  import { offsetFor } from './data';
+
+  for (const box of document.querySelectorAll<HTMLElement>('.stock-slider')) {
+    const input = box.querySelector<HTMLInputElement>('input[type="range"]')!;
+    const locale = box.dataset.locale === 'en' ? 'en' : 'fr';
+    const show = () => {
+      const { years, share } = offsetFor(Number(input.value));
+      box.querySelector('.years')!.textContent = formatNumberText(years, locale, 2);
+      box.querySelector('.share')!.textContent = formatPercent(share, locale);
+    };
+    input.addEventListener('input', show);
+    for (const button of box.querySelectorAll<HTMLButtonElement>('button[data-gtc]'))
+      button.addEventListener('click', () => {
+        input.value = button.dataset.gtc!;
+        // Bubbles so the shared slider script echoes the new value too.
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+  }
+</script>
+
+<style>
+  .stock-slider {
+    padding: 1rem 0;
+  }
+
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    color: var(--chalk);
+  }
+
+  .presets button {
+    font: inherit;
+    color: var(--chalk-yellow);
+    background: none;
+    border: 1.5px dashed var(--chalk);
+    border-radius: 0.4rem;
+    padding: 0.15rem 0.6rem;
+    min-height: 2.75rem;
+    cursor: pointer;
+  }
+
+  .presets button:focus-visible {
+    outline: 2px solid var(--chalk-yellow);
+    outline-offset: 3px;
+  }
+
+  .sentence {
+    color: var(--chalk);
+    font-size: 1.2rem;
+    line-height: 1.9;
+  }
+
+  .result {
+    color: var(--chalk-yellow);
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+</style>

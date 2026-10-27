@@ -1,0 +1,109 @@
+---
+topic: cloud-weight
+locale: fr
+slug: combien-pese-un-nuage
+question: "Combien pèse un nuage ?"
+hook: "Des avions de recherche ont mesuré l’eau de petits cumulus : quelques dixièmes de gramme par mètre cube. Un nuage d’un kilomètre de côté en porterait des centaines de tonnes, en gouttelettes qui tombent d’environ un centimètre par seconde."
+discipline: Météo
+date: 2026-11-16
+answer: "Un petit cumulus d’un kilomètre de côté porte environ quatre cents tonnes d’eau liquide, d’après des mesures faites en avion dans des cumulus des alizés. Ce chiffre suppose un nuage cubique, aussi humide partout qu’aux endroits mesurés. Cette eau forme des gouttelettes d’un centième de millimètre de rayon, qui tombent d’un peu plus d’un centimètre par seconde. Dans les tours qui grandissent, l’air monte bien plus vite. L’air du nuage pèse environ deux mille cinq cents fois plus que cette eau."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import CloudSlider from './CloudSlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('fr');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="profile" locale="fr" />
+
+## Un mètre cube de cumulus contient environ {f.lwc} gramme d’eau liquide
+
+Pendant la campagne RICO, au large des Antilles, des avions de recherche étudient les petits cumulus des alizés. Hermann Gerber et ses collègues analysent l’un de ces vols<SourceRef id="gerber2008" sources={sources} />. L’avion traverse plus de {f.traversed} cumulus. Les auteurs en retiennent {f.clouds}, larges de {f.width} mètres en moyenne.
+
+Une sonde mesure l’eau liquide, sous forme de gouttelettes, à cinq hauteurs au-dessus de la base du nuage. De {f.levelLow} à {f.levelHigh} mètres, cette eau varie de {f.lwcMin} à {f.lwcMax} gramme par mètre cube<SourceRef id="gerber2008" sources={sources} />. La moyenne des cinq niveaux vaut **{f.lwc} gramme par mètre cube**.
+
+L’avion passe dans des tours en croissance, un peu sous leur sommet, là où l’eau est souvent la plus abondante<SourceRef id="gerber2008" sources={sources} />. Un nuage entier en contient sans doute moins en moyenne.
+
+<ShowCalc calc={calc('lwc')} sources={sources} locale="fr">
+
+Chaque niveau rassemble sept nuages différents. Les auteurs les traitent comme les stades successifs d’un même nuage qui grandit<SourceRef id="gerber2008" sources={sources} />. Nous faisons la moyenne simple des cinq niveaux.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <CloudSlider slot="figure" locale="fr" />
+
+## Un nuage d’un kilomètre de côté porte environ {f.massRef} tonnes d’eau
+
+Prenons un nuage en forme de cube, d’un kilomètre de côté, aussi humide partout que la moyenne mesurée. Il contient {f.refVolume} de mètres cubes d’air. À {f.lwc} gramme par mètre cube, il porte environ **{f.massRef} tonnes d’eau liquide**. Avec le niveau le plus sec ou le plus humide, nous trouvons {f.massMin} ou {f.massMax} tonnes.
+
+Rassemblée, cette eau formerait un cube de {f.cubeEdge} mètres de côté<SourceRef id="wagner2002" sources={sources} />. Le côté du nuage vaut environ {f.cubeShare} fois celui de ce cube, quelle que soit sa taille. À l’échelle d’un dessin du nuage, toute son eau tient dans un point.
+
+Le curseur change la taille du nuage. Doubler son côté multiplie son volume, donc son eau, par huit. Pour un nuage de {f.width} mètres, la largeur moyenne mesurée, nous trouvons environ {f.massMeasured} tonnes.
+
+Ce calcul surestime l’eau des plus petits nuages. En {f.warnerYear}, J. Warner mesure en avion des cumulus de la côte est de l’Australie. Ceux de moins de {f.warnerM} mètres de large environ sont plus secs que les grands<SourceRef id="warner1955" sources={sources} />.
+
+<ShowCalc calc={calc('mass')} sources={sources} locale="fr">
+
+Le cube et le côté d’un kilomètre sont nos choix, pour un calcul simple. Selon Gerber et ses collègues, les petits cumulus des autres grandes campagnes de mesure sont environ cinq fois plus larges que ceux de RICO<SourceRef id="gerber2008" sources={sources} />. La masse volumique de l’eau liquide vient de la formulation internationale de référence des propriétés de l’eau<SourceRef id="wagner2002" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="air" locale="fr" />
+
+## L’air du même nuage pèse environ {f.airPerWater} fois plus que son eau liquide
+
+Un nuage est un volume d’air humide qui porte des gouttelettes. Dans les nuages mesurés, nous connaissons la pression, la température et la vapeur d’eau<SourceRef id="gerber2008" sources={sources} />. Avec la loi des gaz parfaits, nous en tirons la masse d’un mètre cube d’air : {f.airDensity} kilogramme par mètre cube<SourceRef id="tiesinga2021" sources={sources} /><SourceRef id="lemmon2004" sources={sources} />.
+
+Le cube d’un kilomètre contient donc environ **{f.airRef} d’air**, pour {f.massRef} tonnes d’eau liquide. Soit {f.airPerWater} fois plus. L’eau liquide ne représente qu’une petite charge pour cet air. La vapeur d’eau invisible du même air pèse environ {f.vapourPerLiquid} fois plus que les gouttelettes<SourceRef id="gerber2008" sources={sources} />.
+
+<ShowCalc calc={calc('air')} sources={sources} locale="fr">
+
+Nous prenons le niveau du milieu, à {f.levelMid} mètres au-dessus de la base. Gerber et ses collègues donnent la température potentielle : nous en tirons la température en traitant l’air comme un gaz parfait de molécules à deux atomes. La vapeur d’eau, plus légère que l’air sec, l’allège un peu<SourceRef id="wagner2002" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="fall" locale="fr" />
+
+## Une gouttelette tombe d’environ {f.fallCm} centimètre par seconde
+
+Dans les nuages mesurés, les gouttelettes ont un rayon moyen de {f.radius} micromètres<SourceRef id="gerber2008" sources={sources} />. Pour une sphère aussi petite, le frottement de l’air équilibre vite son poids. La loi de Stokes donne alors sa vitesse de chute. Elle dépend de la viscosité de l’air et de la pesanteur<SourceRef id="lemmon2004" sources={sources} /><SourceRef id="moritz2000" sources={sources} />.
+
+Une gouttelette moyenne tombe de **{f.fallCm} centimètre par seconde**. Il lui faudrait environ {f.hoursPerKm} heures pour descendre d’un kilomètre dans un air immobile.
+
+Gerber et ses collègues ont choisi des tours où l’air monte<SourceRef id="gerber2008" sources={sources} />. Aux quatre niveaux inférieurs, il y monte en moyenne de {f.wMin} à {f.wMax} mètre par seconde, avec des pointes jusqu’à {f.wPeak} mètres par seconde. C’est {f.fasterMin} à {f.fasterMax} fois plus vite que la chute des gouttelettes.
+
+Près du sommet des plus hautes tours, l’air redescend d’environ {f.wTop} mètre par seconde<SourceRef id="gerber2008" sources={sources} />. Là où l’air monte, il emporte ses gouttelettes avec lui.
+
+<ShowCalc calc={calc('fall')} sources={sources} locale="fr">
+
+La loi de Stokes vaut quand le nombre de Reynolds de la gouttelette reste très inférieur à un : c’est le cas ici. Nous prenons la pesanteur à l’équateur, très proche de celle des Antilles.
+
+</ShowCalc>
+
+</Step>
+
+<Aside>
+
+## Le nuage perd des gouttelettes et en forme de nouvelles
+
+Sous la base des nuages mesurés, l’humidité relative de l’air tombe à {f.rhBelow} %<SourceRef id="gerber2008" sources={sources} />. Autour du nuage, à mi-hauteur, l’air contient {f.qvEnv} grammes de vapeur par kilogramme, contre {f.qvCloud} dans le nuage<SourceRef id="gerber2008" sources={sources} />. Une gouttelette qui sort du nuage par le bas ou par le bord s’évapore donc. Pendant ce temps, de nouvelles gouttelettes se forment à la base du nuage, dans l’air qui monte<SourceRef id="gerber2008" sources={sources} />.
+
+Gerber et ses collègues observent aussi des gouttes de bruine, plus grosses, de plus en plus nombreuses vers le sommet<SourceRef id="gerber2008" sources={sources} />. Elles tombent bien plus vite que les gouttelettes : c’est ainsi que commence la pluie de ces nuages<SourceRef id="gerber2008" sources={sources} />.
+
+</Aside>

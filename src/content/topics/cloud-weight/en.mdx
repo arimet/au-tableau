@@ -1,0 +1,109 @@
+---
+topic: cloud-weight
+locale: en
+slug: how-much-does-a-cloud-weigh
+question: "How Much Does a Cloud Weigh?"
+hook: "Research aircraft have measured the water in small cumulus clouds: a few tenths of a gram per cubic metre. A cloud one kilometre on a side would hold hundreds of tonnes, as droplets that fall about a centimetre per second."
+discipline: Weather
+date: 2026-11-16
+answer: "A small cumulus one kilometre on a side holds about four hundred tonnes of liquid water, based on aircraft measurements in trade-wind cumulus. This figure assumes a cubic cloud, as wet throughout as the places measured. The water forms droplets a hundredth of a millimetre in radius, which fall a little over a centimetre per second. In growing turrets the air rises far faster. The cloud’s air weighs about two and a half thousand times more than this water."
+---
+
+import Step from '../../../components/Step.astro';
+import ShowCalc from '../../../components/ShowCalc.astro';
+import SourceRef from '../../../components/SourceRef.astro';
+import Aside from '../../../components/Aside.astro';
+import Figures from './Figures.astro';
+import CloudSlider from './CloudSlider.astro';
+import { sources, calcs, figures } from './data';
+
+export const f = figures('en');
+export const calc = (id) => calcs.find((c) => c.id === id);
+
+<Step>
+  <Figures slot="figure" name="profile" locale="en" />
+
+## A Cubic Metre of Cumulus Holds About Four Tenths of a Gram of Water
+
+During the RICO campaign, off the Caribbean islands, research aircraft studied the small cumulus clouds of the trade winds. Hermann Gerber and his colleagues analysed one of these flights<SourceRef id="gerber2008" sources={sources} />. The aircraft crossed more than {f.traversed} cumulus clouds. The authors kept {f.clouds} of them, with an average width of {f.width} metres.
+
+A probe measured the liquid water, held as droplets, at five heights above the cloud base. From {f.levelLow} to {f.levelHigh} metres, this water ranged from {f.lwcMin} to {f.lwcMax} grams per cubic metre<SourceRef id="gerber2008" sources={sources} />. The mean of the five levels is **{f.lwc} grams per cubic metre**.
+
+The aircraft flew through growing turrets, a little below their tops, where water is often most abundant<SourceRef id="gerber2008" sources={sources} />. We expect a whole cloud to hold less on average.
+
+<ShowCalc calc={calc('lwc')} sources={sources} locale="en">
+
+Each level gathers seven different clouds. The authors treat them as the successive stages of one growing cloud<SourceRef id="gerber2008" sources={sources} />. We take the plain mean of the five levels.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <CloudSlider slot="figure" locale="en" />
+
+## A Cloud One Kilometre on a Side Holds Hundreds of Tonnes of Water
+
+Take a cloud shaped like a cube, one kilometre on a side, as wet throughout as the measured mean. It holds {f.refVolume} cubic metres of air. At {f.lwc} grams per cubic metre, it carries about **{f.massRef} tonnes of liquid water**. With the driest or the wettest level, we find {f.massMin} or {f.massMax} tonnes.
+
+Gathered together, this water would make a cube {f.cubeEdge} metres on a side<SourceRef id="wagner2002" sources={sources} />. The cloud’s edge is about {f.cubeShare} times the edge of this cube, whatever its size. In a drawing of the cloud, all its water fits in a dot.
+
+The slider changes the size of the cloud. Doubling its edge multiplies its volume, and so its water, by eight. For a cloud of {f.width} metres, the measured mean width, we find about {f.massMeasured} tonnes.
+
+This calculation overstates the water of the smallest clouds. In {f.warnerYear}, J. Warner measured cumulus clouds along the east coast of Australia from an aircraft. Those narrower than about {f.warnerM} metres were drier than the large ones<SourceRef id="warner1955" sources={sources} />.
+
+<ShowCalc calc={calc('mass')} sources={sources} locale="en">
+
+The cube and the one-kilometre edge are our choices, to keep the calculation simple. According to Gerber and his colleagues, the small cumulus clouds of the other major field campaigns are about five times wider than those of RICO<SourceRef id="gerber2008" sources={sources} />. The density of liquid water comes from the international reference formulation of the properties of water<SourceRef id="wagner2002" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="air" locale="en" />
+
+## The Cloud’s Air Weighs About Two and a Half Thousand Times More Than Its Liquid Water
+
+A cloud is a volume of moist air carrying droplets. In the measured clouds, we know the pressure, the temperature and the water vapour<SourceRef id="gerber2008" sources={sources} />. With the ideal gas law, we turn these into the mass of a cubic metre of air: {f.airDensity} kilograms per cubic metre<SourceRef id="tiesinga2021" sources={sources} /><SourceRef id="lemmon2004" sources={sources} />.
+
+The one-kilometre cube thus holds about **{f.airRef} of air**, against {f.massRef} tonnes of liquid water. That is {f.airPerWater} times more. The liquid water is only a small load for this air. The invisible water vapour in the same air weighs about {f.vapourPerLiquid} times more than the droplets<SourceRef id="gerber2008" sources={sources} />.
+
+<ShowCalc calc={calc('air')} sources={sources} locale="en">
+
+We take the middle level, {f.levelMid} metres above the base. Gerber and his colleagues give the potential temperature: we derive the temperature by treating air as an ideal gas of two-atom molecules. Water vapour, lighter than dry air, makes it a little lighter<SourceRef id="wagner2002" sources={sources} />.
+
+</ShowCalc>
+
+</Step>
+
+<Step>
+  <Figures slot="figure" name="fall" locale="en" />
+
+## A Droplet Falls About a Centimetre per Second
+
+In the measured clouds, the droplets have a mean radius of {f.radius} micrometres<SourceRef id="gerber2008" sources={sources} />. For a sphere this small, air friction soon balances its weight. Stokes’ law then gives its fall speed. This speed depends on the viscosity of air and on gravity<SourceRef id="lemmon2004" sources={sources} /><SourceRef id="moritz2000" sources={sources} />.
+
+An average droplet falls **{f.fallCm} centimetres per second**. It would need about {f.hoursPerKm} hours to drop one kilometre through still air.
+
+Gerber and his colleagues chose turrets where the air rises<SourceRef id="gerber2008" sources={sources} />. At the four lower levels, it rises on average at {f.wMin} to {f.wMax} metres per second, with peaks up to {f.wPeak} metres per second. That is {f.fasterMin} to {f.fasterMax} times faster than the droplets fall.
+
+Near the top of the tallest turrets, the air sinks at about {f.wTop} metres per second<SourceRef id="gerber2008" sources={sources} />. Where the air rises, it carries its droplets up with it.
+
+<ShowCalc calc={calc('fall')} sources={sources} locale="en">
+
+Stokes’ law holds when the droplet’s Reynolds number stays far below one, as it does here. We take gravity at the equator, very close to its value in the Caribbean.
+
+</ShowCalc>
+
+</Step>
+
+<Aside>
+
+## The Cloud Loses Droplets and Forms New Ones
+
+Below the base of the measured clouds, the relative humidity of the air drops to {f.rhBelow}%<SourceRef id="gerber2008" sources={sources} />. Around the cloud, at mid-height, the air holds {f.qvEnv} grams of vapour per kilogram, against {f.qvCloud} inside the cloud<SourceRef id="gerber2008" sources={sources} />. A droplet that leaves the cloud through its base or its edge therefore evaporates. Meanwhile, new droplets form at the cloud base, in the rising air<SourceRef id="gerber2008" sources={sources} />.
+
+Gerber and his colleagues also observe drizzle drops, larger and more numerous toward the top<SourceRef id="gerber2008" sources={sources} />. They fall much faster than the droplets: this is how rain begins in these clouds<SourceRef id="gerber2008" sources={sources} />.
+
+</Aside>

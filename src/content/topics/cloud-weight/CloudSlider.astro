@@ -1,0 +1,117 @@
+---
+// Edge of the cloud and what it holds, recomputed live: liquid water, the cube of water it would make, and the air.
+// One button jumps to the average width of the measured clouds.
+import Slider from '../../../components/Slider.astro';
+import { formatNumberText } from '../../../lib/format';
+import type { Locale } from '../../../lib/i18n';
+import { SLIDER, WARNER_M, waterTonnes, waterCubeEdge, airTonnes, tonnesText } from './data';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+const start = SLIDER.value;
+const water = waterTonnes(start);
+const warnerM = formatNumberText(WARNER_M, locale, 2);
+---
+
+<div class="cloud-slider" data-locale={locale}>
+  <Slider
+    id="cloud-edge"
+    label={fr ? 'Côté du nuage, en mètres' : 'Edge of the cloud, in metres'}
+    min={SLIDER.min}
+    max={SLIDER.max}
+    step={SLIDER.step}
+    scale="linear"
+    value={start}
+    {locale}
+  />
+  <p class="presets hand">
+    <button type="button" data-edge={SLIDER.measured}>{fr ? `Largeur moyenne des nuages mesurés, ${SLIDER.measured} m` : `Average width of the measured clouds, ${SLIDER.measured} m`}</button>
+    <button type="button" data-edge={SLIDER.value}>{fr ? `Nuage de référence, ${SLIDER.value.toLocaleString(locale)} m` : `Reference cloud, ${SLIDER.value.toLocaleString(locale)} m`}</button>
+  </p>
+  <p class="sentence" aria-live="polite">
+    {fr ? 'Eau liquide : ' : 'Liquid water: '}<b class="result water">{tonnesText(water, locale)}</b>
+    <br />
+    {fr ? 'Toute cette eau tient dans un cube de ' : 'All this water fits in a cube '}<b class="result cube">{formatNumberText(waterCubeEdge(water), locale, 2)}</b>{fr ? ' m de côté' : ' m on a side'}
+    <br />
+    {fr ? 'Air du même volume : ' : 'Air in the same volume: '}<b class="result air">{tonnesText(airTonnes(start), locale)}</b>
+  </p>
+  <p class="warn" hidden={start >= WARNER_M}>
+    {fr ? `Sous ${warnerM} m de large, les cumulus mesurés par Warner sont plus secs : ce chiffre est surestimé.` : `Below ${warnerM} m across, the cumulus clouds Warner measured are drier: this figure is too high.`}
+  </p>
+</div>
+
+<script>
+  import { formatNumberText } from '../../../lib/format';
+  import { WARNER_M, waterTonnes, waterCubeEdge, airTonnes, tonnesText } from './data';
+
+  for (const box of document.querySelectorAll<HTMLElement>('.cloud-slider')) {
+    const input = box.querySelector<HTMLInputElement>('input[type="range"]')!;
+    const locale = box.dataset.locale === 'en' ? 'en' : 'fr';
+    const out = (cls: string) => box.querySelector(`.${cls}`)!;
+    input.addEventListener('input', () => {
+      const edge = Number(input.value);
+      const water = waterTonnes(edge);
+      out('water').textContent = tonnesText(water, locale);
+      out('cube').textContent = formatNumberText(waterCubeEdge(water), locale, 2);
+      out('air').textContent = tonnesText(airTonnes(edge), locale);
+      (out('warn') as HTMLElement).hidden = edge >= WARNER_M;
+    });
+    for (const button of box.querySelectorAll<HTMLButtonElement>('button[data-edge]'))
+      button.addEventListener('click', () => {
+        input.value = button.dataset.edge!;
+        // Bubbles so the shared slider script echoes the new value too.
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+  }
+</script>
+
+<style>
+  .cloud-slider {
+    padding: 1rem 0;
+  }
+
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.75rem 0 0;
+  }
+
+  .presets button {
+    padding: 0.25rem 0.6rem;
+    background: none;
+    border: 1.5px dashed var(--text);
+    border-radius: 6px;
+    color: var(--chalk);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .presets button:hover,
+  .presets button:focus-visible {
+    border-color: var(--chalk-yellow);
+    color: var(--chalk-yellow);
+  }
+
+  .sentence {
+    color: var(--chalk);
+    font-size: 1.2rem;
+    line-height: 1.9;
+  }
+
+  .warn {
+    margin: 0;
+    color: var(--text);
+    font-size: 1rem;
+  }
+
+  .result {
+    color: var(--chalk-yellow);
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+</style>

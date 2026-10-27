@@ -1,0 +1,196 @@
+---
+// Small figures for the story: water measured at five levels, air against water, and the fall of a droplet
+// against the rising air.
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchLine, arrowHead, hatch, type Pt } from '../../../lib/chalk';
+import { formatNumberText } from '../../../lib/format';
+import type { Locale } from '../../../lib/i18n';
+import { figures, gramsText, PROFILE, SPEEDS, AIR_PER_WATER, LWC_MEAN } from './data';
+
+interface Props {
+  name: 'profile' | 'air' | 'fall';
+  locale: Locale;
+}
+
+const { name, locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng({ profile: 41, air: 42, fall: 43 }[name]);
+const draw = (t: number, d: number) => `--t:${t}s;--d:${d}s`;
+const arrow = (from: Pt, to: Pt, size = 10) => [sketchLine(rand, from, to, 1), ...arrowHead(rand, to, Math.atan2(to[1] - from[1], to[0] - from[0]), size)];
+
+// Profile: one bar per level, length ∝ liquid water, height ∝ height above the cloud base.
+const [PX0, PX1, PMAX, PB, PK] = [96, 400, 0.6, 262, 0.2]; // x of 0 and of PMAX g/m³; y of the base; px per metre of height
+const px = (g: number) => PX0 + (g / PMAX) * (PX1 - PX0);
+const py = (h: number) => PB - h * PK;
+const levels = PROFILE.map((l, i) => {
+  const [y0, y1] = [py(l.h) - 11, py(l.h) + 11];
+  return {
+    ...l,
+    i,
+    y: py(l.h),
+    outline: [sketchLine(rand, [PX0, y0], [px(l.lwc), y0], 0.6), sketchLine(rand, [px(l.lwc), y0], [px(l.lwc), y1], 0.4), sketchLine(rand, [px(l.lwc), y1], [PX0, y1], 0.6)],
+    fill: hatch(rand, (PX0 + px(l.lwc)) / 2, py(l.h), (px(l.lwc) - PX0) / 2, 6, 0.9),
+    clip: { x: PX0, y: y0 + 1, w: px(l.lwc) - PX0 - 1, h: y1 - y0 - 2 },
+    value: gramsText(l.lwc, locale),
+    // The value sits right of its bar, or right of the mean line when the line would cross it.
+    valueX: px(l.lwc) < px(LWC_MEAN) && px(l.lwc) + 56 > px(LWC_MEAN) ? px(LWC_MEAN) + 8 : px(l.lwc) + 8,
+  };
+});
+const meanLine = sketchLine(rand, [px(LWC_MEAN), PB + 6], [px(LWC_MEAN), 38], 1);
+const baseLine = sketchLine(rand, [PX0 - 6, PB], [PX1 + 20, PB], 1);
+const heightAxis = sketchLine(rand, [PX0, PB], [PX0, 24], 1);
+
+// Air: one dot for the cloud's water, and as many dots of the same mass for its air.
+const DOTS = Math.round(AIR_PER_WATER / 100) * 100;
+const COLS = 50, STEP = 5.6, [AX, AY] = [24, 34];
+const rows = Array.from({ length: Math.ceil(DOTS / COLS) }, (_, r) => {
+  let d = '';
+  for (let c = 0; c < COLS && r * COLS + c < DOTS; c++) if (r || c) d += `M${(AX + c * STEP).toFixed(1)},${(AY + r * STEP).toFixed(1)}h0.01`;
+  return d;
+});
+const dotsShown = formatNumberText(DOTS, locale, 2);
+
+// Fall: 100 px for 1 m/s, for the rising air and for the droplet alike.
+const PER = 100;
+const [GROUND, UX] = [268, [140, 196]];
+const updrafts = [SPEEDS.wMin, SPEEDS.wMax].map((w, i) => ({ w, x: UX[i], d: arrow([UX[i], GROUND], [UX[i], GROUND - w * PER]) }));
+const droplet: Pt = [336, 130];
+const fallTick = sketchLine(rand, [droplet[0], droplet[1] + 9], [droplet[0], droplet[1] + 9 + SPEEDS.fall * PER], 0.1);
+const scaleBar = sketchLine(rand, [70, GROUND], [70, GROUND - PER], 0.5);
+const scaleTicks = [GROUND, GROUND - PER].map((y) => sketchLine(rand, [64, y], [76, y], 0.2));
+
+const labels = {
+  profile: fr
+    ? {
+        scene: `Diagramme en barres : eau liquide mesurée dans ${f.clouds} cumulus, à cinq hauteurs de ${f.levelLow} à ${f.levelHigh} mètres au-dessus de la base. Elle va de ${f.lwcMin} à ${f.lwcMax} gramme par mètre cube ; la moyenne vaut ${f.lwc}.`,
+        mean: `moyenne : ${f.lwc}`,
+        x: 'eau liquide, g/m³',
+        y: 'au-dessus de la base',
+        base: 'base',
+      }
+    : {
+        scene: `Bar chart: liquid water measured in ${f.clouds} cumuli, at five heights from ${f.levelLow} to ${f.levelHigh} metres above the base. It runs from ${f.lwcMin} to ${f.lwcMax} grams per cubic metre; the mean is ${f.lwc}.`,
+        mean: `mean: ${f.lwc}`,
+        x: 'liquid water, g/m³',
+        y: 'above the base',
+        base: 'base',
+      },
+  air: fr
+    ? {
+        scene: `Grille de ${dotsShown} points de même masse. Un point jaune représente l’eau liquide du nuage. Tous les points ensemble représentent l’air du même nuage, environ ${f.airPerWater} fois plus lourd.`,
+        lines: ['un point jaune :', 'l’eau du nuage', '', `environ ${dotsShown} points :`, 'l’air du nuage'],
+      }
+    : {
+        scene: `Grid of ${dotsShown} dots of equal mass. One yellow dot stands for the cloud’s liquid water. All the dots together stand for the air of the same cloud, about ${f.airPerWater} times heavier.`,
+        lines: ['one yellow dot:', 'the cloud’s water', '', `about ${dotsShown} dots:`, 'the cloud’s air'],
+      },
+  fall: fr
+    ? {
+        scene: `Flèches à la même échelle. L’air monte dans les tours mesurées à ${f.wMin} et ${f.wMax} mètre par seconde. Une gouttelette tombe à ${f.fallCm} centimètre par seconde : à cette échelle, un trait d’un pixel.`,
+        up: ['air qui monte', `${f.wMin} et ${f.wMax} m/s`],
+        drop: ['gouttelette :', `chute de ${f.fallCm} cm/s,`, 'presque rien', 'à cette échelle'],
+        scale: '1 m/s',
+      }
+    : {
+        scene: `Arrows to the same scale. The air rises in the measured turrets at ${f.wMin} and ${f.wMax} metres per second. A droplet falls at ${f.fallCm} centimetres per second: at this scale, a one-pixel stroke.`,
+        up: ['rising air', `${f.wMin} and ${f.wMax} m/s`],
+        drop: ['droplet:', `falls ${f.fallCm} cm/s,`, 'next to nothing', 'at this scale'],
+        scale: '1 m/s',
+      },
+}[name];
+const viewBox = { profile: '0 0 480 310', air: '0 0 520 330', fall: '0 0 540 300' }[name];
+---
+
+<Scene {viewBox} label={labels.scene} {locale}>
+  {
+    name === 'profile' && (
+      <>
+        <defs>
+          {levels.map((l) => (
+            <clipPath id={`cloud-bar-${l.i}`}>
+              <rect x={l.clip.x} y={l.clip.y} width={l.clip.w} height={l.clip.h} />
+            </clipPath>
+          ))}
+        </defs>
+        <g fill="none" stroke-linecap="round">
+          <path class="draw" pathLength="1" d={baseLine} stroke="var(--chalk)" stroke-width="2.3" style={draw(0, 0.6)} />
+          <path class="draw" pathLength="1" d={heightAxis} stroke="var(--chalk)" stroke-width="2" style={draw(0.4, 0.5)} />
+          {levels.map((l) => (
+            <>
+              <g clip-path={`url(#cloud-bar-${l.i})`} stroke="var(--blue)" stroke-width="1.5" opacity="0.75">
+                {l.fill.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(1.2 + l.i * 0.4 + j * 0.01, 0.12)} />)}
+              </g>
+              <g stroke="var(--blue)" stroke-width="2.3">
+                {l.outline.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(0.9 + l.i * 0.4 + j * 0.1, 0.2)} />)}
+              </g>
+            </>
+          ))}
+          <path class="draw" pathLength="1" d={meanLine} stroke="var(--chalk-yellow)" stroke-width="2.3" style={draw(3.2, 0.6)} />
+        </g>
+        <g class="labels">
+          {levels.map((l) => (
+            <>
+              <Annotation x={PX0 - 10} y={l.y + 7} t={0.9 + l.i * 0.4} anchor="end">{`${l.h.toLocaleString(locale)} m`}</Annotation>
+              <Annotation x={l.valueX} y={l.y + 7} t={1.3 + l.i * 0.4}>{l.value}</Annotation>
+            </>
+          ))}
+          <Annotation x={px(LWC_MEAN) + 8} y={30} t={3.6}><tspan fill="var(--chalk-yellow)">{labels.mean}</tspan></Annotation>
+          <Annotation x={PX1 + 20} y={PB + 28} t={0.3} anchor="end">{labels.x}</Annotation>
+          <Annotation x={PX0 - 10} y={PB + 28} t={0.2} anchor="end">{labels.base}</Annotation>
+          <Annotation x={10} y={16} t={0.5}>{labels.y}</Annotation>
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'air' && (
+      <>
+        <g fill="none" stroke="var(--chalk)" stroke-width="2.6" stroke-linecap="round" opacity="0.85">
+          {rows.map((d, r) => <path class="pop" {d} style={`--t:${0.8 + r * 0.05}s`} />)}
+        </g>
+        <circle class="pop" cx={AX} cy={AY} r="2.6" fill="var(--chalk-yellow)" style="--t:0.3s" />
+        <circle class="pop" cx={AX} cy={AY} r="9" fill="none" stroke="var(--chalk-yellow)" stroke-width="1.4" style="--t:0.5s" />
+        <g class="labels">
+          {labels.lines.map((line, i) => line && <Annotation x={312} y={70 + i * 28} t={i < 2 ? 0.5 + i * 0.1 : 3.4 + i * 0.1}><tspan fill={i < 2 ? 'var(--chalk-yellow)' : 'var(--chalk)'}>{line}</tspan></Annotation>)}
+        </g>
+      </>
+    )
+  }
+
+  {
+    name === 'fall' && (
+      <>
+        <g fill="none" stroke-linecap="round">
+          <g stroke="var(--chalk)" stroke-width="2" opacity="0.8">
+            <path class="draw" pathLength="1" d={scaleBar} style={draw(0, 0.4)} />
+            {scaleTicks.map((d) => <path class="draw" pathLength="1" {d} style={draw(0.4, 0.1)} />)}
+          </g>
+          {updrafts.map((u, i) => (
+            <g stroke="var(--blue)" stroke-width="2.8">
+              {u.d.map((d, j) => <path class="draw" pathLength="1" {d} style={draw(0.8 + i * 0.6 + (j ? 0.5 : 0), j ? 0.12 : 0.5)} />)}
+            </g>
+          ))}
+          <path class="draw" pathLength="1" d={fallTick} stroke="var(--chalk-yellow)" stroke-width="2.4" style={draw(2.8, 0.1)} />
+        </g>
+        <circle class="pop" cx={droplet[0]} cy={droplet[1]} r="6" fill="var(--blue)" style="--t:2.4s" />
+        <g class="labels">
+          <Annotation x={58} y={GROUND - PER / 2 + 7} t={0.3} anchor="end">{labels.scale}</Annotation>
+          {labels.up.map((line, i) => <Annotation x={UX[1] + 18} y={GROUND - 40 + i * 26} t={1.8 + i * 0.1}>{line}</Annotation>)}
+          {labels.drop.map((line, i) => <Annotation x={droplet[0] + 18} y={droplet[1] - 20 + i * 26} t={3 + i * 0.1}><tspan fill={i === 1 ? 'var(--chalk-yellow)' : 'var(--chalk)'}>{line}</tspan></Annotation>)}
+        </g>
+      </>
+    )
+  }
+</Scene>
+
+<style>
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>

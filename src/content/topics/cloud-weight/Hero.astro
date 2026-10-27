@@ -1,0 +1,95 @@
+---
+// Opening scene: a cumulus in a box one kilometre on a side. All its water, drawn to the same scale,
+// is a cube small enough to be a dot.
+import Scene from '../../../components/chalk/Scene.astro';
+import Annotation from '../../../components/chalk/Annotation.astro';
+import { rng, sketchLine, smoothPath, arrowHead, type Pt } from '../../../lib/chalk';
+import type { Locale } from '../../../lib/i18n';
+import { figures, CUBE_SHARE } from './data';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const fr = locale === 'fr';
+const f = figures(locale);
+const rand = rng(2604);
+
+// The box: the front face of a cube, 280 px for 1 km.
+const [X0, Y0, SIDE] = [60, 56, 280];
+const box: Pt[] = [[X0, Y0], [X0 + SIDE, Y0], [X0 + SIDE, Y0 + SIDE], [X0, Y0 + SIDE]];
+const boxSides = box.map((p, i) => sketchLine(rand, p, box[(i + 1) % 4], 1));
+
+// The cloud: the upper outline of a few overlapping bumps, on a flat base.
+const BASE = Y0 + SIDE - 36;
+const bumps = [
+  { x: 104, y: BASE - 8, r: 34 },
+  { x: 146, y: BASE - 46, r: 44 },
+  { x: 204, y: BASE - 84, r: 58 },
+  { x: 262, y: BASE - 56, r: 50 },
+  { x: 302, y: BASE - 10, r: 34 },
+];
+const left = bumps[0].x - bumps[0].r + 2, right = bumps[4].x + bumps[4].r - 2;
+const top = (x: number) =>
+  Math.min(BASE, ...bumps.filter((b) => Math.abs(x - b.x) < b.r).map((b) => b.y - Math.sqrt(b.r ** 2 - (x - b.x) ** 2)));
+const outline: Pt[] = [[left, BASE]];
+for (let x = left + 4; x < right; x += 6) outline.push([x, top(x) + (rand() - 0.5) * 1.6]);
+outline.push([right, BASE]);
+const cloudTop = smoothPath(outline);
+const cloudBase = sketchLine(rand, [right, BASE], [left, BASE], 1.2);
+
+// All the water, at the same scale as the box.
+const dropSide = SIDE * CUBE_SHARE;
+const drop: Pt = [210, BASE - 60];
+const pointerFrom: Pt = [378, 220];
+const pointerTo: Pt = [drop[0] + 8, drop[1] + 2];
+const pointer = sketchLine(rand, pointerFrom, pointerTo, 3);
+const pointerHead = arrowHead(rand, pointerTo, Math.atan2(pointerTo[1] - pointerFrom[1], pointerTo[0] - pointerFrom[0]), 10);
+
+const text = fr
+  ? {
+      label: `Schéma : un cumulus dessiné dans une boîte de ${f.refKm} kilomètre de côté. Si toute la boîte était remplie de nuage à ${f.lwc} gramme d’eau par mètre cube, elle porterait environ ${f.massRef} tonnes d’eau. À la même échelle, toute cette eau forme un cube de ${f.cubeEdge} mètres de côté : un point.`,
+      box: `${f.refKm} km`,
+      mass: ['si toute la boîte', 'était du nuage :', `environ ${f.massRef} tonnes`, 'd’eau liquide'],
+      cube: ['toute cette eau,', 'à la même échelle :', `un cube de ${f.cubeEdge} m`],
+    }
+  : {
+      label: `Diagram: a cumulus drawn in a box ${f.refKm} kilometre on a side. If the whole box were filled with cloud at ${f.lwc} grams of water per cubic metre, it would hold about ${f.massRef} tonnes of water. At the same scale, all this water makes a cube ${f.cubeEdge} metres on a side: a dot.`,
+      box: `${f.refKm} km`,
+      mass: ['if the whole box', 'were cloud:', `about ${f.massRef} tonnes`, 'of liquid water'],
+      cube: ['all this water,', 'at the same scale:', `a ${f.cubeEdge} m cube`],
+    };
+const draw = (t: number, d: number) => `--t:${t}s;--d:${d}s`;
+---
+
+<Scene viewBox="0 0 640 380" label={text.label} {locale}>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g stroke="var(--chalk)" stroke-width="1.6" opacity="0.6">
+      {boxSides.map((d, i) => <path class="draw" pathLength="1" {d} style={draw(i * 0.3, 0.35)} />)}
+    </g>
+    <path class="draw" pathLength="1" d={cloudTop} stroke="var(--chalk)" stroke-width="2.6" style={draw(1.3, 1.4)} />
+    <path class="draw" pathLength="1" d={cloudBase} stroke="var(--chalk)" stroke-width="2.6" style={draw(2.7, 0.4)} />
+    <g stroke="var(--chalk-yellow)" stroke-width="2">
+      <path class="draw" pathLength="1" d={pointer} style={draw(4, 0.5)} />
+      {pointerHead.map((d) => <path class="draw" pathLength="1" {d} style={draw(4.5, 0.12)} />)}
+    </g>
+  </g>
+  <circle class="pop" cx={drop[0]} cy={drop[1]} r="9" fill="none" stroke="var(--chalk-yellow)" stroke-width="1.4" opacity="0.8" style="--t:3.6s" />
+  <rect class="pop" x={drop[0] - dropSide / 2} y={drop[1] - dropSide / 2} width={dropSide} height={dropSide} fill="var(--chalk-yellow)" style="--t:3.6s" />
+
+  <g class="labels">
+    <Annotation x={X0 + SIDE / 2} y={Y0 - 14} t={1} anchor="middle">{text.box}</Annotation>
+    {text.mass.map((line, i) => <Annotation x={384} y={92 + i * 28} t={3.1 + i * 0.15}><tspan fill={i === 2 ? 'var(--chalk-yellow)' : 'var(--chalk)'}>{line}</tspan></Annotation>)}
+    {text.cube.map((line, i) => <Annotation x={384} y={244 + i * 28} t={4.6 + i * 0.15}>{line}</Annotation>)}
+  </g>
+</Scene>
+
+<style>
+  .labels :global(text) {
+    paint-order: stroke;
+    stroke: var(--slate);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+</style>
